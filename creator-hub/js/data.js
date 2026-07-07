@@ -1,4 +1,4 @@
-/* Peonara Creator Hub — shared data layer.
+/* Piyonna Creator Hub — shared data layer.
    Runs entirely client-side (localStorage) so it works as a static site
    (GitHub Pages) with no backend. Real deployment would swap the
    localStorage calls in this file for API calls to a small server that

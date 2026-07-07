@@ -295,7 +295,7 @@
         toast('먼저 할인코드를 저장해주세요.');
         return;
       }
-      const baseUrl = document.getElementById('baseUrlInput').value.trim() || 'https://peonara.com';
+      const baseUrl = document.getElementById('baseUrlInput').value.trim() || 'https://piyonna.com';
       const link = PH.buildAffiliateLink(baseUrl, code);
       document.getElementById('generatedLinkBlock').style.display = 'block';
       document.getElementById('generatedLink').value = link;
