@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>notverycaicai 성장 대시보드</title>
+<meta name="description" content="notverycaicai 계정 성장 트래킹, 데일리/위클리 투두, KPI 체크리스트">
+<style>
+  :root{
+    --bg:#faf8f5; --surface:#ffffff; --border:#e6e0d8; --text:#211f1c; --text-dim:#7a746a;
+    --accent:#c65b3f; --accent-soft:#f3dfd7; --good:#4c7a52; --good-soft:#e2ede2;
+    --warn:#b8863a; --shadow:0 1px 3px rgba(30,25,15,0.08);
+    --radius:14px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#16151a; --surface:#201f26; --border:#34323c; --text:#f1eee8; --text-dim:#9b96a8;
+      --accent:#e8825f; --accent-soft:#3a2a26; --good:#7fbf85; --good-soft:#1f3324;
+      --warn:#e0b45f; --shadow:0 1px 3px rgba(0,0,0,0.4);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Pretendard","Apple SD Gothic Neo",sans-serif;
+    background:var(--bg);color:var(--text);padding-bottom:76px;}
+  header{padding:20px 16px 8px;position:sticky;top:0;background:var(--bg);z-index:5;}
+  header h1{font-size:1.05rem;margin:0 0 2px;font-weight:700;}
+  header .sub{font-size:0.78rem;color:var(--text-dim);}
+  main{max-width:640px;margin:0 auto;padding:8px 16px 24px;}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+    padding:16px;margin-bottom:14px;box-shadow:var(--shadow);}
+  .card h2{font-size:0.95rem;margin:0 0 10px;display:flex;align-items:center;justify-content:space-between;gap:8px;}
+  .card h2 small{font-size:0.72rem;color:var(--text-dim);font-weight:500;}
+  .muted{color:var(--text-dim);font-size:0.78rem;line-height:1.5;}
+  .tabs{display:none;}
+  nav.bottombar{position:fixed;bottom:0;left:0;right:0;background:var(--surface);
+    border-top:1px solid var(--border);display:flex;z-index:10;
+    padding-bottom:env(safe-area-inset-bottom);}
+  nav.bottombar button{flex:1;background:none;border:none;padding:10px 2px 8px;font-size:0.68rem;
+    color:var(--text-dim);display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;
+    font-family:inherit;}
+  nav.bottombar button .ic{font-size:1.15rem;}
+  nav.bottombar button.active{color:var(--accent);}
+  section.tabpanel{display:none;}
+  section.tabpanel.active{display:block;}
+  .todo-item{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);}
+  .todo-item:last-child{border-bottom:none;}
+  .todo-item input[type=checkbox]{width:19px;height:19px;margin-top:2px;accent-color:var(--accent);flex:none;}
+  .todo-item .txt{flex:1;font-size:0.88rem;line-height:1.4;}
+  .todo-item.done .txt{color:var(--text-dim);text-decoration:line-through;}
+  .todo-item .del{background:none;border:none;color:var(--text-dim);font-size:0.95rem;cursor:pointer;padding:2px 6px;}
+  .addrow{display:flex;gap:6px;margin-top:10px;}
+  .addrow input{flex:1;padding:9px 10px;border-radius:10px;border:1px solid var(--border);
+    background:var(--bg);color:var(--text);font-size:0.85rem;}
+  .addrow button, .btn{padding:9px 14px;border-radius:10px;border:none;background:var(--accent);
+    color:#fff;font-size:0.82rem;font-weight:600;cursor:pointer;white-space:nowrap;}
+  .btn.secondary{background:var(--accent-soft);color:var(--accent);}
+  .btn.ghost{background:transparent;color:var(--text-dim);border:1px solid var(--border);}
+  .progress-wrap{background:var(--bg);border-radius:8px;height:8px;overflow:hidden;margin:6px 0 4px;}
+  .progress-bar{height:100%;background:var(--accent);border-radius:8px;transition:width .3s;}
+  .progress-bar.good{background:var(--good);}
+  .kpi-row{padding:12px 0;border-bottom:1px solid var(--border);}
+  .kpi-row:last-child{border-bottom:none;}
+  .kpi-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:0.86rem;}
+  .kpi-top b{font-weight:700;}
+  .kpi-nums{font-size:0.76rem;color:var(--text-dim);}
+  .kpi-target-edit{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;}
+  .kpi-target-edit label{font-size:0.68rem;color:var(--text-dim);display:flex;flex-direction:column;gap:2px;}
+  .kpi-target-edit input{width:64px;padding:5px 6px;border-radius:6px;border:1px solid var(--border);
+    background:var(--bg);color:var(--text);font-size:0.78rem;}
+  table.growth-table{width:100%;border-collapse:collapse;font-size:0.74rem;}
+  table.growth-table th, table.growth-table td{padding:6px 4px;text-align:right;border-bottom:1px solid var(--border);}
+  table.growth-table th:first-child, table.growth-table td:first-child{text-align:left;}
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;}
+  .form-grid label{font-size:0.72rem;color:var(--text-dim);display:flex;flex-direction:column;gap:3px;}
+  .form-grid input{padding:8px 9px;border-radius:8px;border:1px solid var(--border);background:var(--bg);
+    color:var(--text);font-size:0.85rem;width:100%;}
+  .form-grid .full{grid-column:1/-1;}
+  .chip{display:inline-block;padding:2px 8px;border-radius:999px;background:var(--accent-soft);
+    color:var(--accent);font-size:0.68rem;font-weight:600;margin-left:6px;}
+  .row-between{display:flex;justify-content:space-between;align-items:center;gap:8px;}
+  select{padding:6px 8px;border-radius:8px;border:1px solid var(--border);background:var(--bg);
+    color:var(--text);font-size:0.78rem;}
+  .editable{border:1px dashed var(--border);border-radius:10px;padding:10px 12px;font-size:0.85rem;
+    line-height:1.6;background:var(--bg);min-height:44px;}
+  .editable:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .pillar-label{font-weight:700;font-size:0.82rem;margin:14px 0 4px;color:var(--accent);}
+  .pillar-label:first-child{margin-top:0;}
+  .footer-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;}
+  .empty{text-align:center;color:var(--text-dim);font-size:0.8rem;padding:18px 0;}
+  svg.chart{width:100%;height:120px;display:block;}
+  .legend{display:flex;gap:10px;flex-wrap:wrap;font-size:0.68rem;color:var(--text-dim);margin-top:6px;}
+  .legend span{display:inline-flex;align-items:center;gap:4px;}
+  .dot{width:8px;height:8px;border-radius:50%;display:inline-block;}
+  .toast{position:fixed;bottom:84px;left:50%;transform:translateX(-50%);background:var(--text);
+    color:var(--bg);padding:9px 16px;border-radius:999px;font-size:0.78rem;opacity:0;
+    transition:opacity .25s;pointer-events:none;z-index:20;}
+  .toast.show{opacity:1;}
+  .streak{font-size:0.72rem;color:var(--warn);font-weight:600;}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🎬 notverycaicai 성장 대시보드</h1>
+  <div class="sub" id="todayLabel"></div>
+</header>
+
+<main>
+
+  <section class="tabpanel active" id="tab-daily">
+    <div class="card">
+      <h2>오늘의 투두 <small id="dailyDateSmall"></small></h2>
+      <div class="streak" id="streakLabel"></div>
+      <div id="dailyList"></div>
+      <div class="addrow">
+        <input type="text" id="dailyInput" placeholder="오늘 할 일 추가...">
+        <button class="btn" onclick="addDaily()">추가</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>메모</h2>
+      <textarea class="editable" style="width:100%;border:1px solid var(--border);min-height:70px;font-family:inherit;"
+        id="dailyNote" placeholder="오늘 촬영/편집하면서 떠오른 생각, 다음 소재 아이디어 등"></textarea>
+    </div>
+  </section>
+
+  <section class="tabpanel" id="tab-weekly">
+    <div class="card">
+      <h2>이번 주 투두 <small id="weeklyRangeSmall"></small></h2>
+      <div id="weeklyList"></div>
+      <div class="addrow">
+        <input type="text" id="weeklyInput" placeholder="이번 주 할 일 추가...">
+        <button class="btn" onclick="addWeekly()">추가</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>주간 운영 루틴 <small>기본 템플릿</small></h2>
+      <div class="muted">
+        월: 성과 점검 + POV 소재 정하기 · 화~목: 촬영/편집 · 금: 유튜브 롱폼 + 인스타 캐러셀 업로드 · 토: Self-Care 촬영 + 샤오홍슈 작성 · 일: 틱톡 업로드 + 댓글 소통
+      </div>
+    </div>
+  </section>
+
+  <section class="tabpanel" id="tab-growth">
+    <div class="card">
+      <h2>오늘 지표 입력</h2>
+      <div class="form-grid">
+        <label>인스타 팔로워<input type="number" id="g_ig_f" placeholder="예: 44"></label>
+        <label>인스타 30일 조회수<input type="number" id="g_ig_v" placeholder="예: 25800"></label>
+        <label>틱톡 팔로워<input type="number" id="g_tt_f" placeholder="예: 456"></label>
+        <label>틱톡 베스트 영상 조회수<input type="number" id="g_tt_v" placeholder="예: 12100"></label>
+        <label>유튜브 구독자<input type="number" id="g_yt_f" placeholder="예: 25"></label>
+        <label>샤오홍슈 팔로워<input type="number" id="g_xhs_f" placeholder="예: 9"></label>
+        <label class="full">메모<input type="text" id="g_note" placeholder="이번 기록에 대한 메모 (선택)"></label>
+      </div>
+      <div class="footer-actions">
+        <button class="btn" onclick="addGrowthEntry()">오늘 기록 저장</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>팔로워 추이</h2>
+      <svg class="chart" id="chartFollowers"></svg>
+      <div class="legend" id="legendFollowers"></div>
+    </div>
+
+    <div class="card">
+      <h2>기록 히스토리</h2>
+      <div id="growthTableWrap"><div class="empty">아직 입력한 기록이 없습니다</div></div>
+    </div>
+  </section>
+
+  <section class="tabpanel" id="tab-kpi">
+    <div class="card row-between">
+      <h2 style="margin:0;">분기 목표</h2>
+      <select id="quarterSelect" onchange="onQuarterChange()">
+        <option value="1">Q1 (1~3개월)</option>
+        <option value="2">Q2 (4~6개월)</option>
+        <option value="3">Q3 (7~9개월)</option>
+        <option value="4">Q4 (10~12개월)</option>
+      </select>
+    </div>
+    <div class="card">
+      <div id="kpiList"></div>
+      <div class="muted" style="margin-top:8px;">현재값은 '성장 트래커'에 입력한 최신 기록에서 자동으로 가져옵니다. 목표(Q1~Q4)는 숫자를 눌러 바로 수정할 수 있습니다.</div>
+    </div>
+  </section>
+
+  <section class="tabpanel" id="tab-strategy">
+    <div class="card">
+      <h2>3-필러 정체성 <small>탭하여 수정</small></h2>
+      <div class="pillar-label">A. 정착하지 못한 나 (Life in Transit)</div>
+      <div class="editable" contenteditable="true" id="pillarA"></div>
+      <div class="pillar-label">B. 국경을 넘는 나 (Cross-Border Life)</div>
+      <div class="editable" contenteditable="true" id="pillarB"></div>
+      <div class="pillar-label">C. 영화·음악을 만드는 나 (The Craft)</div>
+      <div class="editable" contenteditable="true" id="pillarC"></div>
+    </div>
+    <div class="card">
+      <h2>플랫폼 우선순위 <small>탭하여 수정</small></h2>
+      <div class="editable" contenteditable="true" id="platformNotes"></div>
+    </div>
+    <div class="card">
+      <h2>데이터 관리</h2>
+      <div class="muted">모든 데이터는 이 브라우저에만 저장됩니다(localStorage). 기기를 바꾸거나 브라우저 데이터를 지우면 사라지니, 주기적으로 내보내기 해두세요.</div>
+      <div class="footer-actions">
+        <button class="btn secondary" onclick="exportData()">내보내기 (JSON)</button>
+        <button class="btn ghost" onclick="document.getElementById('importFile').click()">가져오기</button>
+        <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importData(event)">
+        <button class="btn ghost" onclick="resetAll()">전체 초기화</button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<nav class="bottombar">
+  <button data-tab="tab-daily" class="active"><span class="ic">✅</span>데일리</button>
+  <button data-tab="tab-weekly"><span class="ic">🗓️</span>위클리</button>
+  <button data-tab="tab-growth"><span class="ic">📈</span>트래커</button>
+  <button data-tab="tab-kpi"><span class="ic">🎯</span>KPI</button>
+  <button data-tab="tab-strategy"><span class="ic">🧭</span>전략</button>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const STORAGE_KEY = 'ncc_dashboard_v1';
+
+const DEFAULT_STRATEGY = {
+  pillarA: "구직, 이직, 회사 생활, 나이/세대 차이, \"인생을 추스르는 중\" 시리즈. 시그니처: \"Getting My Life Together (Day X)\", \"POV: [상황]\".",
+  pillarB: "서울-런던-충칭을 오간 실제 이력. 뷰티·패션은 튜토리얼이 아니라 여행 무드/스타일로 가볍게. 시그니처: \"从韩国到[도시]\", 슬로건 \"we go where nobody knows\".",
+  pillarC: "영화·음악을 만드는 나 — 아이폰 17 프로맥스 vs 소니 알파 A5600, 캡컷/프리미어/파이널컷 비교, \"이 장면엔 이 음악\" 코너.",
+  platformNotes: "우선순위: 인스타·틱톡(이미 검증된 도달) 60% → 유튜브·샤오홍슈(장기 자산화) 40%. 플랫폼별 역할: 유튜브=서사 롱컷, 인스타=POV 본진, 틱톡=날것 훅, 샤오홍슈=크로스보더 시드."
+};
+
+const DEFAULT_KPI = [
+  { id:'ig_f',  label:'인스타그램 팔로워',      unit:'명',   current0:44,    q1:300,   q2:1000,  q3:2500,  q4:5000,  source:'g_ig_f' },
+  { id:'ig_v',  label:'인스타그램 월 조회수',    unit:'회',   current0:25800, q1:40000, q2:80000, q3:150000,q4:250000,source:'g_ig_v' },
+  { id:'tt_f',  label:'틱톡 팔로워',            unit:'명',   current0:456,   q1:1000,  q2:2500,  q3:5000,  q4:10000, source:'g_tt_f' },
+  { id:'tt_v',  label:'틱톡 베스트 영상 조회수', unit:'회',   current0:12100, q1:15000, q2:25000, q3:50000, q4:100000,source:'g_tt_v' },
+  { id:'yt_f',  label:'유튜브 구독자',          unit:'명',   current0:25,    q1:150,   q2:500,   q3:1500,  q4:3000,  source:'g_yt_f' },
+  { id:'xhs_f', label:'샤오홍슈 팔로워',        unit:'명',   current0:9,     q1:100,   q2:500,   q3:1500,  q4:3000,  source:'g_xhs_f' },
+  { id:'deal',  label:'브랜드 협업 문의',        unit:'건',   current0:0,     q1:0,     q2:0,     q3:1,     q4:2,     source:null }
+];
+
+function loadState(){
+  let raw = localStorage.getItem(STORAGE_KEY);
+  let base = {
+    dailyTodos:{}, weeklyTodos:{}, growth:[], kpi: JSON.parse(JSON.stringify(DEFAULT_KPI)),
+    strategy: Object.assign({}, DEFAULT_STRATEGY), dealCount:0
+  };
+  if(!raw) return base;
+  try{
+    let parsed = JSON.parse(raw);
+    return Object.assign(base, parsed, {
+      kpi: parsed.kpi && parsed.kpi.length ? parsed.kpi : base.kpi,
+      strategy: Object.assign({}, DEFAULT_STRATEGY, parsed.strategy || {})
+    });
+  }catch(e){ return base; }
+}
+function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+let state = loadState();
+
+function pad(n){ return n<10 ? '0'+n : ''+n; }
+function fmtDate(d){ return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+function todayStr(){ return fmtDate(new Date()); }
+function todayObj(){ return new Date(); }
+function getISOWeekKey(d){
+  let date = new Date(d.getTime());
+  date.setHours(0,0,0,0);
+  date.setDate(date.getDate() + 3 - ((date.getDay()+6)%7));
+  let week1 = new Date(date.getFullYear(),0,4);
+  let weekNo = 1 + Math.round(((date-week1)/86400000 - 3 + ((week1.getDay()+6)%7))/7);
+  return date.getFullYear()+'-W'+pad(weekNo);
+}
+function uid(){ return (crypto.randomUUID ? crypto.randomUUID() : 'id'+Math.random().toString(36).slice(2)); }
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(window.__toastTimer);
+  window.__toastTimer = setTimeout(()=>t.classList.remove('show'), 1600);
+}
+
+const DAILY_TEMPLATES = {
+  0:["틱톡 'Self-Care Sunday' 업로드","댓글 전수 확인 및 답글","샤오홍슈 노트 업로드"],
+  1:["지난주 4개 플랫폼 성과 5분 점검 (유지율/저장/공유 중심)","이번 주 'POV' 상황 아이디어 정하기"],
+  2:["이번 주 콘텐츠 촬영 (필러 A: POV / Getting My Life Together)","촬영본 백업"],
+  3:["촬영 지속 또는 편집 시작","필러 B·C 소재 1개 촬영"],
+  4:["편집 마무리","썸네일 / 캡션 초안 작성"],
+  5:["유튜브 롱폼 업로드","인스타그램 캐러셀 업로드"],
+  6:["Self-Care Sunday용 콘텐츠 촬영","샤오홍슈 노트 작성 (중국어 카피 준비)"]
+};
+const WEEKLY_TEMPLATE = [
+  "이번 주 'POV' 상황 아이디어 브레인스토밍",
+  "'Getting My Life Together' 다음 Day 촬영",
+  "유튜브 롱폼 1편 업로드",
+  "틱톡 3~5회 업로드 확인",
+  "샤오홍슈 노트 2~3개 업로드",
+  "성장 트래커에 이번 주 지표 입력",
+  "반응 좋았던 콘텐츠 부스트 여부 결정 (틱톡)"
+];
+
+function ensureDailyList(dateKey){
+  if(!state.dailyTodos[dateKey]){
+    const dow = new Date(dateKey+'T00:00:00').getDay();
+    state.dailyTodos[dateKey] = (DAILY_TEMPLATES[dow]||[]).map(t=>({id:uid(),text:t,done:false}));
+    saveState();
+  }
+  return state.dailyTodos[dateKey];
+}
+function ensureWeeklyList(weekKey){
+  if(!state.weeklyTodos[weekKey]){
+    state.weeklyTodos[weekKey] = WEEKLY_TEMPLATE.map(t=>({id:uid(),text:t,done:false}));
+    saveState();
+  }
+  return state.weeklyTodos[weekKey];
+}
+
+function renderTodoList(container, items, onToggle, onDelete){
+  container.innerHTML = '';
+  if(!items.length){ container.innerHTML = '<div class="empty">할 일이 없습니다. 아래에서 추가해보세요.</div>'; return; }
+  items.forEach(item=>{
+    const row = document.createElement('div');
+    row.className = 'todo-item' + (item.done ? ' done':'');
+    row.innerHTML = `<input type="checkbox" ${item.done?'checked':''}><div class="txt">${escapeHtml(item.text)}</div><button class="del">✕</button>`;
+    row.querySelector('input').addEventListener('change', e=>onToggle(item.id, e.target.checked));
+    row.querySelector('.del').addEventListener('click', ()=>onDelete(item.id));
+    container.appendChild(row);
+  });
+}
+function escapeHtml(s){ return s.replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function renderDaily(){
+  const dk = todayStr();
+  document.getElementById('dailyDateSmall').textContent = dk;
+  const list = ensureDailyList(dk);
+  renderTodoList(document.getElementById('dailyList'), list,
+    (id,done)=>{ list.find(t=>t.id===id).done = done; saveState(); renderDaily(); },
+    (id)=>{ state.dailyTodos[dk] = list.filter(t=>t.id!==id); saveState(); renderDaily(); }
+  );
+  const doneCount = list.filter(t=>t.done).length;
+  document.getElementById('streakLabel').textContent = list.length ? `오늘 ${doneCount}/${list.length} 완료` : '';
+  document.getElementById('dailyNote').value = state.dailyNotes && state.dailyNotes[dk] || '';
+}
+function addDaily(){
+  const input = document.getElementById('dailyInput');
+  const v = input.value.trim();
+  if(!v) return;
+  const dk = todayStr();
+  ensureDailyList(dk).push({id:uid(), text:v, done:false});
+  saveState(); input.value=''; renderDaily();
+}
+document.getElementById('dailyNote').addEventListener('input', e=>{
+  const dk = todayStr();
+  state.dailyNotes = state.dailyNotes || {};
+  state.dailyNotes[dk] = e.target.value;
+  saveState();
+});
+
+function renderWeekly(){
+  const now = new Date();
+  const wk = getISOWeekKey(now);
+  const monday = new Date(now); monday.setDate(now.getDate() - ((now.getDay()+6)%7));
+  const sunday = new Date(monday); sunday.setDate(monday.getDate()+6);
+  document.getElementById('weeklyRangeSmall').textContent = `${fmtDate(monday)} ~ ${fmtDate(sunday)}`;
+  const list = ensureWeeklyList(wk);
+  renderTodoList(document.getElementById('weeklyList'), list,
+    (id,done)=>{ list.find(t=>t.id===id).done = done; saveState(); renderWeekly(); },
+    (id)=>{ state.weeklyTodos[wk] = list.filter(t=>t.id!==id); saveState(); renderWeekly(); }
+  );
+}
+function addWeekly(){
+  const input = document.getElementById('weeklyInput');
+  const v = input.value.trim();
+  if(!v) return;
+  const wk = getISOWeekKey(new Date());
+  ensureWeeklyList(wk).push({id:uid(), text:v, done:false});
+  saveState(); input.value=''; renderWeekly();
+}
+
+function addGrowthEntry(){
+  const entry = {
+    date: todayStr(),
+    g_ig_f: numOrNull('g_ig_f'), g_ig_v: numOrNull('g_ig_v'),
+    g_tt_f: numOrNull('g_tt_f'), g_tt_v: numOrNull('g_tt_v'),
+    g_yt_f: numOrNull('g_yt_f'), g_xhs_f: numOrNull('g_xhs_f'),
+    note: document.getElementById('g_note').value.trim()
+  };
+  state.growth = state.growth.filter(g=>g.date!==entry.date);
+  state.growth.push(entry);
+  state.growth.sort((a,b)=>a.date.localeCompare(b.date));
+  saveState();
+  ['g_ig_f','g_ig_v','g_tt_f','g_tt_v','g_yt_f','g_xhs_f','g_note'].forEach(id=>document.getElementById(id).value='');
+  showToast('오늘 기록을 저장했어요');
+  renderGrowth(); renderKpi();
+}
+function numOrNull(id){ const v = document.getElementById(id).value; return v===''? null : Number(v); }
+
+function latestVal(field){
+  for(let i=state.growth.length-1;i>=0;i--){ if(state.growth[i][field]!=null) return state.growth[i][field]; }
+  return null;
+}
+
+const CHART_COLORS = {g_ig_f:'#c65b3f', g_tt_f:'#4c7a52', g_yt_f:'#3f6fb0', g_xhs_f:'#b8863a'};
+const CHART_LABELS = {g_ig_f:'인스타', g_tt_f:'틱톡', g_yt_f:'유튜브', g_xhs_f:'샤오홍슈'};
+
+function renderGrowthChart(){
+  const svg = document.getElementById('chartFollowers');
+  const legend = document.getElementById('legendFollowers');
+  const fields = ['g_ig_f','g_tt_f','g_yt_f','g_xhs_f'];
+  const pts = state.growth.filter(g=>fields.some(f=>g[f]!=null));
+  legend.innerHTML = fields.map(f=>`<span><span class="dot" style="background:${CHART_COLORS[f]}"></span>${CHART_LABELS[f]}</span>`).join('');
+  if(pts.length < 2){ svg.innerHTML = `<text x="10" y="60" font-size="12" fill="currentColor" opacity="0.5">기록이 2개 이상 쌓이면 그래프가 보여요</text>`; return; }
+  const W=600,H=120,pad=8;
+  let allVals = [];
+  fields.forEach(f=> pts.forEach(p=>{ if(p[f]!=null) allVals.push(p[f]); }));
+  const maxV = Math.max(1, ...allVals);
+  const x = i => pad + (W-2*pad) * (i/(pts.length-1));
+  const y = v => H-pad - (H-2*pad) * (v/maxV);
+  let svgHtml = '';
+  fields.forEach(f=>{
+    let d=''; let started=false;
+    pts.forEach((p,i)=>{
+      if(p[f]==null) return;
+      const cmd = started? 'L':'M';
+      d += `${cmd}${x(i).toFixed(1)},${y(p[f]).toFixed(1)} `;
+      started = true;
+    });
+    if(d) svgHtml += `<path d="${d.trim()}" fill="none" stroke="${CHART_COLORS[f]}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`;
+  });
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svg.innerHTML = svgHtml;
+}
+
+function renderGrowthTable(){
+  const wrap = document.getElementById('growthTableWrap');
+  if(!state.growth.length){ wrap.innerHTML = '<div class="empty">아직 입력한 기록이 없습니다</div>'; return; }
+  const rows = state.growth.slice().reverse().slice(0,30);
+  wrap.innerHTML = `<div style="overflow-x:auto"><table class="growth-table">
+    <tr><th>날짜</th><th>IG</th><th>TT</th><th>YT</th><th>XHS</th></tr>
+    ${rows.map(r=>`<tr><td>${r.date}</td><td>${r.g_ig_f??'-'}</td><td>${r.g_tt_f??'-'}</td><td>${r.g_yt_f??'-'}</td><td>${r.g_xhs_f??'-'}</td></tr>`).join('')}
+  </table></div>`;
+}
+function renderGrowth(){ renderGrowthChart(); renderGrowthTable(); }
+
+function currentQuarter(){
+  const start = new Date('2026-08-01T00:00:00');
+  const now = new Date();
+  let months = (now.getFullYear()-start.getFullYear())*12 + (now.getMonth()-start.getMonth());
+  let q = Math.floor(months/3)+1;
+  return Math.min(4, Math.max(1, q));
+}
+function onQuarterChange(){ saveQuarterSel(); renderKpi(); }
+function saveQuarterSel(){ state.quarterSel = document.getElementById('quarterSelect').value; saveState(); }
+
+function renderKpi(){
+  const sel = document.getElementById('quarterSelect');
+  if(!sel.dataset.init){
+    sel.value = state.quarterSel || String(currentQuarter());
+    sel.dataset.init = '1';
+  }
+  const q = sel.value;
+  const list = document.getElementById('kpiList');
+  list.innerHTML = state.kpi.map(k=>{
+    const cur = k.source ? (latestVal(k.source) ?? k.current0) : (state.dealCount ?? k.current0);
+    const target = k['q'+q];
+    const pct = target>0 ? Math.min(100, Math.round(cur/target*100)) : (cur>=target?100:0);
+    const isDeal = k.id==='deal';
+    return `<div class="kpi-row">
+      <div class="kpi-top"><b>${k.label}</b><span class="kpi-nums">${cur.toLocaleString()} / ${target.toLocaleString()} ${k.unit}</span></div>
+      <div class="progress-wrap"><div class="progress-bar ${pct>=100?'good':''}" style="width:${pct}%"></div></div>
+      <div class="kpi-target-edit">
+        ${['q1','q2','q3','q4'].map(qq=>`<label>${qq.toUpperCase()}<input type="number" data-kpi="${k.id}" data-q="${qq}" value="${k[qq]}"></label>`).join('')}
+        ${isDeal ? `<button class="btn secondary" style="align-self:flex-end" onclick="incDeal()">+1 협업 문의</button>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+  list.querySelectorAll('input[data-kpi]').forEach(inp=>{
+    inp.addEventListener('change', e=>{
+      const kid = e.target.dataset.kpi, qq = e.target.dataset.q;
+      const row = state.kpi.find(k=>k.id===kid);
+      row[qq] = Number(e.target.value)||0;
+      saveState(); renderKpi();
+    });
+  });
+}
+function incDeal(){ state.dealCount = (state.dealCount||0)+1; saveState(); renderKpi(); showToast('협업 문의 +1'); }
+
+function renderStrategy(){
+  document.getElementById('pillarA').textContent = state.strategy.pillarA;
+  document.getElementById('pillarB').textContent = state.strategy.pillarB;
+  document.getElementById('pillarC').textContent = state.strategy.pillarC;
+  document.getElementById('platformNotes').textContent = state.strategy.platformNotes;
+}
+['pillarA','pillarB','pillarC','platformNotes'].forEach(id=>{
+  document.getElementById(id).addEventListener('blur', e=>{
+    state.strategy[id] = e.target.textContent.trim();
+    saveState(); showToast('저장됨');
+  });
+});
+
+function exportData(){
+  const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `notverycaicai-dashboard-${todayStr()}.json`;
+  a.click();
+}
+function importData(evt){
+  const file = evt.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    try{
+      const parsed = JSON.parse(reader.result);
+      state = Object.assign(loadState(), parsed);
+      saveState();
+      renderAll();
+      showToast('가져오기 완료');
+    }catch(e){ alert('파일을 읽을 수 없어요: '+e.message); }
+  };
+  reader.readAsText(file);
+}
+function resetAll(){
+  if(!confirm('모든 데이터를 초기화할까요? 이 작업은 되돌릴 수 없어요.')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  state = loadState();
+  renderAll();
+  showToast('초기화 완료');
+}
+
+document.querySelectorAll('nav.bottombar button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('nav.bottombar button').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('section.tabpanel').forEach(s=>s.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.tab).classList.add('active');
+  });
+});
+
+function renderAll(){
+  document.getElementById('todayLabel').textContent = new Date().toLocaleDateString('ko-KR', {year:'numeric',month:'long',day:'numeric',weekday:'long'});
+  renderDaily();
+  renderWeekly();
+  renderGrowth();
+  renderKpi();
+  renderStrategy();
+}
+renderAll();
+</script>
+</body>
+</html>
