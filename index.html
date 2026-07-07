@@ -288,22 +288,38 @@
   <div class="home-tabs">
     <button class="h-tab active" data-t="recent">🕐 최근 본</button>
     <button class="h-tab" data-t="saved">❤️ 찜</button>
-    <button class="h-tab" data-t="search">🔥 인기 검색</button>
+    <button class="h-tab" data-t="search">🧭 둘러보기</button>
   </div>
   <div id="tab-recent" class="tab-pane"></div>
   <div id="tab-saved" class="tab-pane" style="display:none;"></div>
   <div id="tab-search" class="tab-pane" style="display:none;">
-    <div class="sugg-label" style="margin-bottom:10px;">이런 검색어는 어때요</div>
+    <div class="sugg-label" style="margin-bottom:10px;">카테고리로 둘러보기</div>
+    <div class="sugg-chips" style="margin-bottom:18px;">
+      <button class="sugg-chip" data-q="토너">토너</button>
+      <button class="sugg-chip" data-q="세럼 앰플 에센스">세럼·앰플</button>
+      <button class="sugg-chip" data-q="크림">크림</button>
+      <button class="sugg-chip" data-q="선크림">선크림</button>
+      <button class="sugg-chip" data-q="클렌징">클렌징</button>
+      <button class="sugg-chip" data-q="마스크팩 패드">마스크팩</button>
+      <button class="sugg-chip" data-q="아이크림 아이패치">아이케어</button>
+      <button class="sugg-chip" data-q="바디로션 바디워시 바디">바디</button>
+      <button class="sugg-chip" data-q="샴푸 헤어 트리트먼트">헤어</button>
+      <button class="sugg-chip" data-q="미스트">미스트</button>
+    </div>
+    <div class="sugg-label" style="margin-bottom:10px;">인기 브랜드</div>
     <div class="sugg-chips">
-      <button class="sugg-chip" data-q="COSRX snail mucin">코스알엑스</button>
-      <button class="sugg-chip" data-q="Beauty of Joseon">조선미녀</button>
-      <button class="sugg-chip" data-q="Innisfree green tea">이니스프리</button>
-      <button class="sugg-chip" data-q="Laneige water sleeping mask">라네즈</button>
-      <button class="sugg-chip" data-q="Sulwhasoo first care">설화수</button>
-      <button class="sugg-chip" data-q="Round Lab dokdo">라운드랩</button>
-      <button class="sugg-chip" data-q="CeraVe moisturizer">CeraVe</button>
-      <button class="sugg-chip" data-q="The Ordinary niacinamide">The Ordinary</button>
-      <button class="sugg-chip" data-q="La Roche-Posay sunscreen">La Roche-Posay</button>
+      <button class="sugg-chip" data-q="코스알엑스">코스알엑스</button>
+      <button class="sugg-chip" data-q="조선미녀">조선미녀</button>
+      <button class="sugg-chip" data-q="라운드랩">라운드랩</button>
+      <button class="sugg-chip" data-q="아누아">아누아</button>
+      <button class="sugg-chip" data-q="토리든">토리든</button>
+      <button class="sugg-chip" data-q="스킨1004">스킨1004</button>
+      <button class="sugg-chip" data-q="넘버즈인">넘버즈인</button>
+      <button class="sugg-chip" data-q="이니스프리">이니스프리</button>
+      <button class="sugg-chip" data-q="라네즈">라네즈</button>
+      <button class="sugg-chip" data-q="세라비">세라비</button>
+      <button class="sugg-chip" data-q="디오디너리">디오디너리</button>
+      <button class="sugg-chip" data-q="라로슈포제">라로슈포제</button>
     </div>
   </div>
 </div>
@@ -376,6 +392,7 @@
 
 <div class="toast" id="toast"></div>
 
+<script src="catalog.js"></script>
 <script>
 // ══ CONFIG ══
 const PKEY   = 'skinly-profile-v1';
@@ -637,6 +654,18 @@ const FLAG_LABELS = {comedogenic:'모공 막힘 유발', irritant:'자극 유발
 const dispName = n => DB[n]?.ko || cap(n);
 
 // ══ OPEN BEAUTY FACTS ══
+// 로컬 큐레이션 카탈로그 검색 — OBF가 약한 한국어 검색을 보완
+function searchLocal(q) {
+  if (typeof LOCAL_CATALOG === 'undefined') return [];
+  const terms = q.toLowerCase().split(/\s+/).filter(t => t.length > 1);
+  if (!terms.length) return [];
+  return LOCAL_CATALOG
+    .map(p => ({p, hits: terms.filter(t => `${p.product_name} ${p.brands} ${p.kw||''}`.toLowerCase().includes(t)).length}))
+    .filter(x => x.hits > 0)
+    .sort((a,b) => b.hits - a.hits)
+    .map(x => x.p);
+}
+
 async function searchOBF(q) {
   const url = `https://world.openbeautyfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(q)}&search_simple=1&action=process&json=1&fields=code,product_name,brands,ingredients_text,image_front_url&page_size=18`;
   const res = await fetch(url);
@@ -649,8 +678,13 @@ async function fetchByBarcode(code) {
   $('scan-hint').textContent = '찾았어요! 제품 불러오는 중...';
   $('scan-status').textContent = `바코드: ${code}`;
   try {
-    const res = await fetch(`https://world.openbeautyfacts.org/api/v2/product/${code}?fields=code,product_name,brands,ingredients_text,image_front_url`);
-    const data = await res.json();
+    const localHit = typeof LOCAL_CATALOG !== 'undefined' && LOCAL_CATALOG.find(p => p.code === code);
+    let data;
+    if (localHit) data = {status: 1, product: {...localHit}};
+    else {
+      const res = await fetch(`https://world.openbeautyfacts.org/api/v2/product/${code}?fields=code,product_name,brands,ingredients_text,image_front_url`);
+      data = await res.json();
+    }
     if (data.status === 1 && data.product?.product_name) {
       const p = data.product;
       p.code = code;
@@ -801,7 +835,12 @@ async function loadResults(query) {
   $('res-list').innerHTML = `<div class="state-box"><div class="spinner"></div><div class="state-sub">성분 데이터베이스 검색 중...</div></div>`;
   $('res-meta').textContent = '';
   try {
-    const products = await searchOBF(query);
+    const local = searchLocal(query);
+    let remote = [], remoteFailed = false;
+    try { remote = await searchOBF(query); } catch { remoteFailed = true; }
+    const seen = new Set(local.map(p => p.code));
+    const products = [...local, ...remote.filter(p => !seen.has(p.code))];
+    if (remoteFailed && !products.length) throw new Error('network');
     if (!products.length) {
       $('res-list').innerHTML = `<div class="state-box"><div class="state-emoji">🔍</div><div class="state-title">검색 결과가 없어요</div><div class="state-sub">다른 이름이나 브랜드로 검색해 보세요.<br/>영문 제품명이 더 잘 검색돼요.</div></div>`;
       return;

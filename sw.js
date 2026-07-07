@@ -1,8 +1,8 @@
-const CACHE = 'skinly-v2';
+const CACHE = 'skinly-v3';
 
 self.addEventListener('install', e => {
   // 상대 경로 사용: GitHub Pages처럼 하위 경로에 배포돼도 동작
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(['./', './index.html'])));
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(['./', './index.html', './catalog.js'])));
   self.skipWaiting();
 });
 
