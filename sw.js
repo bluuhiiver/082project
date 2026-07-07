@@ -1,4 +1,4 @@
-const CACHE = 'catchup-v2';
+const CACHE = 'catchup-global-v1';
 const PRECACHE = ['/', '/index.html', '/manifest.json'];
 
 self.addEventListener('install', e => {
