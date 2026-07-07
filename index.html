@@ -8,8 +8,7 @@
 <meta name="theme-color" content="#7C3AED"/>
 <meta name="description" content="Z세대 트렌드를 하루 한 번, 한 곳에서 캐치업하는 로컬 트렌드 앱."/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' fill='%237C3AED' rx='40'/><path d='M96 34c14 26-8 30-8 48 0 12 8 20 20 20 16 0 26-12 26-28 0-10-4-18-4-18s16 10 16 34c0 26-20 46-46 46s-46-20-46-46c0-30 22-42 42-56z' fill='white' opacity='0.95'/></svg>"/>
 <style>
 :root{
   --bg:#FAFAF8; --white:#fff; --black:#18181B;
@@ -17,7 +16,7 @@
   --accent:#F59E0B; --accent-bg:#FEF3C7;
   --info:#0EA5E9; --info-bg:#E0F2FE;
   --gray:#71717A; --gray-light:#F4F4F5; --border:#E4E4E7;
-  --font:'Noto Sans KR',-apple-system,BlinkMacSystemFont,sans-serif;
+  --font:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Pretendard','Noto Sans KR','Malgun Gothic',sans-serif;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:var(--font);background:var(--bg);color:var(--black);min-height:100dvh;-webkit-font-smoothing:antialiased;}
@@ -143,6 +142,16 @@ button,input{font-family:var(--font);}
 .bn-btn .ic{font-size:1.15rem;}
 .bn-btn.active{color:var(--primary);}
 
+/* ── MICRO TREND BOARD ── */
+.board-list{padding:8px 18px;display:flex;flex-direction:column;gap:9px;}
+.board-card{display:flex;align-items:center;gap:12px;background:var(--black);border-radius:13px;padding:13px 15px;color:#fff;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.board-rank{font-size:.82rem;font-weight:800;color:var(--accent);width:20px;flex-shrink:0;}
+.board-body{flex:1;min-width:0;}
+.board-text{font-size:.84rem;font-weight:600;line-height:1.4;}
+.board-time{font-size:.7rem;color:#A1A1AA;margin-top:2px;}
+.board-arrow{color:#71717A;font-size:.85rem;flex-shrink:0;}
+.board-hint{padding:4px 20px 0;font-size:.74rem;color:var(--gray);}
+
 /* ── TOAST ── */
 .toast{position:fixed;bottom:82px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--black);color:#fff;padding:10px 18px;border-radius:100px;font-size:.8rem;font-weight:600;opacity:0;pointer-events:none;transition:all .25s ease;z-index:500;white-space:nowrap;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
@@ -155,9 +164,9 @@ button,input{font-family:var(--font);}
   <div class="view active" id="view-home">
     <div class="top-hd">
       <div class="logo">캐치<span>업</span></div>
-      <button class="icon-btn" onclick="go('my')">👤</button>
+      <button class="icon-btn" aria-label="마이페이지" onclick="go('my')">👤</button>
     </div>
-    <div class="ticker-wrap" onclick="go('home')">
+    <div class="ticker-wrap" role="button" aria-label="마이크로 트렌드 전광판 열기" onclick="go('board')">
       <div class="ticker-label">🔥 지금</div>
       <div class="ticker-track" id="ticker-track"></div>
     </div>
@@ -174,7 +183,7 @@ button,input{font-family:var(--font);}
   <!-- SEARCH RESULTS -->
   <div class="view" id="view-search">
     <div class="nav-bar">
-      <button class="back-btn" onclick="go('home')">←</button>
+      <button class="back-btn" aria-label="뒤로" onclick="go('home')">←</button>
       <div class="search-wrap">
         <span class="search-icon-l">🔍</span>
         <input class="search-inp" id="search-inp2" placeholder="트렌드, 사전 단어 검색" onkeydown="if(event.key==='Enter')doSearch()"/>
@@ -189,9 +198,9 @@ button,input{font-family:var(--font);}
   <!-- ARTICLE DETAIL -->
   <div class="view" id="view-article">
     <div class="nav-bar">
-      <button class="back-btn" onclick="goBack()">←</button>
+      <button class="back-btn" aria-label="뒤로" onclick="goBack()">←</button>
       <div class="nav-spacer"></div>
-      <button class="icon-btn" id="bookmark-btn" onclick="toggleBookmark()">🔖</button>
+      <button class="icon-btn" id="bookmark-btn" aria-label="북마크" onclick="toggleBookmark()">🔖</button>
     </div>
     <div class="art-detail" id="article-content"></div>
     <div class="section-label">관련 트렌드</div>
@@ -228,6 +237,16 @@ button,input{font-family:var(--font);}
     <div class="cal-events" id="cal-events"></div>
   </div>
 
+  <!-- MICRO TREND BOARD -->
+  <div class="view" id="view-board">
+    <div class="nav-bar">
+      <button class="back-btn" aria-label="뒤로" onclick="go('home')">←</button>
+      <div class="nav-title">마이크로 트렌드 전광판</div>
+    </div>
+    <div class="board-hint">지금 이 순간 감지된 작은 유행들 · 눌러서 관련 트렌드 검색</div>
+    <div class="board-list" id="board-list"></div>
+  </div>
+
   <!-- MY PAGE -->
   <div class="view" id="view-my">
     <div class="my-hd">
@@ -242,6 +261,7 @@ button,input{font-family:var(--font);}
         <button class="nl-btn" onclick="subscribeNewsletter()">구독</button>
       </div>
       <div class="nl-status" id="nl-status" style="display:none;"></div>
+      <button class="nl-unsub" id="nl-unsub" style="display:none;margin-top:8px;background:transparent;border:none;color:rgba(255,255,255,.75);font-size:.72rem;font-weight:600;cursor:pointer;text-decoration:underline;" onclick="unsubscribeNewsletter()">구독 해지</button>
     </div>
     <div class="my-tabs">
       <button class="my-tab active" data-tab="bookmarks" onclick="switchMyTab('bookmarks')">북마크한 글</button>
@@ -356,16 +376,16 @@ const CAL_EVENTS = [
 ];
 
 const MICRO_TRENDS = [
-"🧋 '요아정' 커스텀 조합 인증 폭증 · 5분 전",
-"📱 '오운완' 인증 릴스 조회수 급상승 · 12분 전",
-"🛍️ 다이소 신상 립밤 완판 · 34분 전",
-"🎮 신작 모바일게임 사전예약 1위 · 1시간 전",
-"🚇 지하철 밈 광고 캡처 공유 확산 · 2시간 전",
-"📸 AI 프로필 챌린지 릴스 급증 · 3시간 전",
-"🍦 편의점 콜라보 아이스크림 재입고 완판 · 4시간 전",
-"💸 무지출 챌린지 인증 게시물 증가 · 5시간 전",
-"🎟️ 팝업스토어 대기줄 3시간 인증 · 6시간 전",
-"📚 전공 요약노트 거래 게시글 폭증 · 7시간 전"
+{text:"🧋 '요아정' 커스텀 조합 인증 폭증",time:"5분 전",query:"요아정"},
+{text:"📱 '오운완' 인증 릴스 조회수 급상승",time:"12분 전",query:"오운완"},
+{text:"🛍️ 다이소 신상 립밤 완판",time:"34분 전",query:"다이소"},
+{text:"🎮 신작 모바일게임 사전예약 1위",time:"1시간 전",query:"게임"},
+{text:"🚇 지하철 밈 광고 캡처 공유 확산",time:"2시간 전",query:"지하철"},
+{text:"📸 AI 프로필 챌린지 릴스 급증",time:"3시간 전",query:"AI"},
+{text:"🍦 편의점 콜라보 아이스크림 재입고 완판",time:"4시간 전",query:"편의점"},
+{text:"💸 무지출 챌린지 인증 게시물 증가",time:"5시간 전",query:"무지출"},
+{text:"🎟️ 팝업스토어 대기줄 3시간 인증",time:"6시간 전",query:"팝업스토어"},
+{text:"📚 전공 요약노트 거래 게시글 폭증",time:"7시간 전",query:"요약노트"}
 ];
 
 /* ============ STATE ============ */
@@ -382,7 +402,7 @@ let state = loadState();
 
 let currentCat = "전체";
 let currentArticleId = null;
-let cameFrom = 'home';
+let navStack = []; // article back-stack: {view} or {view:'article', articleId}
 let calYear, calMonth, calSelDate = null;
 {
   const now = new Date();
@@ -390,16 +410,36 @@ let calYear, calMonth, calSelDate = null;
 }
 
 /* ============ NAV ============ */
-function go(view){
+function activeViewName(){
+  const v = document.querySelector('.view.active');
+  return v ? v.id.replace('view-','') : 'home';
+}
+function showView(view){
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.getElementById('view-'+view).classList.add('active');
   document.querySelectorAll('.bn-btn').forEach(b=>b.classList.toggle('active', b.dataset.view===view));
+}
+function go(view){
+  navStack = [];
+  showView(view);
   if(view==='home') renderHome();
   if(view==='dictionary') renderDictionary();
   if(view==='calendar') renderCalendar();
   if(view==='my') renderMy();
+  if(view==='board') renderBoard();
 }
-function goBack(){ go(cameFrom); }
+function goBack(){
+  const prev = navStack.pop();
+  if(!prev){ go('home'); return; }
+  if(prev.view==='article'){ showArticle(prev.articleId); }
+  else {
+    showView(prev.view);
+    if(prev.view==='home') renderHome();
+    if(prev.view==='board') renderBoard();
+    if(prev.view==='my') renderMy();
+    if(prev.view==='dictionary') renderDictionary();
+  }
+}
 
 /* ============ TOAST ============ */
 let toastTimer;
@@ -411,21 +451,36 @@ function toast(msg){
   toastTimer = setTimeout(()=>t.classList.remove('show'), 1800);
 }
 
-/* ============ TICKER ============ */
+/* ============ TICKER + BOARD ============ */
 let tickerIdx = 0, tickerTimer;
 function renderTicker(){
   const track = document.getElementById('ticker-track');
-  track.innerHTML = MICRO_TRENDS.map((m,i)=>{
-    const parts = m.split(' · ');
-    return `<div class="ticker-item${i===0?' show':''}" data-i="${i}">${parts[0]}<span class="ticker-time"> · ${parts[1]}</span></div>`;
-  }).join('');
+  track.innerHTML = MICRO_TRENDS.map((m,i)=>
+    `<div class="ticker-item${i===0?' show':''}" data-i="${i}">${m.text}<span class="ticker-time"> · ${m.time}</span></div>`
+  ).join('');
   clearInterval(tickerTimer);
   tickerTimer = setInterval(()=>{
     const items = track.querySelectorAll('.ticker-item');
+    if(!items.length) return;
     items[tickerIdx].classList.remove('show');
     tickerIdx = (tickerIdx+1) % items.length;
     items[tickerIdx].classList.add('show');
   }, 3200);
+}
+function renderBoard(){
+  const el = document.getElementById('board-list');
+  el.innerHTML = MICRO_TRENDS.map((m,i)=>
+    `<div class="board-card" onclick="searchFromBoard('${m.query}')">
+      <div class="board-rank">${i+1}</div>
+      <div class="board-body"><div class="board-text">${m.text}</div><div class="board-time">${m.time} 감지</div></div>
+      <div class="board-arrow">🔍</div>
+    </div>`
+  ).join('');
+}
+function searchFromBoard(q){
+  showView('search');
+  document.getElementById('search-inp2').value = q;
+  runSearch(q);
 }
 
 /* ============ HOME ============ */
@@ -442,7 +497,7 @@ function badgeHtml(badge){
   return '';
 }
 function artCardHtml(a){
-  return `<div class="art-card" onclick="openArticle(${a.id},'${cameFromForCard()}')">
+  return `<div class="art-card" onclick="openArticle(${a.id})">
     <div class="art-thumb">${a.emoji}</div>
     <div class="art-body">
       <div class="art-badges">${badgeHtml(a.badge)}<span class="badge badge-cat">${a.category}</span></div>
@@ -451,10 +506,6 @@ function artCardHtml(a){
       <div class="art-meta">${a.date}</div>
     </div>
   </div>`;
-}
-function cameFromForCard(){
-  const activeView = document.querySelector('.view.active');
-  return activeView ? activeView.id.replace('view-','') : 'home';
 }
 
 function renderHome(){
@@ -468,11 +519,14 @@ function renderHome(){
 
 /* ============ SEARCH ============ */
 function doSearch(){
-  const q1 = document.getElementById('search-inp').value.trim();
-  const q2 = document.getElementById('search-inp2') ? document.getElementById('search-inp2').value.trim() : '';
-  const q = (q1 || q2);
+  // prefer the input belonging to the view the user is typing in
+  const inSearchView = activeViewName()==='search';
+  const q = (inSearchView
+    ? document.getElementById('search-inp2').value
+    : document.getElementById('search-inp').value).trim();
   if(!q){ toast('검색어를 입력해주세요'); return; }
-  go('search');
+  if(!inSearchView) showView('search');
+  navStack = [];
   document.getElementById('search-inp2').value = q;
   runSearch(q);
 }
@@ -501,9 +555,13 @@ function runSearch(q){
 }
 
 /* ============ ARTICLE DETAIL ============ */
-function openArticle(id, from){
+function openArticle(id){
+  const cur = activeViewName();
+  navStack.push(cur==='article' ? {view:'article', articleId: currentArticleId} : {view: cur});
+  showArticle(id);
+}
+function showArticle(id){
   currentArticleId = id;
-  cameFrom = from || 'home';
   const a = ARTICLES.find(x=>x.id===id);
   if(!a) return;
   if(!state.history.includes(id)){
@@ -525,8 +583,9 @@ function openArticle(id, from){
   updateBookmarkBtn();
   const related = ARTICLES.filter(x=>x.category===a.category && x.id!==a.id).slice(0,3);
   document.getElementById('related-list').innerHTML = related.length ? related.map(artCardHtml).join('') : '<div class="empty-state">관련 트렌드가 없어요.</div>';
-  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-  document.getElementById('view-article').classList.add('active');
+  showView('article');
+  document.getElementById('view-article').scrollTop = 0;
+  window.scrollTo(0,0);
 }
 function updateBookmarkBtn(){
   const btn = document.getElementById('bookmark-btn');
@@ -641,7 +700,11 @@ function renderCalEvents(){
   } else {
     const monthPrefix = `${calYear}-${pad(calMonth+1)}`;
     events = events.filter(e=>e.date.startsWith(monthPrefix));
-    if(!events.length) events = CAL_EVENTS.slice(0,5);
+    if(!events.length){
+      const today = new Date();
+      const todayStr = `${today.getFullYear()}-${pad(today.getMonth()+1)}-${pad(today.getDate())}`;
+      events = CAL_EVENTS.filter(e=>e.date>=todayStr).slice(0,5);
+    }
   }
   events = [...events].sort((a,b)=>a.date.localeCompare(b.date));
   const monthNames = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
@@ -674,14 +737,24 @@ function renderMy(){
   switchMyTab(myTab);
   const nlForm = document.getElementById('nl-form');
   const nlStatus = document.getElementById('nl-status');
+  const nlUnsub = document.getElementById('nl-unsub');
   if(state.subscribed){
     nlForm.style.display='none';
     nlStatus.style.display='block';
+    nlUnsub.style.display='inline-block';
     nlStatus.textContent = `✅ ${state.email} 로 매주 화요일 트렌드 레터가 발송돼요`;
   } else {
     nlForm.style.display='flex';
     nlStatus.style.display='none';
+    nlUnsub.style.display='none';
   }
+}
+function unsubscribeNewsletter(){
+  state.subscribed = false;
+  state.email = '';
+  saveState();
+  toast('구독을 해지했어요');
+  renderMy();
 }
 function subscribeNewsletter(){
   const email = document.getElementById('nl-email').value.trim();
