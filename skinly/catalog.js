@@ -285,7 +285,7 @@ const LOCAL_CATALOG = [
 "code": "sk029",
 "product_name": "Reedle Shot 100",
 "brands": "VT",
-"kw": "브이티 리들샷 100 시카",
+"kw": "브이티 리들샷 100 시카 앰플",
 "image_front_url": "",
 "ingredients_text": "Water, Butylene Glycol, Glycerin, Centella Asiatica Extract, Madecassoside, Asiaticoside, Panthenol, Sodium Hyaluronate, Cica Care Complex"
 },
@@ -581,7 +581,7 @@ const LOCAL_CATALOG = [
 "code": "sk060",
 "product_name": "Skin Food Original",
 "brands": "Weleda",
-"kw": "벨레다 스킨푸드",
+"kw": "벨레다 스킨푸드 크림",
 "image_front_url": "",
 "ingredients_text": "Water, Helianthus Annuus (Sunflower) Seed Oil, Lanolin, Prunus Amygdalus Dulcis (Sweet Almond) Oil, Beeswax, Viola Tricolor Extract, Rosmarinus Officinalis Leaf Extract, Fragrance, Limonene, Linalool, Geraniol, Coumarin"
 },
