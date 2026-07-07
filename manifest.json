@@ -2,7 +2,7 @@
   "name": "LinguaMaster — 7개 언어 마스터 코치",
   "short_name": "LinguaMaster",
   "description": "프랑스어, 영어, 스페인어, 중국어, 한국어, 일본어, 이탈리아어를 배우는 개인 맞춤형 언어 학습 앱",
-  "start_url": "/",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#F7F7FB",
   "theme_color": "#4F46E5",

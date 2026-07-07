@@ -1,8 +1,9 @@
 const CACHE = 'linguamaster-v1';
+// relative paths so the app also works under a subpath (e.g. GitHub Pages project sites)
 const ASSETS = [
-  '/', '/index.html', '/styles.css', '/app.js', '/manifest.json',
-  '/data/lang-fr.js', '/data/lang-en.js', '/data/lang-es.js',
-  '/data/lang-zh.js', '/data/lang-ko.js', '/data/lang-ja.js', '/data/lang-it.js'
+  './', './index.html', './styles.css', './app.js', './manifest.json',
+  './data/lang-fr.js', './data/lang-en.js', './data/lang-es.js',
+  './data/lang-zh.js', './data/lang-ko.js', './data/lang-ja.js', './data/lang-it.js'
 ];
 
 self.addEventListener('install', e => {
