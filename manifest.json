@@ -1,20 +1,20 @@
 {
-  "name": "Skinly — Ingredient Analyzer",
-  "short_name": "Skinly",
-  "description": "Personalized skincare ingredient analyzer. Find products matched to your skin type.",
+  "name": "캐치업 — 오늘의 Z세대 트렌드",
+  "short_name": "캐치업",
+  "description": "Z세대 트렌드, 요즘어 사전, 이슈 캘린더를 한 곳에서 캐치업하는 로컬 트렌드 앱.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#F7F7F5",
-  "theme_color": "#E11D48",
+  "background_color": "#FAFAF8",
+  "theme_color": "#7C3AED",
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' fill='%23E11D48' rx='40'/><circle cx='96' cy='80' r='34' fill='white' opacity='0.95'/><ellipse cx='96' cy='140' rx='50' ry='28' fill='white' opacity='0.95'/></svg>",
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' fill='%237C3AED' rx='40'/><path d='M96 34c14 26-8 30-8 48 0 12 8 20 20 20 16 0 26-12 26-28 0-10-4-18-4-18s16 10 16 34c0 26-20 46-46 46s-46-20-46-46c0-30 22-42 42-56z' fill='white' opacity='0.95'/></svg>",
       "sizes": "192x192",
       "type": "image/svg+xml"
     },
     {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' fill='%23E11D48' rx='100'/><circle cx='256' cy='210' r='90' fill='white' opacity='0.95'/><ellipse cx='256' cy='370' rx='130' ry='75' fill='white' opacity='0.95'/></svg>",
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' fill='%237C3AED' rx='100'/><path d='M256 90c37 70-21 80-21 128 0 32 21 53 53 53 43 0 70-32 70-75 0-27-11-48-11-48s43 27 43 91c0 69-53 122-122 122s-122-53-122-122c0-80 59-112 110-149z' fill='white' opacity='0.95'/></svg>",
       "sizes": "512x512",
       "type": "image/svg+xml"
     }

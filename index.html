@@ -1,984 +1,706 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>Skinly — Ingredient Analyzer</title>
-  <link rel="manifest" href="manifest.json"/>
-  <meta name="theme-color" content="#E11D48"/>
-  <meta name="description" content="Personalized skincare ingredient analyzer."/>
-  <meta name="apple-mobile-web-app-capable" content="yes"/>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
-  <style>
-    :root {
-      --bg:#F7F7F5; --white:#fff; --black:#18181B;
-      --primary:#E11D48; --primary-dark:#BE123C; --primary-light:#FFF1F2;
-      --success:#059669; --success-bg:#ECFDF5;
-      --warning:#B45309; --warning-bg:#FFFBEB;
-      --danger:#DC2626; --danger-bg:#FEF2F2;
-      --info:#0369A1; --info-bg:#E0F2FE;
-      --gray:#71717A; --gray-light:#F4F4F5; --border:#E4E4E7;
-      --font:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,sans-serif;
-    }
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-    body{font-family:var(--font);background:var(--bg);color:var(--black);min-height:100dvh;-webkit-font-smoothing:antialiased;}
-    .view{display:none;flex-direction:column;min-height:100dvh;}
-    .view.active{display:flex;animation:fadeUp .2s ease;}
-    @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
+<title>캐치업 — 오늘의 Z세대 트렌드</title>
+<link rel="manifest" href="manifest.json"/>
+<meta name="theme-color" content="#7C3AED"/>
+<meta name="description" content="Z세대 트렌드를 하루 한 번, 한 곳에서 캐치업하는 로컬 트렌드 앱."/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#FAFAF8; --white:#fff; --black:#18181B;
+  --primary:#7C3AED; --primary-dark:#6D28D9; --primary-light:#F3EEFF;
+  --accent:#F59E0B; --accent-bg:#FEF3C7;
+  --info:#0EA5E9; --info-bg:#E0F2FE;
+  --gray:#71717A; --gray-light:#F4F4F5; --border:#E4E4E7;
+  --font:'Noto Sans KR',-apple-system,BlinkMacSystemFont,sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--font);background:var(--bg);color:var(--black);min-height:100dvh;-webkit-font-smoothing:antialiased;}
+button,input{font-family:var(--font);}
+.app{max-width:480px;margin:0 auto;min-height:100dvh;background:var(--bg);display:flex;flex-direction:column;position:relative;}
+.view{display:none;flex-direction:column;flex:1;padding-bottom:70px;}
+.view.active{display:flex;animation:fadeUp .18s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 
-    /* ── ONBOARDING ── */
-    #view-onboard{background:var(--white);}
-    .ob-progress{display:flex;gap:6px;padding:20px 24px 0;}
-    .ob-bar{height:4px;flex:1;border-radius:2px;background:var(--border);transition:background .3s;}
-    .ob-bar.done{background:var(--primary);}
-    .ob-content{flex:1;display:flex;flex-direction:column;padding:32px 24px 28px;}
-    .ob-tag{font-size:.7rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--primary);margin-bottom:10px;}
-    .ob-title{font-size:1.65rem;font-weight:800;line-height:1.25;margin-bottom:8px;}
-    .ob-sub{font-size:.88rem;color:var(--gray);line-height:1.55;margin-bottom:28px;}
-    .skin-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:auto;}
-    .skin-card{border:2px solid var(--border);border-radius:14px;padding:16px 14px;cursor:pointer;transition:all .15s;background:var(--white);text-align:left;-webkit-tap-highlight-color:transparent;}
-    .skin-card:last-child{grid-column:1/-1;}
-    .skin-card.sel{border-color:var(--primary);background:var(--primary-light);}
-    .sc-emoji{font-size:1.6rem;margin-bottom:8px;display:block;}
-    .sc-name{font-size:.9rem;font-weight:700;margin-bottom:3px;}
-    .sc-desc{font-size:.72rem;color:var(--gray);line-height:1.4;}
-    .concern-wrap{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:auto;}
-    .concern-chip{display:flex;align-items:center;gap:6px;padding:10px 16px;border-radius:100px;border:2px solid var(--border);font-size:.82rem;font-weight:600;cursor:pointer;background:var(--white);transition:all .15s;font-family:var(--font);-webkit-tap-highlight-color:transparent;}
-    .concern-chip.sel{border-color:var(--primary);background:var(--primary-light);color:var(--primary);}
-    .ob-footer{padding-top:20px;display:flex;flex-direction:column;gap:8px;}
+/* ── HEADER / NAV ── */
+.top-hd{padding:18px 18px 0;display:flex;align-items:center;justify-content:space-between;}
+.logo{font-size:1.35rem;font-weight:800;letter-spacing:-.03em;}
+.logo span{color:var(--primary);}
+.nav-bar{background:var(--bg);padding:14px 16px 10px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:50;}
+.back-btn,.icon-btn{width:36px;height:36px;border-radius:10px;background:var(--gray-light);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;-webkit-tap-highlight-color:transparent;}
+.icon-btn.on{background:var(--primary-light);color:var(--primary);}
+.nav-title{font-size:1rem;font-weight:700;flex:1;}
+.nav-spacer{flex:1;}
 
-    /* ── BUTTONS ── */
-    .btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:15px;border-radius:12px;border:none;font-family:var(--font);font-size:.9rem;font-weight:700;cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent;}
-    .btn-primary{background:var(--primary);color:var(--white);}
-    .btn-primary:active{background:var(--primary-dark);transform:scale(.99);}
-    .btn-primary:disabled{background:var(--border);color:var(--gray);cursor:not-allowed;transform:none;}
-    .btn-ghost{background:transparent;color:var(--gray);font-size:.82rem;}
-    .icon-btn{width:36px;height:36px;border-radius:50%;background:var(--gray-light);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.05rem;-webkit-tap-highlight-color:transparent;}
+/* ── TICKER (마이크로 트렌드 전광판) ── */
+.ticker-wrap{margin:16px 18px 4px;background:var(--black);border-radius:14px;padding:11px 14px;display:flex;align-items:center;gap:10px;overflow:hidden;}
+.ticker-label{font-size:.68rem;font-weight:700;color:var(--accent);letter-spacing:.04em;flex-shrink:0;white-space:nowrap;}
+.ticker-track{flex:1;overflow:hidden;position:relative;height:18px;}
+.ticker-item{position:absolute;inset:0;color:#fff;font-size:.78rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:0;transition:opacity .4s ease;}
+.ticker-item.show{opacity:1;}
+.ticker-time{color:#A1A1AA;margin-left:6px;}
 
-    /* ── HOME ── */
-    #view-home{background:var(--white);}
-    .home-hd{padding:20px 20px 0;display:flex;align-items:center;justify-content:space-between;}
-    .home-logo{font-size:1.3rem;font-weight:800;letter-spacing:-.03em;}
-    .home-logo span{color:var(--primary);}
-    .home-hero{padding:24px 20px 18px;}
-    .home-eyebrow{font-size:.78rem;color:var(--gray);font-weight:500;margin-bottom:4px;}
-    .home-headline{font-size:1.45rem;font-weight:800;line-height:1.3;}
-    .profile-tag{display:inline-flex;align-items:center;gap:5px;margin-top:10px;padding:5px 12px;border-radius:100px;background:var(--primary-light);color:var(--primary);font-size:.72rem;font-weight:600;}
-    .search-area{padding:0 20px;display:flex;gap:10px;align-items:center;}
-    .search-wrap{flex:1;position:relative;}
-    .search-inp{width:100%;padding:13px 46px 13px 42px;border-radius:13px;border:2px solid var(--border);font-family:var(--font);font-size:.88rem;background:var(--bg);color:var(--black);outline:none;transition:all .2s;}
-    .search-inp:focus{border-color:var(--primary);background:var(--white);}
-    .search-inp::placeholder{color:#A1A1AA;}
-    .search-icon-l{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--gray);pointer-events:none;font-size:1rem;}
-    .search-go{position:absolute;right:7px;top:50%;transform:translateY(-50%);width:32px;height:32px;border-radius:9px;background:var(--primary);border:none;color:var(--white);font-size:.9rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:var(--font);-webkit-tap-highlight-color:transparent;}
-    .scan-btn{width:46px;height:46px;border-radius:13px;background:var(--gray-light);border:2px solid var(--border);font-size:1.2rem;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;}
+/* ── SEARCH ── */
+.search-area{padding:14px 18px 0;display:flex;gap:8px;}
+.search-wrap{flex:1;position:relative;}
+.search-inp{width:100%;padding:12px 14px 12px 40px;border-radius:12px;border:2px solid var(--border);font-size:.86rem;background:var(--white);color:var(--black);outline:none;transition:border-color .2s;}
+.search-inp:focus{border-color:var(--primary);}
+.search-icon-l{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--gray);pointer-events:none;font-size:.95rem;}
 
-    /* home tabs */
-    .home-tabs{display:flex;gap:0;padding:16px 20px 0;border-bottom:1px solid var(--border);margin-top:16px;}
-    .h-tab{padding:8px 14px;border:none;background:transparent;font-family:var(--font);font-size:.8rem;font-weight:600;color:var(--gray);cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-1px;transition:all .15s;-webkit-tap-highlight-color:transparent;}
-    .h-tab.active{color:var(--primary);border-bottom-color:var(--primary);}
-    .tab-pane{padding:14px 20px 8px;}
-    .tab-empty{font-size:.82rem;color:var(--gray);padding:8px 0;}
+/* ── CATEGORY CHIPS ── */
+.cat-scroll{display:flex;gap:8px;padding:16px 18px 4px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
+.cat-scroll::-webkit-scrollbar{display:none;}
+.cat-chip{flex-shrink:0;padding:8px 15px;border-radius:100px;border:2px solid var(--border);background:var(--white);font-size:.8rem;font-weight:600;color:var(--gray);cursor:pointer;white-space:nowrap;-webkit-tap-highlight-color:transparent;transition:all .15s;}
+.cat-chip.sel{border-color:var(--primary);background:var(--primary);color:#fff;}
 
-    /* history / fav cards */
-    .hist-scroll{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
-    .hist-scroll::-webkit-scrollbar{display:none;}
-    .hist-card{flex-shrink:0;width:96px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
-    .hist-img{width:96px;height:96px;border-radius:12px;object-fit:cover;background:var(--gray-light);display:block;margin-bottom:5px;}
-    .hist-img-ph{width:96px;height:96px;border-radius:12px;background:var(--gray-light);display:flex;align-items:center;justify-content:center;font-size:2rem;margin-bottom:5px;}
-    .hist-name{font-size:.7rem;font-weight:600;line-height:1.3;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;margin-bottom:3px;}
+/* ── ARTICLE LIST ── */
+.list-wrap{padding:14px 18px 8px;display:flex;flex-direction:column;gap:12px;}
+.art-card{display:flex;gap:12px;background:var(--white);border:1px solid var(--border);border-radius:16px;padding:13px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .1s;}
+.art-card:active{transform:scale(.98);}
+.art-thumb{width:62px;height:62px;border-radius:12px;background:var(--primary-light);display:flex;align-items:center;justify-content:center;font-size:1.7rem;flex-shrink:0;}
+.art-body{flex:1;min-width:0;}
+.art-badges{display:flex;gap:5px;margin-bottom:5px;}
+.badge{font-size:.62rem;font-weight:700;padding:2px 7px;border-radius:6px;letter-spacing:.02em;}
+.badge-hot{background:#FEE2E2;color:#DC2626;}
+.badge-rising{background:var(--info-bg);color:var(--info);}
+.badge-cat{background:var(--gray-light);color:var(--gray);}
+.art-title{font-size:.9rem;font-weight:700;line-height:1.35;margin-bottom:4px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+.art-summary{font-size:.76rem;color:var(--gray);line-height:1.4;overflow:hidden;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;margin-bottom:5px;}
+.art-meta{font-size:.7rem;color:#A1A1AA;}
+.empty-state{padding:40px 20px;text-align:center;color:var(--gray);font-size:.85rem;}
 
-    /* sugg chips */
-    .sugg-label{font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gray);margin-bottom:10px;}
-    .sugg-chips{display:flex;flex-wrap:wrap;gap:7px;}
-    .sugg-chip{padding:8px 14px;border-radius:100px;background:var(--gray-light);font-size:.78rem;font-weight:600;cursor:pointer;border:none;font-family:var(--font);-webkit-tap-highlight-color:transparent;transition:all .15s;}
-    .sugg-chip:active{background:var(--primary-light);color:var(--primary);}
+/* ── ARTICLE DETAIL ── */
+.art-detail{padding:6px 20px 24px;}
+.detail-cat{display:inline-block;font-size:.72rem;font-weight:700;color:var(--primary);background:var(--primary-light);padding:4px 10px;border-radius:8px;margin-bottom:12px;}
+.detail-title{font-size:1.35rem;font-weight:800;line-height:1.35;margin-bottom:8px;}
+.detail-meta{font-size:.76rem;color:var(--gray);margin-bottom:18px;}
+.detail-thumb{width:100%;height:160px;border-radius:16px;background:var(--primary-light);display:flex;align-items:center;justify-content:center;font-size:3.4rem;margin-bottom:18px;}
+.detail-body p{font-size:.9rem;line-height:1.75;color:#27272A;margin-bottom:14px;}
+.tag-row{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px;margin-bottom:22px;}
+.tag-chip{font-size:.74rem;color:var(--primary);background:var(--primary-light);padding:5px 11px;border-radius:100px;font-weight:600;}
+.detail-actions{display:flex;gap:10px;margin-bottom:26px;}
+.act-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:12px;border-radius:12px;border:2px solid var(--border);background:var(--white);font-size:.82rem;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.act-btn.on{border-color:var(--primary);background:var(--primary-light);color:var(--primary);}
+.section-label{font-size:.78rem;font-weight:700;color:var(--gray);margin:0 20px 10px;letter-spacing:.02em;}
 
-    /* ── NAV BAR ── */
-    .nav-bar{background:var(--white);padding:14px 14px 12px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;}
-    .back-btn{width:36px;height:36px;border-radius:10px;background:var(--gray-light);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;-webkit-tap-highlight-color:transparent;}
-    .nav-inp{flex:1;padding:9px 12px;border-radius:10px;border:1.5px solid var(--border);font-family:var(--font);font-size:.88rem;background:var(--bg);outline:none;color:var(--black);}
-    .nav-inp:focus{border-color:var(--primary);background:var(--white);}
-    .nav-go{width:36px;height:36px;border-radius:10px;background:var(--primary);border:none;color:var(--white);font-size:.9rem;font-weight:700;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:var(--font);-webkit-tap-highlight-color:transparent;}
+/* ── DICTIONARY ── */
+.dict-list{padding:6px 18px 8px;display:flex;flex-direction:column;gap:10px;}
+.dict-card{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:14px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.dict-term-row{display:flex;align-items:center;justify-content:between;gap:8px;}
+.dict-term{font-size:1rem;font-weight:800;color:var(--primary);}
+.dict-tag{font-size:.65rem;font-weight:700;color:var(--gray);background:var(--gray-light);padding:2px 8px;border-radius:6px;margin-left:8px;}
+.dict-meaning{font-size:.8rem;color:#3F3F46;margin-top:5px;line-height:1.5;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+.dict-detail{margin-top:10px;padding-top:10px;border-top:1px solid var(--border);display:none;}
+.dict-card.open .dict-detail{display:block;}
+.dict-detail-row{font-size:.78rem;margin-bottom:8px;line-height:1.55;}
+.dict-detail-label{font-weight:700;color:var(--gray);margin-right:4px;}
+.dict-save-btn{margin-top:6px;font-size:.75rem;font-weight:700;color:var(--primary);background:var(--primary-light);border:none;padding:7px 12px;border-radius:9px;cursor:pointer;}
+.dict-save-btn.on{background:var(--primary);color:#fff;}
 
-    /* ── RESULTS ── */
-    #view-results{background:var(--bg);}
-    .results-meta{padding:12px 16px 6px;font-size:.78rem;color:var(--gray);font-weight:500;}
-    .results-list{padding:4px 14px 28px;display:flex;flex-direction:column;gap:10px;}
-    .product-card{background:var(--white);border-radius:14px;padding:14px;display:flex;gap:12px;align-items:center;cursor:pointer;border:1.5px solid transparent;transition:border-color .15s;-webkit-tap-highlight-color:transparent;}
-    .product-card:active{border-color:var(--primary);}
-    .prod-img{width:64px;height:64px;border-radius:10px;object-fit:cover;background:var(--gray-light);flex-shrink:0;}
-    .prod-img-ph{width:64px;height:64px;border-radius:10px;background:var(--gray-light);display:flex;align-items:center;justify-content:center;font-size:1.7rem;flex-shrink:0;}
-    .prod-info{flex:1;min-width:0;}
-    .prod-brand{font-size:.68rem;font-weight:600;color:var(--gray);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;}
-    .prod-name{font-size:.88rem;font-weight:700;line-height:1.3;margin-bottom:6px;}
-    .prod-chevron{color:var(--border);font-size:1.1rem;flex-shrink:0;}
+/* ── CALENDAR ── */
+.cal-nav{display:flex;align-items:center;justify-content:space-between;padding:8px 18px 4px;}
+.cal-nav-btn{width:34px;height:34px;border-radius:9px;background:var(--gray-light);border:none;font-size:1rem;cursor:pointer;}
+.cal-month-label{font-size:1.02rem;font-weight:800;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;padding:12px 18px;}
+.cal-dow{font-size:.68rem;color:var(--gray);text-align:center;font-weight:700;padding-bottom:4px;}
+.cal-cell{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:10px;font-size:.78rem;font-weight:600;cursor:default;position:relative;}
+.cal-cell.has-day{cursor:pointer;}
+.cal-cell.today{background:var(--primary);color:#fff;}
+.cal-cell.sel:not(.today){background:var(--primary-light);color:var(--primary);}
+.cal-dot{width:5px;height:5px;border-radius:50%;background:var(--accent);position:absolute;bottom:6px;}
+.cal-cell.today .cal-dot{background:#fff;}
+.cal-events{padding:6px 18px 8px;display:flex;flex-direction:column;gap:10px;}
+.cal-event-card{display:flex;gap:12px;background:var(--white);border:1px solid var(--border);border-radius:13px;padding:12px;}
+.cal-event-date{flex-shrink:0;width:44px;text-align:center;}
+.cal-event-date .d{font-size:1.1rem;font-weight:800;color:var(--primary);line-height:1;}
+.cal-event-date .m{font-size:.65rem;color:var(--gray);font-weight:600;}
+.cal-event-body .t{font-size:.85rem;font-weight:700;margin-bottom:3px;}
+.cal-event-body .desc{font-size:.76rem;color:var(--gray);line-height:1.4;}
 
-    /* grade badge */
-    .gbadge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:100px;font-size:.7rem;font-weight:700;}
-    .g-A{background:var(--success-bg);color:var(--success);}
-    .g-B{background:var(--info-bg);color:var(--info);}
-    .g-C{background:var(--warning-bg);color:var(--warning);}
-    .g-D{background:var(--danger-bg);color:var(--danger);}
-    .g-x{background:var(--gray-light);color:var(--gray);}
+/* ── MY PAGE ── */
+.my-hd{padding:24px 20px 6px;}
+.my-title{font-size:1.3rem;font-weight:800;margin-bottom:4px;}
+.my-sub{font-size:.8rem;color:var(--gray);}
+.my-tabs{display:flex;gap:0;padding:16px 18px 0;border-bottom:1px solid var(--border);margin-top:10px;}
+.my-tab{padding:8px 4px;margin-right:20px;border:none;background:transparent;font-size:.84rem;font-weight:700;color:var(--gray);cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-1px;}
+.my-tab.active{color:var(--primary);border-bottom-color:var(--primary);}
+.nl-card{margin:16px 18px;background:linear-gradient(135deg,var(--primary),#A78BFA);border-radius:16px;padding:18px;color:#fff;}
+.nl-title{font-size:.96rem;font-weight:800;margin-bottom:4px;}
+.nl-sub{font-size:.76rem;opacity:.9;margin-bottom:12px;line-height:1.4;}
+.nl-row{display:flex;gap:8px;}
+.nl-inp{flex:1;padding:10px 12px;border-radius:10px;border:none;font-size:.8rem;outline:none;}
+.nl-btn{padding:10px 16px;border-radius:10px;border:none;background:#fff;color:var(--primary);font-weight:800;font-size:.8rem;cursor:pointer;flex-shrink:0;}
+.nl-status{margin-top:10px;font-size:.78rem;font-weight:700;background:rgba(255,255,255,.18);padding:8px 10px;border-radius:9px;}
 
-    /* state boxes */
-    .state-box{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:52px 24px;text-align:center;gap:10px;}
-    .state-emoji{font-size:2.4rem;}
-    .state-title{font-size:1rem;font-weight:700;}
-    .state-sub{font-size:.82rem;color:var(--gray);line-height:1.5;}
-    .spinner{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .7s linear infinite;}
-    @keyframes spin{to{transform:rotate(360deg)}}
+/* ── BOTTOM NAV ── */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;max-width:480px;margin:0 auto;background:var(--white);border-top:1px solid var(--border);display:flex;padding:8px 6px calc(8px + env(safe-area-inset-bottom));z-index:200;}
+.bn-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;background:transparent;border:none;padding:6px 0;cursor:pointer;color:var(--gray);font-size:.66rem;font-weight:600;-webkit-tap-highlight-color:transparent;}
+.bn-btn .ic{font-size:1.15rem;}
+.bn-btn.active{color:var(--primary);}
 
-    /* ── PRODUCT DETAIL ── */
-    #view-product{background:var(--bg);}
-    .product-hero{background:var(--white);padding:20px;display:flex;gap:14px;align-items:flex-start;border-bottom:1px solid var(--border);}
-    .hero-img{width:80px;height:80px;border-radius:12px;object-fit:cover;background:var(--gray-light);flex-shrink:0;}
-    .hero-img-ph{width:80px;height:80px;border-radius:12px;background:var(--gray-light);display:flex;align-items:center;justify-content:center;font-size:2rem;flex-shrink:0;}
-    .hero-info{flex:1;}
-    .hero-brand{font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--gray);margin-bottom:4px;}
-    .hero-name{font-size:1rem;font-weight:800;line-height:1.3;margin-bottom:10px;}
-    .section{background:var(--white);margin:10px 0;padding:16px 18px;}
-    .sec-title{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--gray);margin-bottom:12px;display:flex;align-items:center;gap:6px;}
-    .sec-count{background:var(--gray-light);color:var(--gray);font-size:.65rem;padding:2px 7px;border-radius:100px;font-weight:600;}
-    .score-row{display:flex;justify-content:space-between;font-size:.72rem;color:var(--gray);font-weight:500;margin-bottom:6px;}
-    .score-track{height:7px;border-radius:4px;background:var(--border);overflow:hidden;}
-    .score-fill{height:100%;border-radius:4px;transition:width .7s ease;}
-    .sf-hi{background:var(--success);} .sf-md{background:#F59E0B;} .sf-lo{background:var(--danger);}
-    .flag-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-top:1px solid var(--border);}
-    .flag-item:first-child{border-top:none;padding-top:0;}
-    .flag-ic{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.82rem;flex-shrink:0;}
-    .fi-hi{background:var(--danger-bg);} .fi-md{background:var(--warning-bg);} .fi-lo{background:var(--gray-light);}
-    .flag-name{font-size:.85rem;font-weight:700;text-transform:capitalize;margin-bottom:2px;}
-    .flag-sub{font-size:.7rem;color:var(--gray);}
-    .benefit-chips{display:flex;flex-wrap:wrap;gap:6px;}
-    .benefit-chip{display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:100px;background:var(--success-bg);color:var(--success);font-size:.76rem;font-weight:600;}
-    .buy-link{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--border);text-decoration:none;color:var(--black);-webkit-tap-highlight-color:transparent;}
-    .buy-link:first-child{border-top:none;padding-top:0;}
-    .buy-ic{width:36px;height:36px;border-radius:10px;background:var(--gray-light);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;}
-    .buy-name{font-size:.88rem;font-weight:700;flex:1;}
-    .buy-arrow{color:var(--gray);font-size:.9rem;}
-    .ing-toggle{font-size:.8rem;font-weight:600;color:var(--primary);background:none;border:none;padding:0;cursor:pointer;font-family:var(--font);margin-bottom:8px;display:block;}
-    .ing-text{font-size:.76rem;color:var(--gray);line-height:1.75;display:none;}
-    .ing-text.open{display:block;}
-    .empty-note{font-size:.82rem;color:var(--gray);font-style:italic;}
-
-    /* ── SCAN ── */
-    #view-scan{background:#000;position:relative;overflow:hidden;min-height:100dvh;}
-    #scan-vid{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;}
-    .scan-back-btn{position:absolute;top:20px;left:16px;z-index:20;width:38px;height:38px;border-radius:50%;background:rgba(0,0,0,.45);border:1.5px solid rgba(255,255,255,.3);color:#fff;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;}
-    .scan-overlay{position:absolute;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;padding-bottom:200px;pointer-events:none;}
-    .scan-finder{width:280px;height:165px;border-radius:14px;position:relative;box-shadow:0 0 0 4000px rgba(0,0,0,.55);overflow:hidden;}
-    .scan-corners{position:absolute;inset:0;}
-    .scan-corners::before,.scan-corners::after{content:'';position:absolute;width:26px;height:26px;border-color:var(--primary);border-style:solid;}
-    .scan-corners::before{top:-2px;left:-2px;border-width:4px 0 0 4px;border-radius:4px 0 0 0;}
-    .scan-corners::after{bottom:-2px;right:-2px;border-width:0 4px 4px 0;border-radius:0 0 4px 0;}
-    .scan-line{position:absolute;width:90%;left:5%;height:2px;background:linear-gradient(90deg,transparent,var(--primary),transparent);animation:scanLine 2s ease-in-out infinite;}
-    @keyframes scanLine{0%,100%{top:10%}50%{top:80%}}
-    .scan-hint{color:rgba(255,255,255,.85);font-size:.85rem;font-weight:500;margin-top:18px;text-align:center;}
-    .scan-controls{position:absolute;bottom:0;left:0;right:0;z-index:20;padding:20px 24px 44px;display:flex;flex-direction:column;gap:10px;background:linear-gradient(to top,rgba(0,0,0,.75) 0%,transparent 100%);}
-    .scan-manual-row{display:flex;gap:8px;}
-    .scan-inp{flex:1;padding:11px 14px;border-radius:10px;border:1.5px solid rgba(255,255,255,.25);background:rgba(255,255,255,.1);color:#fff;font-family:var(--font);font-size:.88rem;outline:none;}
-    .scan-inp::placeholder{color:rgba(255,255,255,.4);}
-    .scan-inp-go{width:42px;height:42px;border-radius:10px;background:var(--primary);border:none;color:#fff;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-    .scan-cancel-btn{padding:12px;border-radius:12px;background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.2);color:#fff;font-family:var(--font);font-size:.88rem;font-weight:600;cursor:pointer;-webkit-tap-highlight-color:transparent;}
-    .scan-status{color:#fff;font-size:.8rem;text-align:center;font-weight:500;opacity:.8;}
-    #scan-unsupported{display:none;position:absolute;inset:0;z-index:30;background:var(--white);flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;gap:12px;text-align:center;}
-
-    /* ── COMPARE ── */
-    #view-compare{background:var(--bg);}
-    .cmp-cards-row{display:flex;align-items:flex-start;padding:16px 14px;gap:8px;background:var(--white);border-bottom:1px solid var(--border);}
-    .cmp-pcard{flex:1;text-align:center;}
-    .cmp-pimg{width:72px;height:72px;border-radius:10px;object-fit:cover;background:var(--gray-light);display:block;margin:0 auto 6px;}
-    .cmp-pimg-ph{width:72px;height:72px;border-radius:10px;background:var(--gray-light);display:flex;align-items:center;justify-content:center;font-size:1.8rem;margin:0 auto 6px;}
-    .cmp-pname{font-size:.72rem;font-weight:700;line-height:1.3;margin-bottom:4px;}
-    .cmp-vs-col{font-size:.9rem;font-weight:900;color:var(--gray);padding-top:24px;flex-shrink:0;}
-    .cmp-empty-slot{flex:1;height:100px;border:2px dashed var(--border);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;gap:4px;-webkit-tap-highlight-color:transparent;}
-    .cmp-empty-slot span{font-size:.72rem;color:var(--gray);font-weight:600;}
-    .cmp-remove-btn{background:none;border:none;font-family:var(--font);font-size:.65rem;color:var(--gray);cursor:pointer;margin-top:5px;padding:2px 6px;border-radius:4px;}
-    .cmp-winner{background:var(--success-bg);color:var(--success);padding:10px 16px;font-size:.82rem;font-weight:700;}
-    .cmp-2col{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px;}
-    .cmp-col-head{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--gray);margin-bottom:6px;}
-    .cmp-row{font-size:.78rem;padding:2px 0;line-height:1.5;}
-    .cmp-bad{color:var(--danger);}
-    .cmp-good{color:var(--success);}
-    .cmp-shared{background:var(--gray-light);border-radius:8px;padding:8px 12px;font-size:.78rem;line-height:1.5;margin-bottom:8px;}
-    .cmp-shared strong{font-weight:700;color:var(--gray);}
-
-    /* Compare FAB */
-    .cmp-fab{position:fixed;bottom:24px;right:16px;z-index:500;display:none;}
-    .cmp-fab-btn{background:var(--black);color:#fff;border:none;border-radius:100px;padding:12px 18px;font-family:var(--font);font-size:.82rem;font-weight:700;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.25);display:flex;align-items:center;gap:7px;white-space:nowrap;-webkit-tap-highlight-color:transparent;}
-
-    /* toast */
-    .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--black);color:#fff;padding:10px 20px;border-radius:100px;font-size:.8rem;font-weight:600;white-space:nowrap;opacity:0;pointer-events:none;transition:all .28s cubic-bezier(.34,1.56,.64,1);z-index:9999;}
-    .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
-  </style>
+/* ── TOAST ── */
+.toast{position:fixed;bottom:82px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--black);color:#fff;padding:10px 18px;border-radius:100px;font-size:.8rem;font-weight:600;opacity:0;pointer-events:none;transition:all .25s ease;z-index:500;white-space:nowrap;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
 </head>
 <body>
+<div class="app" id="app">
 
-<!-- ══ ONBOARDING ══ -->
-<div id="view-onboard" class="view active">
-  <div class="ob-progress">
-    <div class="ob-bar" id="ob-p1"></div>
-    <div class="ob-bar" id="ob-p2"></div>
-  </div>
-  <div class="ob-content" id="ob-s1">
-    <div class="ob-tag">Step 1 of 2</div>
-    <h1 class="ob-title">What's your skin type?</h1>
-    <p class="ob-sub">We'll flag harmful ingredients and highlight ones that benefit you.</p>
-    <div class="skin-grid">
-      <div class="skin-card" data-t="oily"><span class="sc-emoji">✨</span><div class="sc-name">Oily</div><div class="sc-desc">Shiny, large pores, breakout-prone</div></div>
-      <div class="skin-card" data-t="dry"><span class="sc-emoji">🌵</span><div class="sc-name">Dry</div><div class="sc-desc">Tight, flaky, rough texture</div></div>
-      <div class="skin-card" data-t="combination"><span class="sc-emoji">☯️</span><div class="sc-name">Combination</div><div class="sc-desc">Oily T-zone, dry cheeks</div></div>
-      <div class="skin-card" data-t="sensitive"><span class="sc-emoji">🌸</span><div class="sc-name">Sensitive</div><div class="sc-desc">Easily irritated, reactive</div></div>
-      <div class="skin-card" data-t="normal"><span class="sc-emoji">🍃</span><div class="sc-name">Normal</div><div class="sc-desc">Balanced, minimal concerns</div></div>
+  <!-- HOME -->
+  <div class="view active" id="view-home">
+    <div class="top-hd">
+      <div class="logo">캐치<span>업</span></div>
+      <button class="icon-btn" onclick="go('my')">👤</button>
     </div>
-    <div class="ob-footer">
-      <button class="btn btn-primary" id="ob-next" disabled>Continue →</button>
+    <div class="ticker-wrap" onclick="go('home')">
+      <div class="ticker-label">🔥 지금</div>
+      <div class="ticker-track" id="ticker-track"></div>
     </div>
-  </div>
-  <div class="ob-content" id="ob-s2" style="display:none;">
-    <div class="ob-tag">Step 2 of 2</div>
-    <h1 class="ob-title">Any skin concerns?</h1>
-    <p class="ob-sub">Select all that apply.</p>
-    <div class="concern-wrap">
-      <button class="concern-chip" data-c="acne">🔴 Acne &amp; Breakouts</button>
-      <button class="concern-chip" data-c="dry">💧 Dryness</button>
-      <button class="concern-chip" data-c="aging">🕐 Anti-Aging</button>
-      <button class="concern-chip" data-c="hyperpigmentation">🌑 Dark Spots</button>
-      <button class="concern-chip" data-c="redness">😊 Redness</button>
-      <button class="concern-chip" data-c="none">✨ No concerns</button>
-    </div>
-    <div class="ob-footer">
-      <button class="btn btn-primary" id="ob-finish">Get Started ✓</button>
-      <button class="btn btn-ghost" id="ob-back">← Back</button>
-    </div>
-  </div>
-</div>
-
-<!-- ══ HOME ══ -->
-<div id="view-home" class="view">
-  <div class="home-hd">
-    <div class="home-logo">skin<span>ly</span></div>
-    <button class="icon-btn" id="profile-btn">👤</button>
-  </div>
-  <div class="home-hero">
-    <div class="home-eyebrow">Personalized for you</div>
-    <h1 class="home-headline">Find products<br/>made for your skin</h1>
-    <div class="profile-tag" id="profile-tag">Loading...</div>
-  </div>
-  <div class="search-area">
-    <div class="search-wrap">
-      <span class="search-icon-l">🔍</span>
-      <input class="search-inp" id="home-inp" type="text" placeholder="Product name or brand..." autocomplete="off" autocorrect="off" spellcheck="false"/>
-      <button class="search-go" id="home-go">→</button>
-    </div>
-    <button class="scan-btn" id="scan-open" title="Scan barcode">📷</button>
-  </div>
-  <div class="home-tabs">
-    <button class="h-tab active" data-t="recent">🕐 Recent</button>
-    <button class="h-tab" data-t="saved">❤️ Saved</button>
-    <button class="h-tab" data-t="search">🔥 Popular</button>
-  </div>
-  <div id="tab-recent" class="tab-pane"></div>
-  <div id="tab-saved" class="tab-pane" style="display:none;"></div>
-  <div id="tab-search" class="tab-pane" style="display:none;">
-    <div class="sugg-label" style="margin-bottom:10px;">Try searching</div>
-    <div class="sugg-chips">
-      <button class="sugg-chip" data-q="CeraVe moisturizer">CeraVe</button>
-      <button class="sugg-chip" data-q="The Ordinary niacinamide">The Ordinary</button>
-      <button class="sugg-chip" data-q="La Roche-Posay sunscreen">La Roche-Posay</button>
-      <button class="sugg-chip" data-q="COSRX snail mucin">COSRX</button>
-      <button class="sugg-chip" data-q="Neutrogena hydro boost">Neutrogena</button>
-      <button class="sugg-chip" data-q="Innisfree green tea">Innisfree</button>
-      <button class="sugg-chip" data-q="Laneige water sleeping mask">Laneige</button>
-      <button class="sugg-chip" data-q="Sulwhasoo first care">Sulwhasoo</button>
-    </div>
-  </div>
-</div>
-
-<!-- ══ RESULTS ══ -->
-<div id="view-results" class="view">
-  <div class="nav-bar">
-    <button class="back-btn" id="res-back">←</button>
-    <input class="nav-inp" id="res-inp" type="text" placeholder="Search..." autocomplete="off"/>
-    <button class="nav-go" id="res-go">→</button>
-  </div>
-  <div class="results-meta" id="res-meta"></div>
-  <div class="results-list" id="res-list"></div>
-</div>
-
-<!-- ══ PRODUCT DETAIL ══ -->
-<div id="view-product" class="view">
-  <div class="nav-bar">
-    <button class="back-btn" id="prod-back">←</button>
-    <div id="prod-nav-title" style="flex:1;font-size:.85rem;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></div>
-    <button class="icon-btn" id="prod-fav-btn" title="Save">🤍</button>
-    <button class="icon-btn" id="prod-cmp-btn" title="Compare" style="font-size:.85rem;font-weight:800;">⊞</button>
-  </div>
-  <div id="prod-content"></div>
-</div>
-
-<!-- ══ SCAN ══ -->
-<div id="view-scan" class="view">
-  <video id="scan-vid" autoplay playsinline muted></video>
-  <button class="scan-back-btn" id="scan-back">←</button>
-  <div class="scan-overlay">
-    <div class="scan-finder">
-      <div class="scan-corners"></div>
-      <div class="scan-line"></div>
-    </div>
-    <p class="scan-hint" id="scan-hint">Point camera at a barcode</p>
-  </div>
-  <div class="scan-controls">
-    <div class="scan-status" id="scan-status"></div>
-    <div class="scan-manual-row">
-      <input class="scan-inp" id="scan-inp" type="tel" placeholder="Or type barcode number (EAN-13)..."/>
-      <button class="scan-inp-go" id="scan-inp-go">→</button>
-    </div>
-    <button class="scan-cancel-btn" id="scan-cancel">Cancel</button>
-  </div>
-  <div id="scan-unsupported">
-    <div style="font-size:2.4rem;">📷</div>
-    <div style="font-size:1rem;font-weight:800;">Camera scan not supported</div>
-    <p style="font-size:.85rem;color:var(--gray);line-height:1.6;">Your browser doesn't support barcode detection.<br/>Try Chrome on Android, or type the barcode number below.</p>
-    <input class="nav-inp" id="scan-fb-inp" type="tel" placeholder="Type barcode number..." style="margin-top:8px;width:100%;"/>
-    <button class="btn btn-primary" id="scan-fb-go" style="margin-top:8px;">Search →</button>
-    <button class="btn btn-ghost" id="scan-fb-cancel">Cancel</button>
-  </div>
-</div>
-
-<!-- ══ COMPARE ══ -->
-<div id="view-compare" class="view">
-  <div class="nav-bar">
-    <button class="back-btn" id="cmp-back">←</button>
-    <div style="flex:1;font-size:.9rem;font-weight:800;">Compare Products</div>
-    <button class="icon-btn" id="cmp-clear" title="Clear all" style="font-size:.8rem;">✕</button>
-  </div>
-  <div id="cmp-content"></div>
-</div>
-
-<!-- Compare FAB -->
-<div class="cmp-fab" id="cmp-fab">
-  <button class="cmp-fab-btn" id="cmp-fab-btn">⊞ Compare · <span id="cmp-count">0</span></button>
-</div>
-
-<div class="toast" id="toast"></div>
-
-<script>
-// ══ CONFIG ══
-const PKEY   = 'skinly-profile-v1';
-const HKEY   = 'skinly-hist-v1';
-const FAVKEY = 'skinly-favs-v1';
-
-// ══ STATE ══
-let profile = null;
-try { profile = JSON.parse(localStorage.getItem(PKEY)); } catch {}
-let prodBackView = 'view-results';
-let currentProdId = null;
-let compareList = []; // up to 2 product codes
-let scanActive = false;
-let scanStream = null;
-
-// ══ INGREDIENT DB ══
-const DB = {
-  'isopropyl myristate':       {flag:'comedogenic',severity:5,bad_for:['acne','oily']},
-  'isopropyl palmitate':       {flag:'comedogenic',severity:4,bad_for:['acne','oily']},
-  'myristyl myristate':        {flag:'comedogenic',severity:5,bad_for:['acne']},
-  'isopropyl isostearate':     {flag:'comedogenic',severity:4,bad_for:['acne','oily']},
-  'butyl stearate':            {flag:'comedogenic',severity:3,bad_for:['acne']},
-  'wheat germ oil':            {flag:'comedogenic',severity:5,bad_for:['acne']},
-  'acetylated lanolin':        {flag:'comedogenic',severity:4,bad_for:['acne']},
-  'cocoa butter':              {flag:'comedogenic',severity:4,bad_for:['acne']},
-  'coconut oil':               {flag:'comedogenic',severity:4,bad_for:['acne','oily']},
-  'flaxseed oil':              {flag:'comedogenic',severity:4,bad_for:['acne']},
-  'linseed oil':               {flag:'comedogenic',severity:4,bad_for:['acne']},
-  'soybean oil':               {flag:'comedogenic',severity:3,bad_for:['acne']},
-  'sesame oil':                {flag:'comedogenic',severity:3,bad_for:['acne']},
-  'fragrance':                 {flag:'irritant',severity:4,bad_for:['sensitive','redness']},
-  'parfum':                    {flag:'irritant',severity:4,bad_for:['sensitive','redness']},
-  'alcohol denat':             {flag:'irritant',severity:4,bad_for:['sensitive','dry']},
-  'denatured alcohol':         {flag:'irritant',severity:4,bad_for:['sensitive','dry']},
-  'sd alcohol':                {flag:'irritant',severity:3,bad_for:['sensitive','dry']},
-  'sodium lauryl sulfate':     {flag:'irritant',severity:4,bad_for:['sensitive','dry']},
-  'sodium laureth sulfate':    {flag:'irritant',severity:2,bad_for:['sensitive']},
-  'methylisothiazolinone':     {flag:'irritant',severity:5,bad_for:['sensitive','redness']},
-  'methylchloroisothiazolinone':{flag:'irritant',severity:5,bad_for:['sensitive']},
-  'dmdm hydantoin':            {flag:'irritant',severity:3,bad_for:['sensitive'],note:'Formaldehyde releaser'},
-  'imidazolidinyl urea':       {flag:'irritant',severity:3,bad_for:['sensitive'],note:'Formaldehyde releaser'},
-  'diazolidinyl urea':         {flag:'irritant',severity:3,bad_for:['sensitive'],note:'Formaldehyde releaser'},
-  'limonene':                  {flag:'allergen',severity:3,bad_for:['sensitive','redness']},
-  'linalool':                  {flag:'allergen',severity:3,bad_for:['sensitive','redness']},
-  'citronellol':               {flag:'allergen',severity:2,bad_for:['sensitive']},
-  'eugenol':                   {flag:'allergen',severity:3,bad_for:['sensitive']},
-  'geraniol':                  {flag:'allergen',severity:2,bad_for:['sensitive']},
-  'cinnamyl alcohol':          {flag:'allergen',severity:3,bad_for:['sensitive']},
-  'benzyl benzoate':           {flag:'allergen',severity:2,bad_for:['sensitive']},
-  'isoeugenol':                {flag:'allergen',severity:3,bad_for:['sensitive']},
-  'hyaluronic acid':           {flag:'beneficial',good_for:['dry','all']},
-  'sodium hyaluronate':        {flag:'beneficial',good_for:['dry','all']},
-  'glycerin':                  {flag:'beneficial',good_for:['dry','all']},
-  'glycerol':                  {flag:'beneficial',good_for:['dry','all']},
-  'niacinamide':               {flag:'beneficial',good_for:['acne','oily','hyperpigmentation','redness']},
-  'retinol':                   {flag:'beneficial',good_for:['aging','acne']},
-  'retinal':                   {flag:'beneficial',good_for:['aging','acne']},
-  'ascorbic acid':             {flag:'beneficial',good_for:['hyperpigmentation','aging']},
-  'l-ascorbic acid':           {flag:'beneficial',good_for:['hyperpigmentation','aging']},
-  'ceramide':                  {flag:'beneficial',good_for:['dry','sensitive']},
-  'ceramide np':               {flag:'beneficial',good_for:['dry','sensitive']},
-  'ceramide ap':               {flag:'beneficial',good_for:['dry','sensitive']},
-  'centella asiatica':         {flag:'beneficial',good_for:['sensitive','acne','redness']},
-  'madecassoside':             {flag:'beneficial',good_for:['sensitive','redness']},
-  'asiaticoside':              {flag:'beneficial',good_for:['sensitive','redness']},
-  'aloe vera':                 {flag:'beneficial',good_for:['sensitive','dry','redness']},
-  'aloe barbadensis':          {flag:'beneficial',good_for:['sensitive','dry','redness']},
-  'salicylic acid':            {flag:'beneficial',good_for:['acne','oily']},
-  'zinc oxide':                {flag:'beneficial',good_for:['acne','sensitive']},
-  'allantoin':                 {flag:'beneficial',good_for:['sensitive','dry']},
-  'panthenol':                 {flag:'beneficial',good_for:['dry','sensitive']},
-  'squalane':                  {flag:'beneficial',good_for:['dry','all']},
-  'shea butter':               {flag:'beneficial',good_for:['dry']},
-  'butyrospermum parkii':      {flag:'beneficial',good_for:['dry']},
-  'adenosine':                 {flag:'beneficial',good_for:['aging']},
-  'ubiquinone':                {flag:'beneficial',good_for:['aging']},
-  'palmitoyl tripeptide':      {flag:'beneficial',good_for:['aging']},
-  'palmitoyl pentapeptide':    {flag:'beneficial',good_for:['aging']},
-  'alpha arbutin':             {flag:'beneficial',good_for:['hyperpigmentation']},
-  'kojic acid':                {flag:'beneficial',good_for:['hyperpigmentation']},
-  'tranexamic acid':           {flag:'beneficial',good_for:['hyperpigmentation']},
-  'azelaic acid':              {flag:'beneficial',good_for:['acne','hyperpigmentation','redness']},
-  'avena sativa':              {flag:'beneficial',good_for:['sensitive','dry']},
-  'camellia sinensis':         {flag:'beneficial',good_for:['oily','aging','sensitive']},
-  'bakuchiol':                 {flag:'beneficial',good_for:['aging','sensitive']},
-  'ferulic acid':              {flag:'beneficial',good_for:['aging','hyperpigmentation']},
-  'resveratrol':               {flag:'beneficial',good_for:['aging']},
-  'tocopherol':                {flag:'beneficial',good_for:['dry','aging','all']},
-  'jojoba':                    {flag:'beneficial',good_for:['acne','oily','dry']},
-  'simmondsia chinensis':      {flag:'beneficial',good_for:['acne','dry']},
-  'rosehip':                   {flag:'beneficial',good_for:['aging','hyperpigmentation']},
-  'snail secretion filtrate':  {flag:'beneficial',good_for:['acne','aging','dry']},
-  'propolis':                  {flag:'beneficial',good_for:['acne','sensitive']},
-  'beta-glucan':               {flag:'beneficial',good_for:['dry','sensitive','aging']},
-  'beta glucan':               {flag:'beneficial',good_for:['dry','sensitive','aging']},
-  'lactic acid':               {flag:'beneficial',good_for:['dry','hyperpigmentation']},
-  'glycolic acid':             {flag:'beneficial',good_for:['hyperpigmentation','aging','acne']},
-  'mandelic acid':             {flag:'beneficial',good_for:['acne','hyperpigmentation','sensitive']},
-};
-
-// ══ UTILS ══
-const $ = id => document.getElementById(id);
-const cap = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
-const esc = s => s ? s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') : '';
-const toast = msg => {
-  const t = $('toast'); t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2600);
-};
-
-function showView(id) {
-  if ($('view-scan').classList.contains('active') && id !== 'view-scan') stopScan();
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  $(id).classList.add('active');
-  window.scrollTo(0,0);
-  updateCmpFab(id);
-}
-
-// ══ STORAGE: HISTORY & FAVS ══
-const pCache = {};
-
-function getHistory() { try { return JSON.parse(localStorage.getItem(HKEY)) || []; } catch { return []; } }
-function addToHistory(p) {
-  const slim = {code:p.code||'', product_name:p.product_name||'', brands:p.brands||'', image_front_url:p.image_front_url||'', ingredients_text:p.ingredients_text||''};
-  const hist = getHistory().filter(x => x.code !== slim.code);
-  hist.unshift(slim);
-  localStorage.setItem(HKEY, JSON.stringify(hist.slice(0,12)));
-}
-
-function getFavs() { try { return JSON.parse(localStorage.getItem(FAVKEY)) || []; } catch { return []; } }
-function isFav(code) { return getFavs().some(p => p.code === code); }
-function toggleFav(p) {
-  const slim = {code:p.code||'', product_name:p.product_name||'', brands:p.brands||'', image_front_url:p.image_front_url||'', ingredients_text:p.ingredients_text||''};
-  let favs = getFavs();
-  const idx = favs.findIndex(x => x.code === slim.code);
-  if (idx >= 0) { favs.splice(idx,1); localStorage.setItem(FAVKEY, JSON.stringify(favs)); return false; }
-  favs.unshift(slim);
-  localStorage.setItem(FAVKEY, JSON.stringify(favs.slice(0,50)));
-  return true;
-}
-
-// ══ ANALYSIS ══
-function parseIngs(text) {
-  if (!text) return [];
-  return text.toLowerCase().split(/[,;\/]/)
-    .map(i => i.replace(/\*+|\d+(\.\d+)?%?|\(.*?\)|^\d+\.\s*/g,'').replace(/\s+/g,' ').trim())
-    .filter(i => i.length > 2);
-}
-
-function analyze(ingredientsText) {
-  if (!profile || !ingredientsText) return null;
-  const parsed = parseIngs(ingredientsText);
-  const traits = new Set([profile.skinType, ...profile.concerns]);
-  const seen = new Set(), flags = [], benefits = [];
-  for (const [name, data] of Object.entries(DB)) {
-    if (seen.has(name)) continue;
-    const found = parsed.some(i => i.includes(name) || (name.length > 6 && name.includes(i) && i.length > 5));
-    if (!found) continue;
-    seen.add(name);
-    if (data.flag !== 'beneficial') {
-      if (data.bad_for?.some(t => traits.has(t))) flags.push({name, ...data});
-    } else {
-      if (data.good_for?.some(g => g === 'all' || traits.has(g))) benefits.push({name, ...data});
-    }
-  }
-  const penalty = flags.reduce((s,f) => s + (f.severity||3), 0);
-  const score = Math.max(0, Math.min(100, 70 - penalty*7 + benefits.length*4));
-  const grade = score>=82?'A':score>=62?'B':score>=42?'C':'D';
-  return {grade, score, flags, benefits};
-}
-
-function gradeClass(g) { return {A:'g-A',B:'g-B',C:'g-C',D:'g-D'}[g]||'g-x'; }
-function gradeText(g) { return {A:'Great match',B:'Good match',C:'Use caution',D:'Not recommended'}[g]||'No data'; }
-
-// ══ OPEN BEAUTY FACTS ══
-async function searchOBF(q) {
-  const url = `https://world.openbeautyfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(q)}&search_simple=1&action=process&json=1&fields=code,product_name,brands,ingredients_text,image_front_url&page_size=18`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error('API error');
-  const data = await res.json();
-  return (data.products||[]).filter(p => p.product_name?.trim());
-}
-
-async function fetchByBarcode(code) {
-  $('scan-hint').textContent = 'Found! Loading product...';
-  $('scan-status').textContent = `Barcode: ${code}`;
-  try {
-    const res = await fetch(`https://world.openbeautyfacts.org/api/v2/product/${code}?fields=code,product_name,brands,ingredients_text,image_front_url`);
-    const data = await res.json();
-    if (data.status === 1 && data.product?.product_name) {
-      const p = data.product;
-      p.code = code;
-      pCache[code] = p;
-      addToHistory(p);
-      prodBackView = 'view-home';
-      showView('view-product');
-      $('prod-nav-title').textContent = p.product_name;
-      updateFavBtn(code);
-      updateCmpBtn(code);
-      renderProduct(p, code);
-      renderHomeContent();
-    } else {
-      toast('Product not found — try searching by name');
-      $('scan-hint').textContent = 'Point camera at a barcode';
-      $('scan-status').textContent = '';
-      if (scanActive) startScanLoop();
-    }
-  } catch {
-    toast('Network error'); $('scan-hint').textContent = 'Point camera at a barcode';
-  }
-}
-
-// ══ BUY LINKS ══
-function buyLinks(name, brand) {
-  const q = encodeURIComponent([brand,name].filter(Boolean).join(' '));
-  return [
-    {name:'Amazon',           url:`https://www.amazon.com/s?k=${q}`,              icon:'🛒'},
-    {name:'iHerb',            url:`https://www.iherb.com/search?query=${q}`,      icon:'🌿'},
-    {name:'Sephora',          url:`https://www.sephora.com/search?keyword=${q}`,  icon:'💄'},
-    {name:'Olive Young Global',url:`https://global.oliveyoung.com/search?keyword=${q}`, icon:'🌸'},
-  ];
-}
-
-// ══ ONBOARDING ══
-let obType = null;
-const obConcerns = new Set();
-
-document.querySelectorAll('.skin-card').forEach(card => {
-  card.addEventListener('click', () => {
-    document.querySelectorAll('.skin-card').forEach(c => c.classList.remove('sel'));
-    card.classList.add('sel');
-    obType = card.dataset.t;
-    $('ob-next').disabled = false;
-  });
-});
-$('ob-next').addEventListener('click', () => {
-  if (!obType) return;
-  $('ob-s1').style.display='none'; $('ob-s2').style.display='flex';
-  $('ob-p1').classList.add('done');
-});
-document.querySelectorAll('.concern-chip').forEach(chip => {
-  chip.addEventListener('click', () => {
-    const c = chip.dataset.c;
-    if (c==='none') {
-      obConcerns.clear();
-      document.querySelectorAll('.concern-chip').forEach(ch => ch.classList.remove('sel'));
-      chip.classList.add('sel'); obConcerns.add('none');
-    } else {
-      document.querySelector('.concern-chip[data-c="none"]').classList.remove('sel');
-      obConcerns.delete('none');
-      if (obConcerns.has(c)) { obConcerns.delete(c); chip.classList.remove('sel'); }
-      else { obConcerns.add(c); chip.classList.add('sel'); }
-    }
-  });
-});
-$('ob-back').addEventListener('click', () => {
-  $('ob-s2').style.display='none'; $('ob-s1').style.display='flex';
-  $('ob-p1').classList.remove('done');
-});
-$('ob-finish').addEventListener('click', () => {
-  if (!obType) return;
-  profile = {skinType:obType, concerns:[...obConcerns].filter(c=>c!=='none')};
-  localStorage.setItem(PKEY, JSON.stringify(profile));
-  updateHomeProfile(); renderHomeContent();
-  showView('view-home'); toast('Profile saved ✓');
-});
-
-// ══ HOME ══
-const TYPE_LABELS = {oily:'Oily',dry:'Dry',combination:'Combination',sensitive:'Sensitive',normal:'Normal'};
-const CONCERN_LABELS = {acne:'Acne',dry:'Dryness',aging:'Anti-Aging',hyperpigmentation:'Dark Spots',redness:'Redness'};
-
-function updateHomeProfile() {
-  if (!profile) return;
-  const parts = [TYPE_LABELS[profile.skinType]||cap(profile.skinType), ...profile.concerns.map(c=>CONCERN_LABELS[c]||cap(c))];
-  $('profile-tag').textContent = '👤 ' + parts.join(' · ');
-}
-
-function miniCard(p, backView='view-home') {
-  const an = analyze(p.ingredients_text);
-  const code = p.code||'';
-  const imgHtml = p.image_front_url
-    ? `<img class="hist-img" src="${esc(p.image_front_url)}" alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"/><div class="hist-img-ph" style="display:none;">🧴</div>`
-    : `<div class="hist-img-ph">🧴</div>`;
-  return `<div class="hist-card" onclick="openCached('${esc(code)}','${backView}')">
-    ${imgHtml}
-    <div class="hist-name">${esc(p.product_name)}</div>
-    ${an ? `<span class="gbadge ${gradeClass(an.grade)}" style="font-size:.64rem;padding:2px 7px;">${an.grade}</span>` : ''}
-  </div>`;
-}
-
-function renderHomeContent() {
-  const hist = getHistory();
-  const favs = getFavs();
-  // Recent tab
-  $('tab-recent').innerHTML = hist.length
-    ? `<div class="hist-scroll">${hist.map(p=>{pCache[p.code]=p;return miniCard(p,'view-home');}).join('')}</div>`
-    : `<p class="tab-empty">Products you view will appear here.</p>`;
-  // Saved tab
-  $('tab-saved').innerHTML = favs.length
-    ? `<div class="hist-scroll">${favs.map(p=>{pCache[p.code]=p;return miniCard(p,'view-home');}).join('')}</div>`
-    : `<p class="tab-empty">Tap ❤️ on a product to save it here.</p>`;
-}
-
-// tabs
-document.querySelectorAll('.h-tab').forEach(tab => {
-  tab.addEventListener('click', () => {
-    document.querySelectorAll('.h-tab').forEach(t=>t.classList.remove('active'));
-    tab.classList.add('active');
-    ['recent','saved','search'].forEach(id => $(`tab-${id}`).style.display = id===tab.dataset.t?'block':'none');
-  });
-});
-
-function doSearch(q) {
-  q = q.trim(); if (!q) return;
-  $('res-inp').value = q;
-  showView('view-results');
-  loadResults(q);
-}
-$('home-go').addEventListener('click', () => doSearch($('home-inp').value));
-$('home-inp').addEventListener('keydown', e => { if(e.key==='Enter') doSearch($('home-inp').value); });
-document.querySelectorAll('.sugg-chip').forEach(b => b.addEventListener('click', () => doSearch(b.dataset.q)));
-$('profile-btn').addEventListener('click', () => {
-  obType=null; obConcerns.clear();
-  document.querySelectorAll('.skin-card,.concern-chip').forEach(el=>el.classList.remove('sel'));
-  $('ob-next').disabled=true;
-  $('ob-s1').style.display='flex'; $('ob-s2').style.display='none';
-  $('ob-p1').classList.remove('done'); $('ob-p2').classList.remove('done');
-  showView('view-onboard');
-});
-
-// ══ RESULTS ══
-$('res-back').addEventListener('click', () => showView('view-home'));
-$('res-go').addEventListener('click', () => { const q=$('res-inp').value.trim(); if(q) loadResults(q); });
-$('res-inp').addEventListener('keydown', e => { if(e.key==='Enter'){ const q=$('res-inp').value.trim(); if(q) loadResults(q); } });
-
-async function loadResults(query) {
-  $('res-list').innerHTML = `<div class="state-box"><div class="spinner"></div><div class="state-sub">Searching Open Beauty Facts...</div></div>`;
-  $('res-meta').textContent = '';
-  try {
-    const products = await searchOBF(query);
-    if (!products.length) {
-      $('res-list').innerHTML = `<div class="state-box"><div class="state-emoji">🔍</div><div class="state-title">No products found</div><div class="state-sub">Try a different name or brand.</div></div>`;
-      return;
-    }
-    $('res-meta').textContent = `${products.length} product${products.length!==1?'s':''} found`;
-    $('res-list').innerHTML = products.map((p,i) => {
-      const id = (p.code||`p${i}`).replace(/['"<>]/g,'');
-      pCache[id] = p;
-      const an = analyze(p.ingredients_text);
-      const hasIng = !!p.ingredients_text;
-      const badge = !hasIng
-        ? `<span class="gbadge g-x">No ingredient data</span>`
-        : an ? `<span class="gbadge ${gradeClass(an.grade)}">${an.grade} — ${gradeText(an.grade)}</span>`
-             : `<span class="gbadge g-x">Set profile to analyze</span>`;
-      const imgHtml = p.image_front_url
-        ? `<img class="prod-img" src="${esc(p.image_front_url)}" alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"/><div class="prod-img-ph" style="display:none;">🧴</div>`
-        : `<div class="prod-img-ph">🧴</div>`;
-      const brand = p.brands ? esc(p.brands.split(',')[0].trim()) : '';
-      return `<div class="product-card" onclick="openProduct('${id}','view-results')">
-        ${imgHtml}
-        <div class="prod-info">
-          ${brand?`<div class="prod-brand">${brand}</div>`:''}
-          <div class="prod-name">${esc(p.product_name)}</div>
-          ${badge}
-        </div>
-        <div class="prod-chevron">›</div>
-      </div>`;
-    }).join('');
-  } catch {
-    $('res-list').innerHTML = `<div class="state-box"><div class="state-emoji">😕</div><div class="state-title">Couldn't load results</div><div class="state-sub">Check your connection and try again.</div></div>`;
-  }
-}
-
-// ══ PRODUCT DETAIL ══
-$('prod-back').addEventListener('click', () => { showView(prodBackView); if(prodBackView==='view-home') renderHomeContent(); });
-
-$('prod-fav-btn').addEventListener('click', () => {
-  if (!currentProdId) return;
-  const p = pCache[currentProdId];
-  if (!p) return;
-  const added = toggleFav(p);
-  $('prod-fav-btn').textContent = added ? '❤️' : '🤍';
-  toast(added ? 'Saved ❤️' : 'Removed from saved');
-  renderHomeContent();
-});
-
-$('prod-cmp-btn').addEventListener('click', () => {
-  if (!currentProdId) return;
-  const inList = compareList.includes(currentProdId);
-  if (inList) { compareList = compareList.filter(id=>id!==currentProdId); toast('Removed from compare'); }
-  else {
-    if (compareList.length >= 2) compareList.shift();
-    compareList.push(currentProdId);
-    toast(compareList.length===2 ? 'Ready! Tap ⊞ below to compare →' : 'Added to compare');
-  }
-  updateCmpBtn(currentProdId);
-  updateCmpFab();
-});
-
-function updateFavBtn(code) { $('prod-fav-btn').textContent = isFav(code) ? '❤️' : '🤍'; }
-function updateCmpBtn(code) { $('prod-cmp-btn').textContent = compareList.includes(code) ? '☑️' : '⊞'; }
-
-function openProduct(id, backView='view-results') {
-  const p = pCache[id]; if (!p) return;
-  currentProdId = id;
-  prodBackView = backView;
-  addToHistory(p);
-  showView('view-product');
-  $('prod-nav-title').textContent = p.product_name || '';
-  updateFavBtn(p.code||id);
-  updateCmpBtn(id);
-  renderProduct(p, id);
-  renderHomeContent();
-}
-
-function openCached(id, backView) {
-  const p = pCache[id];
-  if (!p) { toast('Product data unavailable — search again'); return; }
-  openProduct(id, backView);
-}
-
-function renderProduct(p, id) {
-  const an = analyze(p.ingredients_text);
-  const hasIng = !!p.ingredients_text;
-  const brand = p.brands ? p.brands.split(',')[0].trim() : '';
-  const links = buyLinks(p.product_name, brand);
-
-  const imgHtml = p.image_front_url
-    ? `<img class="hero-img" src="${esc(p.image_front_url)}" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"/><div class="hero-img-ph" style="display:none;">🧴</div>`
-    : `<div class="hero-img-ph">🧴</div>`;
-
-  let scoreHtml = '';
-  if (an) {
-    const fc = an.score>=70?'sf-hi':an.score>=45?'sf-md':'sf-lo';
-    scoreHtml = `<div class="section"><div class="sec-title">📊 Skin Match Score</div><div class="score-row"><span>${gradeText(an.grade)}</span><span><strong>${an.score}</strong>/100</span></div><div class="score-track"><div class="score-fill ${fc}" style="width:${an.score}%"></div></div></div>`;
-  }
-
-  let flagsBody = !hasIng
-    ? `<p class="empty-note">No ingredient list in database for this product.</p>`
-    : an && an.flags.length
-      ? an.flags.map(f=>{const sev=f.severity>=4?'hi':f.severity>=3?'md':'lo';const icon=f.flag==='comedogenic'?'🔴':f.flag==='allergen'?'⚠️':'⚡';return`<div class="flag-item"><div class="flag-ic fi-${sev}">${icon}</div><div><div class="flag-name">${esc(cap(f.name))}</div><div class="flag-sub">${cap(f.flag)}${f.note?' · '+f.note:''}</div></div></div>`;}).join('')
-      : an ? `<p class="empty-note">🎉 No flagged ingredients for your skin type.</p>` : '';
-
-  let bensBody = hasIng && an
-    ? an.benefits.length
-      ? `<div class="benefit-chips">${an.benefits.map(b=>`<span class="benefit-chip">✓ ${esc(cap(b.name))}</span>`).join('')}</div>`
-      : `<p class="empty-note">No standout beneficial ingredients detected.</p>`
-    : '<p class="empty-note">Complete your profile to see personalized benefits.</p>';
-
-  const ingToggle = hasIng ? `<div class="section"><button class="ing-toggle" onclick="this.nextElementSibling.classList.toggle('open');this.textContent=this.nextElementSibling.classList.contains('open')?'Hide full list ↑':'Show full ingredient list ↓'">Show full ingredient list ↓</button><div class="ing-text">${esc(p.ingredients_text)}</div></div>` : '';
-
-  $('prod-content').innerHTML = `
-    <div class="product-hero">
-      ${imgHtml}
-      <div class="hero-info">
-        ${brand?`<div class="hero-brand">${esc(brand)}</div>`:''}
-        <div class="hero-name">${esc(p.product_name)}</div>
-        ${an?`<span class="gbadge ${gradeClass(an.grade)}" style="padding:5px 12px;font-size:.78rem;">${an.grade} — ${gradeText(an.grade)}</span>`:`<span class="gbadge g-x" style="padding:5px 12px;font-size:.78rem;">No data</span>`}
+    <div class="search-area">
+      <div class="search-wrap">
+        <span class="search-icon-l">🔍</span>
+        <input class="search-inp" id="search-inp" placeholder="트렌드, 사전 단어 검색" onkeydown="if(event.key==='Enter')doSearch()"/>
       </div>
     </div>
-    ${scoreHtml}
-    <div class="section"><div class="sec-title">⚠️ Flagged Ingredients <span class="sec-count">${an?an.flags.length:'?'}</span></div>${flagsBody}</div>
-    <div class="section"><div class="sec-title">✅ Good for Your Skin <span class="sec-count">${an?an.benefits.length:'?'}</span></div>${bensBody}</div>
-    ${ingToggle}
-    <div class="section" style="margin-bottom:0;"><div class="sec-title">🛒 Where to Buy</div>${links.map(l=>`<a class="buy-link" href="${l.url}" target="_blank" rel="noopener"><div class="buy-ic">${l.icon}</div><div class="buy-name">${l.name}</div><div class="buy-arrow">→</div></a>`).join('')}</div>
-    <div style="height:36px;"></div>`;
-}
+    <div class="cat-scroll" id="cat-scroll"></div>
+    <div class="list-wrap" id="home-list"></div>
+  </div>
 
-// ══ BARCODE SCAN ══
-$('scan-open').addEventListener('click', openScanView);
-$('scan-back').addEventListener('click', () => { stopScan(); showView('view-home'); });
-$('scan-cancel').addEventListener('click', () => { stopScan(); showView('view-home'); });
-$('scan-inp-go').addEventListener('click', () => { const c=$('scan-inp').value.trim(); if(c){stopScan();fetchByBarcode(c);} });
-$('scan-inp').addEventListener('keydown', e => { if(e.key==='Enter'){const c=$('scan-inp').value.trim();if(c){stopScan();fetchByBarcode(c);}} });
-$('scan-fb-go').addEventListener('click', () => { const c=$('scan-fb-inp').value.trim(); if(c) fetchByBarcode(c); });
-$('scan-fb-cancel').addEventListener('click', () => showView('view-home'));
-
-function openScanView() {
-  showView('view-scan');
-  if (!('BarcodeDetector' in window)) {
-    $('scan-unsupported').style.display='flex';
-    return;
-  }
-  startScan();
-}
-
-async function startScan() {
-  scanActive = true;
-  $('scan-hint').textContent = 'Starting camera...';
-  try {
-    scanStream = await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}, width:{ideal:1280}}});
-    const vid = $('scan-vid');
-    vid.srcObject = scanStream;
-    await vid.play();
-    $('scan-hint').textContent = 'Point camera at a barcode';
-    startScanLoop();
-  } catch(e) {
-    $('scan-hint').textContent = 'Camera access denied';
-    $('scan-status').textContent = 'Use the text field below to enter a barcode';
-    scanActive = false;
-  }
-}
-
-async function startScanLoop() {
-  const detector = new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e','code_128','code_39','qr_code']});
-  const vid = $('scan-vid');
-  const loop = async () => {
-    if (!scanActive) return;
-    try {
-      const results = await detector.detect(vid);
-      if (results.length > 0) {
-        scanActive = false;
-        fetchByBarcode(results[0].rawValue);
-        return;
-      }
-    } catch {}
-    requestAnimationFrame(loop);
-  };
-  requestAnimationFrame(loop);
-}
-
-function stopScan() {
-  scanActive = false;
-  if (scanStream) { scanStream.getTracks().forEach(t=>t.stop()); scanStream=null; }
-  const vid = $('scan-vid'); vid.srcObject=null;
-}
-
-// ══ COMPARE ══
-function updateCmpFab(currentView) {
-  const fab = $('cmp-fab');
-  if (compareList.length === 0 || currentView === 'view-compare') { fab.style.display='none'; return; }
-  fab.style.display='block';
-  $('cmp-count').textContent = compareList.length;
-}
-
-$('cmp-fab-btn').addEventListener('click', () => {
-  showView('view-compare');
-  renderCompare();
-});
-$('cmp-back').addEventListener('click', () => showView(prodBackView==='view-home'?'view-home':'view-results'));
-$('cmp-clear').addEventListener('click', () => { compareList=[]; updateCmpFab(); document.querySelectorAll('.icon-btn[id="prod-cmp-btn"]').forEach(b=>b.textContent='⊞'); renderCompare(); });
-
-function removeCmpItem(id) {
-  compareList = compareList.filter(i=>i!==id);
-  updateCmpFab();
-  if(currentProdId) updateCmpBtn(currentProdId);
-  renderCompare();
-}
-
-function renderCompare() {
-  const content = $('cmp-content');
-  if (compareList.length === 0) {
-    content.innerHTML = `<div class="state-box"><div class="state-emoji">⊞</div><div class="state-title">Nothing to compare yet</div><div class="state-sub">Open a product and tap ⊞ to add it to compare.</div></div>`;
-    return;
-  }
-  const products = compareList.map(id=>pCache[id]).filter(Boolean);
-
-  // Slot HTML generator
-  const slot = (p, id) => {
-    const an = analyze(p.ingredients_text);
-    const imgHtml = p.image_front_url
-      ? `<img class="cmp-pimg" src="${esc(p.image_front_url)}" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"/><div class="cmp-pimg-ph" style="display:none;">🧴</div>`
-      : `<div class="cmp-pimg-ph">🧴</div>`;
-    return `<div class="cmp-pcard">${imgHtml}<div class="cmp-pname">${esc((p.product_name||'').substring(0,40))}</div>${an?`<span class="gbadge ${gradeClass(an.grade)}" style="font-size:.68rem;">${an.grade}</span>`:''}<button class="cmp-remove-btn" onclick="removeCmpItem('${id}')">✕ Remove</button></div>`;
-  };
-
-  const emptySlot = `<div class="cmp-empty-slot" onclick="showView('view-results')"><div style="font-size:1.6rem;">+</div><span>Add a product</span></div>`;
-
-  let cardsHtml;
-  if (products.length === 1) {
-    cardsHtml = `<div class="cmp-cards-row">${slot(products[0],compareList[0])}<div class="cmp-vs-col">vs</div>${emptySlot}</div>`;
-    content.innerHTML = cardsHtml + `<div class="state-box" style="padding:32px 24px;"><div class="state-sub">Add a second product to see the comparison.</div></div>`;
-    return;
-  }
-
-  const [p1,p2] = products;
-  const [a1,a2] = [analyze(p1.ingredients_text), analyze(p2.ingredients_text)];
-  cardsHtml = `<div class="cmp-cards-row">${slot(p1,compareList[0])}<div class="cmp-vs-col">vs</div>${slot(p2,compareList[1])}</div>`;
-
-  let winnerHtml = '';
-  if (a1 && a2) {
-    const winner = a1.score >= a2.score ? p1 : p2;
-    winnerHtml = `<div class="cmp-winner">🏆 ${esc(winner.product_name?.split(' ').slice(0,4).join(' '))} is a better match for your skin</div>`;
-  }
-
-  // Flags
-  const f1Names = (a1?.flags||[]).map(f=>f.name);
-  const f2Names = (a2?.flags||[]).map(f=>f.name);
-  const flagsHtml = `<div class="section"><div class="sec-title">⚠️ Flagged Ingredients</div><div class="cmp-2col">
-    <div><div class="cmp-col-head">${esc((p1.product_name||'').split(' ')[0])}</div>${f1Names.length?f1Names.map(n=>`<div class="cmp-row cmp-bad">• ${esc(cap(n))}</div>`).join(''):'<div class="cmp-row cmp-good">None ✓</div>'}</div>
-    <div><div class="cmp-col-head">${esc((p2.product_name||'').split(' ')[0])}</div>${f2Names.length?f2Names.map(n=>`<div class="cmp-row cmp-bad">• ${esc(cap(n))}</div>`).join(''):'<div class="cmp-row cmp-good">None ✓</div>'}</div>
-  </div></div>`;
-
-  // Benefits
-  const b1 = new Set((a1?.benefits||[]).map(b=>b.name));
-  const b2 = new Set((a2?.benefits||[]).map(b=>b.name));
-  const shared = [...b1].filter(n=>b2.has(n));
-  const only1  = [...b1].filter(n=>!b2.has(n));
-  const only2  = [...b2].filter(n=>!b1.has(n));
-  const bensHtml = `<div class="section" style="margin-bottom:0;"><div class="sec-title">✅ Benefits</div>
-    ${shared.length?`<div class="cmp-shared"><strong>Both have:</strong> ${shared.map(cap).join(', ')}</div>`:''}
-    <div class="cmp-2col">
-      <div>${only1.length?`<div class="cmp-col-head">Only in ${esc((p1.product_name||'').split(' ')[0])}</div>${only1.map(n=>`<div class="cmp-row cmp-good">✓ ${cap(n)}</div>`).join('')}`:''}</div>
-      <div>${only2.length?`<div class="cmp-col-head">Only in ${esc((p2.product_name||'').split(' ')[0])}</div>${only2.map(n=>`<div class="cmp-row cmp-good">✓ ${cap(n)}</div>`).join('')}`:''}</div>
+  <!-- SEARCH RESULTS -->
+  <div class="view" id="view-search">
+    <div class="nav-bar">
+      <button class="back-btn" onclick="go('home')">←</button>
+      <div class="search-wrap">
+        <span class="search-icon-l">🔍</span>
+        <input class="search-inp" id="search-inp2" placeholder="트렌드, 사전 단어 검색" onkeydown="if(event.key==='Enter')doSearch()"/>
+      </div>
     </div>
-    ${!shared.length&&!only1.length&&!only2.length?'<p class="empty-note">No notable benefits detected in either product.</p>':''}
-  </div><div style="height:36px;"></div>`;
+    <div class="section-label" id="search-summary"></div>
+    <div class="list-wrap" id="search-art-list"></div>
+    <div class="section-label" id="search-dict-label" style="display:none;">요즘어 사전</div>
+    <div class="dict-list" id="search-dict-list"></div>
+  </div>
 
-  content.innerHTML = cardsHtml + winnerHtml + flagsHtml + bensHtml;
+  <!-- ARTICLE DETAIL -->
+  <div class="view" id="view-article">
+    <div class="nav-bar">
+      <button class="back-btn" onclick="goBack()">←</button>
+      <div class="nav-spacer"></div>
+      <button class="icon-btn" id="bookmark-btn" onclick="toggleBookmark()">🔖</button>
+    </div>
+    <div class="art-detail" id="article-content"></div>
+    <div class="section-label">관련 트렌드</div>
+    <div class="list-wrap" id="related-list"></div>
+  </div>
+
+  <!-- DICTIONARY -->
+  <div class="view" id="view-dictionary">
+    <div class="nav-bar">
+      <div class="nav-title">요즘어 사전</div>
+    </div>
+    <div class="search-area" style="padding-bottom:0;">
+      <div class="search-wrap">
+        <span class="search-icon-l">🔍</span>
+        <input class="search-inp" id="dict-search-inp" placeholder="사전에서 단어 검색" oninput="renderDictionary()"/>
+      </div>
+    </div>
+    <div class="cat-scroll" id="dict-cat-scroll"></div>
+    <div class="dict-list" id="dict-list"></div>
+  </div>
+
+  <!-- CALENDAR -->
+  <div class="view" id="view-calendar">
+    <div class="nav-bar">
+      <div class="nav-title">이슈 캘린더</div>
+    </div>
+    <div class="cal-nav">
+      <button class="cal-nav-btn" onclick="shiftMonth(-1)">‹</button>
+      <div class="cal-month-label" id="cal-month-label"></div>
+      <button class="cal-nav-btn" onclick="shiftMonth(1)">›</button>
+    </div>
+    <div class="cal-grid" id="cal-grid"></div>
+    <div class="section-label">📌 다가오는 이슈</div>
+    <div class="cal-events" id="cal-events"></div>
+  </div>
+
+  <!-- MY PAGE -->
+  <div class="view" id="view-my">
+    <div class="my-hd">
+      <div class="my-title">마이페이지</div>
+      <div class="my-sub" id="my-sub-stat"></div>
+    </div>
+    <div class="nl-card">
+      <div class="nl-title">📬 트렌드 레터 구독</div>
+      <div class="nl-sub">매주 화요일, 이번 주 놓치면 안 될 Z세대 트렌드를 정리해서 보내드려요.</div>
+      <div class="nl-row" id="nl-form">
+        <input class="nl-inp" id="nl-email" type="email" placeholder="이메일 주소"/>
+        <button class="nl-btn" onclick="subscribeNewsletter()">구독</button>
+      </div>
+      <div class="nl-status" id="nl-status" style="display:none;"></div>
+    </div>
+    <div class="my-tabs">
+      <button class="my-tab active" data-tab="bookmarks" onclick="switchMyTab('bookmarks')">북마크한 글</button>
+      <button class="my-tab" data-tab="terms" onclick="switchMyTab('terms')">저장한 단어</button>
+      <button class="my-tab" data-tab="history" onclick="switchMyTab('history')">최근 본 글</button>
+    </div>
+    <div class="list-wrap" id="my-bookmarks-list"></div>
+    <div class="dict-list" id="my-terms-list" style="display:none;padding:14px 18px 8px;"></div>
+    <div class="list-wrap" id="my-history-list" style="display:none;"></div>
+  </div>
+
+  <div class="bottom-nav">
+    <button class="bn-btn active" data-view="home" onclick="go('home')"><span class="ic">🏠</span>홈</button>
+    <button class="bn-btn" data-view="dictionary" onclick="go('dictionary')"><span class="ic">📖</span>사전</button>
+    <button class="bn-btn" data-view="calendar" onclick="go('calendar')"><span class="ic">📅</span>캘린더</button>
+    <button class="bn-btn" data-view="my" onclick="go('my')"><span class="ic">👤</span>마이</button>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+/* ============ DATA ============ */
+const CATEGORIES = ["요즘 10대","요즘 20대","소비 트렌드","마케팅","브랜드 인사이트","밈·콘텐츠"];
+
+const ARTICLES = [
+{id:1,title:"다이소 4,900원 립밤, 올려도 또 품절되는 이유",category:"소비 트렌드",badge:"hot",date:"2026-07-07",tags:["다이소","가성비뷰티","품절런"],emoji:"💄",
+ summary:"저가 뷰티 상품이 올려놓기만 하면 품절되는 현상, 배경엔 '실패해도 안 아까운 가격'이 있다.",
+ body:["다이소 매대에 신상 립밤이 올라오면 몇 시간 안에 품절되는 일이 반복되고 있다. 가격은 4,900원, 부담 없이 '한번 써보자'는 심리가 구매 전환을 빠르게 만든다.","특히 10대·20대는 고가 뷰티 제품보다 저가 제품을 여러 개 사서 조합하는 '레이어링' 소비를 선호한다. 실패해도 손해가 적다는 점이 반복 구매로 이어진다.","브랜드 입장에서는 낮은 가격으로 진입장벽을 낮추고, SNS 후기 확산을 통해 자연스러운 마케팅 효과를 얻는 구조다."]},
+{id:2,title:"편의점 콜라보 아이스크림, 왜 줄 서서까지 사 먹을까",category:"소비 트렌드",badge:"hot",date:"2026-07-06",tags:["편의점","콜라보","한정판"],emoji:"🍦",
+ summary:"기간 한정 콜라보 상품은 '지금 아니면 못 산다'는 희소성이 소비 욕구를 자극한다.",
+ body:["유명 캐릭터·브랜드와 협업한 한정판 아이스크림이 출시될 때마다 편의점 앞에 줄이 생긴다. 재입고 여부가 불확실하다는 점이 오히려 구매를 앞당긴다.","한정판 상품은 SNS 인증샷 콘텐츠로도 소비된다. '샀다'는 인증 자체가 트렌드에 참여했다는 신호가 되기 때문이다.","마케팅 관점에서는 소량 생산으로 재고 부담을 줄이면서도 화제성은 극대화할 수 있는 전략으로 자리잡았다."]},
+{id:3,title:"'멍 때리기 챌린지', 아무것도 안 하는 게 콘텐츠가 됐다",category:"밈·콘텐츠",badge:"rising",date:"2026-07-05",tags:["챌린지","힐링콘텐츠","무자극"],emoji:"😶",
+ summary:"자극적인 콘텐츠에 지친 이용자들이 '아무 말 없이 멍 때리는' 영상에 몰리고 있다.",
+ body:["빠른 편집과 자막이 가득한 숏폼 사이에서, 오히려 아무 자극도 없는 '멍 때리기' 영상이 역주행 중이다. 시청자들은 이를 '두뇌 디톡스'라 부른다.","챌린지 참여자들은 특정 장소에서 5분간 멍 때리는 모습을 촬영해 업로드한다. 편집도 자막도 없는 게 오히려 신선하다는 반응이다.","브랜드들도 이 흐름에 맞춰 '무편집·무자극' 콘셉트의 광고를 실험하기 시작했다."]},
+{id:4,title:"급식 브이로그가 학교 마케팅 채널이 된 사연",category:"요즘 10대",badge:null,date:"2026-07-04",tags:["급식","브이로그","학교밈"],emoji:"🍱",
+ summary:"오늘의 급식을 소개하는 브이로그가 학생들 사이 정보 공유 채널로 자리잡았다.",
+ body:["일부 중고등학생들은 매일 급식 메뉴를 촬영해 짧은 영상으로 공유한다. 맛 평가와 함께 '오늘 급식 등급'을 매기는 것이 하나의 놀이가 됐다.","이 콘텐츠는 같은 학교, 나아가 다른 학교 학생들과의 비교 콘텐츠로 확장되며 지역 커뮤니티성 콘텐츠로 발전하고 있다.","급식업체들도 이 반응을 참고해 메뉴 구성에 변화를 주는 사례가 늘고 있다."]},
+{id:5,title:"스터디윗미 라이브, 실시간 시청자 왜 늘었을까",category:"요즘 20대",badge:"rising",date:"2026-07-03",tags:["스터디윗미","자기관리","라이브"],emoji:"📚",
+ summary:"혼자 공부하기 힘든 사람들이 '같이 공부하는 느낌'을 라이브 방송에서 찾고 있다.",
+ body:["'스터디윗미(Study With Me)' 라이브는 화면 너머 누군가와 함께 공부한다는 소속감을 준다. 채팅창엔 실시간으로 공부 목표를 공유하는 이용자가 가득하다.","특히 시험 기간에는 새벽 시간대 방송의 동시 접속자가 급증하는 경향을 보인다.","자기관리 콘텐츠와 결합되며 '갓생 챌린지'의 한 축으로 자리잡았다."]},
+{id:6,title:"제로슈거 음료, 편의점 매출 상위권 싹쓸이",category:"소비 트렌드",badge:"hot",date:"2026-07-02",tags:["제로슈거","헬시플레저","편의점"],emoji:"🥤",
+ summary:"건강도 챙기고 맛도 즐기는 '헬시플레저' 소비가 음료 시장 판도를 바꾸고 있다.",
+ body:["설탕 없이도 단맛을 즐길 수 있는 제로슈거 음료가 편의점 매출 순위 상위권을 지속적으로 차지하고 있다.","'참는 다이어트'보다 '즐기는 관리'를 선호하는 흐름이 반영된 결과로, 관련 신제품 출시도 빠르게 늘고 있다.","브랜드들은 맛의 다양화와 함께 '죄책감 없는 소비'라는 메시지를 강조하는 방향으로 마케팅을 전개하고 있다."]},
+{id:7,title:"팝업스토어 대기 3시간, 그래도 가는 이유",category:"브랜드 인사이트",badge:"hot",date:"2026-07-01",tags:["팝업스토어","오프라인경험","브랜드체험"],emoji:"🏬",
+ summary:"온라인으로 다 되는 시대에도 오프라인 팝업은 '경험'을 판다는 점에서 여전히 강력하다.",
+ body:["긴 대기 시간에도 팝업스토어 방문이 줄지 않는다. 방문객들은 상품 구매보다 '그 공간에 다녀왔다는 경험' 자체를 목적으로 삼는다.","포토존, 한정판 굿즈, SNS 인증 이벤트가 결합되면서 팝업스토어는 단순 판매 공간을 넘어 콘텐츠 생산 공간이 됐다.","브랜드는 짧은 기간에 강한 화제성을 만들 수 있다는 점에서 팝업스토어를 핵심 마케팅 채널로 활용하고 있다."]},
+{id:8,title:"다꾸(다이어리 꾸미기), 디지털 시대에 왜 다시 유행할까",category:"밈·콘텐츠",badge:"rising",date:"2026-06-30",tags:["다꾸","아날로그감성","취향소비"],emoji:"📔",
+ summary:"디지털 기록이 익숙한 세대일수록 손으로 직접 꾸미는 아날로그 취미에 매력을 느낀다.",
+ body:["스티커와 마스킹테이프로 다이어리를 꾸미는 '다꾸'가 다시 인기를 얻고 있다. 완성된 다이어리는 SNS에 인증되며 취향을 드러내는 수단이 된다.","디지털에 익숙한 세대일수록 오히려 손으로 만지고 완성하는 과정에서 만족감을 느낀다는 분석이 나온다.","관련 문구·스티커 브랜드들은 한정판 굿즈를 출시하며 팬덤 소비를 유도하고 있다."]},
+{id:9,title:"OTT 대신 '숏폼 드라마'를 보는 사람들",category:"요즘 20대",badge:"hot",date:"2026-06-29",tags:["숏폼드라마","세로형콘텐츠","빠른소비"],emoji:"📱",
+ summary:"1분 안에 기승전결이 끝나는 세로형 드라마가 짧은 시청 습관에 맞아 떨어졌다.",
+ body:["긴 러닝타임의 OTT 콘텐츠 대신, 한 편에 1~3분인 세로형 숏폼 드라마 시청이 늘고 있다. 자투리 시간에 여러 편을 몰아보는 방식이 일반화됐다.","전개 속도가 빠르고 자극적인 전환이 많아 다음 편을 계속 보게 만드는 구조가 특징이다.","콘텐츠 제작사들은 광고와 결합한 숏폼 드라마 포맷을 늘리며 새로운 마케팅 채널로 실험하고 있다."]},
+{id:10,title:"무지출 챌린지 인증, 절약이 콘텐츠가 되는 법",category:"요즘 20대",badge:null,date:"2026-06-28",tags:["무지출챌린지","재테크","짠테크"],emoji:"💸",
+ summary:"하루 지출 0원을 인증하는 챌린지가 재테크 콘텐츠의 새로운 흐름을 만들고 있다.",
+ body:["하루 동안 한 푼도 쓰지 않은 것을 인증하는 '무지출 챌린지'가 SNS에서 꾸준히 공유되고 있다. 절약이 놀이처럼 소비되는 모습이다.","참여자들은 냉장고 파먹기, 도보 이동 등 구체적인 절약 방법을 함께 공유하며 커뮤니티를 형성한다.","금융 관련 브랜드들은 이 흐름에 맞춰 절약 습관을 지원하는 앱 기능을 강조하는 마케팅을 펼치고 있다."]},
+{id:11,title:"중고거래 앱에서 '스몰럭셔리' 사는 사람들",category:"소비 트렌드",badge:"rising",date:"2026-06-27",tags:["중고거래","스몰럭셔리","가치소비"],emoji:"🛍️",
+ summary:"작은 사치를 합리적인 가격에 즐기려는 소비자들이 중고 명품 액세서리로 눈을 돌리고 있다.",
+ body:["가방 대신 키링, 스카프 같은 작은 명품 아이템을 중고로 구매하는 사례가 늘고 있다. 적은 예산으로도 브랜드 경험을 할 수 있다는 점이 매력이다.","이런 소비는 '플렉스'보다는 '합리적인 자기만족'에 가깝다는 점에서 기존 명품 소비와 결이 다르다.","중고거래 플랫폼들은 이 수요를 겨냥해 명품 전문 카테고리를 강화하고 있다."]},
+{id:12,title:"회사 대신 '갓생 챌린지' 인증하는 20대",category:"요즘 20대",badge:"hot",date:"2026-06-26",tags:["갓생","자기관리","챌린지"],emoji:"⏰",
+ summary:"기상부터 운동, 공부까지 하루 루틴을 인증하며 스스로를 동기부여하는 문화가 확산 중이다.",
+ body:["미라클모닝, 오운완(오늘 운동 완료) 인증처럼 하루 루틴을 공개하는 '갓생 챌린지'가 20대 사이에서 꾸준히 이어지고 있다.","혼자보다 여럿이 함께 인증할 때 지속률이 높다는 점에서, 관련 챌린지 앱과 커뮤니티도 함께 성장하고 있다.","브랜드들은 갓생 루틴에 필요한 제품(수면, 운동, 다이어리)을 묶어 마케팅하는 전략을 취하고 있다."]},
+{id:13,title:"탕후루 다음은 '요아정', 커스텀 디저트 전쟁",category:"소비 트렌드",badge:"hot",date:"2026-06-25",tags:["요아정","커스텀디저트","유행주기"],emoji:"🍨",
+ summary:"직접 조합을 고르는 '커스텀형' 디저트가 유행의 새로운 공식으로 떠올랐다.",
+ body:["요거트에 토핑을 직접 골라 조합하는 '요아정'류 디저트가 SNS에서 화제다. 나만의 조합을 완성해 인증하는 재미가 확산의 핵심이다.","유행 주기가 짧아진 디저트 시장에서, 소비자가 직접 참여할 수 있는 '커스터마이징' 요소가 다음 유행의 공통 조건으로 꼽힌다.","프랜차이즈들은 이 흐름을 반영해 셀프 조합형 메뉴를 빠르게 늘리는 추세다."]},
+{id:14,title:"브랜드 굿즈, 되팔이 시장이 이렇게 커질 줄이야",category:"브랜드 인사이트",badge:"rising",date:"2026-06-24",tags:["굿즈","리셀","한정판마케팅"],emoji:"🧸",
+ summary:"한정판 굿즈의 리셀 가격이 정가를 뛰어넘는 현상이 오히려 브랜드 화제성을 키운다.",
+ body:["카페·편의점 협업 굿즈가 품절되면 중고거래 플랫폼에서 정가의 몇 배로 거래되는 일이 흔해졌다. 이 현상 자체가 뉴스가 되며 브랜드를 알린다.","리셀 시장이 커질수록 브랜드는 '이 굿즈를 못 구하면 손해'라는 인식을 자연스럽게 만들어낸다.","일부 브랜드는 의도적으로 소량만 생산해 리셀 화제성을 마케팅 전략으로 활용하기도 한다."]},
+{id:15,title:"AI 프로필 챌린지, 왜 다들 한 번씩 해봤을까",category:"밈·콘텐츠",badge:null,date:"2026-06-23",tags:["AI프로필","챌린지","이미지생성"],emoji:"🤖",
+ summary:"손쉽게 만들 수 있는 AI 생성 프로필 사진이 SNS 프로필 교체 놀이로 확산됐다.",
+ body:["사진 몇 장만 올리면 다양한 스타일의 프로필 사진을 만들어주는 서비스가 유행하며, SNS 프로필 사진을 교체하는 놀이가 확산됐다.","완성된 이미지를 서로 비교하고 반응을 남기는 과정 자체가 콘텐츠가 되어, 낮은 진입장벽에도 확산 속도가 빨랐다.","관련 서비스들은 이 흐름을 타고 무료 체험 후 유료 전환을 유도하는 마케팅을 적극적으로 펼쳤다."]},
+{id:16,title:"전공책 대신 '요약노트'가 거래되는 캠퍼스 장터",category:"요즘 20대",badge:null,date:"2026-06-22",tags:["요약노트","캠퍼스","중고거래"],emoji:"📝",
+ summary:"직접 정리한 강의 요약노트가 중고거래 플랫폼에서 활발히 거래되고 있다.",
+ body:["시험 기간이 다가오면 대학 커뮤니티와 중고거래 앱에는 강의 요약노트 판매 글이 쏟아진다. 잘 정리된 노트는 빠르게 거래가 성사된다.","단순 판매를 넘어 '노트 품질 후기'가 공유되면서 일부 판매자는 시리즈로 노트를 제작해 판매하기도 한다.","이 현상은 정보를 가공해 가치를 만드는 '콘텐츠형 거래'의 한 사례로 주목받고 있다."]},
+{id:17,title:"지하철 밈 광고, 왜 캡처해서 퍼가는 걸까",category:"마케팅",badge:"rising",date:"2026-06-21",tags:["밈마케팅","지하철광고","B급감성"],emoji:"🚇",
+ summary:"진지하지 않고 허를 찌르는 카피의 지하철 광고가 캡처되어 SNS를 타고 확산되고 있다.",
+ body:["과장되거나 허를 찌르는 유머 코드를 담은 지하철 광고가 승객들의 캡처를 유도하며 온라인으로 확산되고 있다.","'너무 진지하지 않은' B급 감성의 카피가 오히려 브랜드에 대한 호감을 높인다는 반응이 많다.","브랜드 담당자들은 이 흐름을 참고해 오프라인 광고 카피에도 밈적인 유머를 적극적으로 반영하고 있다."]},
+{id:18,title:"댓글창이 본편? '드립 마케팅' 성공 사례",category:"마케팅",badge:"hot",date:"2026-06-20",tags:["드립마케팅","댓글마케팅","브랜드텐션"],emoji:"💬",
+ summary:"공식 계정이 댓글창에서 재치있게 반응하는 것만으로도 화제성과 호감도가 동시에 올라간다.",
+ body:["일부 브랜드 공식 SNS 계정은 게시물보다 댓글 답변으로 더 큰 화제를 모은다. 이용자의 드립에 위트있게 맞받아치는 반응이 캡처되어 퍼진다.","이런 '드립 마케팅'은 큰 예산 없이도 브랜드에 친근한 이미지를 심어줄 수 있다는 점에서 담당자들의 관심을 받고 있다.","다만 과도한 드립은 브랜드 톤과 맞지 않을 경우 역효과가 날 수 있어 균형이 중요하다는 지적도 나온다."]}
+];
+
+const DICTIONARY = [
+{id:1,term:"갓생",tag:"자기관리",meaning:"부지런하고 계획적으로, 알차게 사는 삶을 뜻하는 말.",origin:"'God(갓)'과 '인생'의 합성어로, 신처럼 완벽하고 부지런한 하루를 보낸다는 의미에서 나왔다.",example:"미라클모닝 성공! 오늘도 갓생 산다."},
+{id:2,term:"짠테크",tag:"소비",meaning:"짠돌이처럼 아끼면서 재테크한다는 뜻으로, 극단적인 절약을 통한 자산 관리 방식.",origin:"'짠돌이'와 '재테크'를 합친 말.",example:"이번 달은 짠테크로 지출을 절반으로 줄였다."},
+{id:3,term:"오운완",tag:"줄임말",meaning:"'오늘 운동 완료'의 줄임말로, 운동을 끝냈다는 인증을 의미.",origin:"운동 인증 챌린지 문화가 확산되며 만들어진 줄임말.",example:"오운완! 오늘도 헬스장 다녀왔어요."},
+{id:4,term:"킹받다",tag:"감정표현",meaning:"매우 화나거나 짜증난다는 뜻의 강조 표현.",origin:"'King(왕)'과 '열받다'를 합쳐 화난 감정을 과장해서 표현한 말.",example:"버스 놓쳐서 진짜 킹받네."},
+{id:5,term:"무지출",tag:"소비",meaning:"하루 동안 돈을 한 푼도 쓰지 않는 것을 뜻함.",origin:"절약 챌린지 문화에서 파생된 표현.",example:"오늘은 무지출 데이! 도시락 싸왔어."},
+{id:6,term:"부캐",tag:"자기표현",meaning:"본래 정체성과 다른 부캐릭터, 즉 제2의 자아나 계정을 뜻함.",origin:"게임 용어 '부캐릭터'에서 유래해 SNS·방송 등으로 의미가 확장됐다.",example:"이 계정은 내 부캐야, 완전 다른 컨셉이지."},
+{id:7,term:"존버",tag:"태도",meaning:"힘들어도 끝까지 버티고 견딘다는 뜻.",origin:"'존X 버티다'를 줄인 은어에서 유래.",example:"주식 떨어져도 일단 존버 중이야."},
+{id:8,term:"눈바디",tag:"자기관리",meaning:"체중계 숫자보다 거울로 눈으로 확인하는 몸의 변화를 뜻함.",origin:"'눈'과 '바디(body)'를 합친 말.",example:"숫자는 그대론데 눈바디로는 확실히 좋아졌어."},
+{id:9,term:"손민수",tag:"밈",meaning:"다른 사람의 스타일이나 소비 패턴을 그대로 따라 하는 것을 뜻하는 동사형 밈.",origin:"드라마 캐릭터 이름에서 유래해 '따라쟁이'를 가리키는 표현으로 굳어졌다.",example:"내 최애 스타일 완전 손민수 했어."},
+{id:10,term:"텅장",tag:"소비",meaning:"통장이 텅텅 비었다는 뜻으로, 지출이 커서 잔액이 거의 없는 상태.",origin:"'텅 비다'와 '통장'을 합친 말.",example:"월급날인데 벌써 텅장이야."},
+{id:11,term:"만반잘부",tag:"줄임말",meaning:"'만나서 반가워 잘 부탁해'의 줄임말로, 처음 만난 사이에 쓰는 인사말.",origin:"온라인 커뮤니티에서 첫 인사를 짧게 줄이며 확산됐다.",example:"이번에 새로 들어온 팀원이에요, 만반잘부!"},
+{id:12,term:"스불재",tag:"줄임말",meaning:"'스스로 불러온 재앙'의 줄임말로, 자신의 선택으로 벌어진 곤란한 상황을 뜻함.",origin:"일상적인 실수나 무리한 계획으로 벌어진 일을 자책하며 쓰는 표현.",example:"마감 미루다 몰아서 하는 건 완전 스불재야."},
+{id:13,term:"인싸",tag:"자기표현",meaning:"무리에 잘 어울리고 사교적인 사람을 뜻함. 반대말은 '아싸'.",origin:"영어 'insider'를 줄여 부른 말.",example:"저 친구는 어딜 가나 인싸더라."},
+{id:14,term:"힙지로",tag:"소비",meaning:"오래된 골목이나 노포가 많은 을지로 일대가 힙한 핫플레이스로 뜨는 현상을 가리킴.",origin:"'힙(hip)'과 지역명 '을지로'의 합성어.",example:"요즘 힙지로 감성 카페가 대세더라."},
+{id:15,term:"그세계",tag:"밈",meaning:"특정 취향이나 소비를 시작하면 끝없이 파고들게 되는 깊은 세계를 가리키는 표현.",origin:"덕질·수집 문화가 확산되며 생긴 신조어.",example:"피규어는 한 번 사면 그세계로 빠지는 거야."}
+];
+
+const CAL_EVENTS = [
+{date:"2026-07-08",title:"여름 시즌오프 세일 시작",desc:"주요 패션·뷰티 브랜드의 여름 재고 할인이 본격적으로 시작되는 시기."},
+{date:"2026-07-15",title:"대학 축제 시즌 스타트",desc:"1학기를 마무리하는 대학 축제가 전국적으로 이어지며 캠퍼스 마케팅 기회가 커진다."},
+{date:"2026-07-18",title:"프로야구 올스타전",desc:"굿즈·팝업 협업이 몰리는 스포츠 마케팅 성수기."},
+{date:"2026-07-25",title:"인기 신작 게임 출시",desc:"대형 게임 신작 출시로 관련 커뮤니티 화제성이 급상승하는 시기."},
+{date:"2026-08-01",title:"여름휴가 성수기 시작",desc:"여행·숙박·레저 관련 소비와 관련 콘텐츠 수요가 최고조에 이른다."},
+{date:"2026-08-15",title:"팝업스토어 오픈 러시",desc:"광복절 연계 연휴를 활용한 팝업스토어·이벤트가 몰리는 시기."},
+{date:"2026-08-20",title:"복학 준비 시즌",desc:"새 학기 오리엔테이션과 학용품·자취용품 수요가 늘어나는 시기."},
+{date:"2026-08-27",title:"2학기 개강",desc:"캠퍼스 활동이 재개되며 학생 대상 마케팅이 다시 활발해진다."},
+{date:"2026-09-05",title:"추석 선물세트 마케팅 시즌",desc:"명절 선물세트 예약과 관련 콘텐츠 발행이 집중되는 시기."},
+{date:"2026-09-19",title:"가을 신상 시즌",desc:"패션·뷰티 브랜드의 가을 신상품 출시가 몰리는 시기."}
+];
+
+const MICRO_TRENDS = [
+"🧋 '요아정' 커스텀 조합 인증 폭증 · 5분 전",
+"📱 '오운완' 인증 릴스 조회수 급상승 · 12분 전",
+"🛍️ 다이소 신상 립밤 완판 · 34분 전",
+"🎮 신작 모바일게임 사전예약 1위 · 1시간 전",
+"🚇 지하철 밈 광고 캡처 공유 확산 · 2시간 전",
+"📸 AI 프로필 챌린지 릴스 급증 · 3시간 전",
+"🍦 편의점 콜라보 아이스크림 재입고 완판 · 4시간 전",
+"💸 무지출 챌린지 인증 게시물 증가 · 5시간 전",
+"🎟️ 팝업스토어 대기줄 3시간 인증 · 6시간 전",
+"📚 전공 요약노트 거래 게시글 폭증 · 7시간 전"
+];
+
+/* ============ STATE ============ */
+const STORE_KEY = 'catchup_state_v1';
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORE_KEY);
+    if(raw) return Object.assign({bookmarks:[],savedTerms:[],history:[],subscribed:false,email:''}, JSON.parse(raw));
+  }catch(e){}
+  return {bookmarks:[],savedTerms:[],history:[],subscribed:false,email:''};
+}
+function saveState(){ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
+let state = loadState();
+
+let currentCat = "전체";
+let currentArticleId = null;
+let cameFrom = 'home';
+let calYear, calMonth, calSelDate = null;
+{
+  const now = new Date();
+  calYear = now.getFullYear(); calMonth = now.getMonth();
 }
 
-// ══ INIT ══
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
-if (profile) { updateHomeProfile(); renderHomeContent(); showView('view-home'); }
+/* ============ NAV ============ */
+function go(view){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+view).classList.add('active');
+  document.querySelectorAll('.bn-btn').forEach(b=>b.classList.toggle('active', b.dataset.view===view));
+  if(view==='home') renderHome();
+  if(view==='dictionary') renderDictionary();
+  if(view==='calendar') renderCalendar();
+  if(view==='my') renderMy();
+}
+function goBack(){ go(cameFrom); }
+
+/* ============ TOAST ============ */
+let toastTimer;
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 1800);
+}
+
+/* ============ TICKER ============ */
+let tickerIdx = 0, tickerTimer;
+function renderTicker(){
+  const track = document.getElementById('ticker-track');
+  track.innerHTML = MICRO_TRENDS.map((m,i)=>{
+    const parts = m.split(' · ');
+    return `<div class="ticker-item${i===0?' show':''}" data-i="${i}">${parts[0]}<span class="ticker-time"> · ${parts[1]}</span></div>`;
+  }).join('');
+  clearInterval(tickerTimer);
+  tickerTimer = setInterval(()=>{
+    const items = track.querySelectorAll('.ticker-item');
+    items[tickerIdx].classList.remove('show');
+    tickerIdx = (tickerIdx+1) % items.length;
+    items[tickerIdx].classList.add('show');
+  }, 3200);
+}
+
+/* ============ HOME ============ */
+function renderCatChips(targetId, onClickName){
+  const el = document.getElementById(targetId);
+  const cats = ["전체", ...CATEGORIES];
+  el.innerHTML = cats.map(c=>`<button class="cat-chip${c===currentCat?' sel':''}" onclick="${onClickName}('${c}')">${c}</button>`).join('');
+}
+function selectCat(c){ currentCat = c; renderHome(); }
+
+function badgeHtml(badge){
+  if(badge==='hot') return '<span class="badge badge-hot">🔥 유행중</span>';
+  if(badge==='rising') return '<span class="badge badge-rising">👀 예감</span>';
+  return '';
+}
+function artCardHtml(a){
+  return `<div class="art-card" onclick="openArticle(${a.id},'${cameFromForCard()}')">
+    <div class="art-thumb">${a.emoji}</div>
+    <div class="art-body">
+      <div class="art-badges">${badgeHtml(a.badge)}<span class="badge badge-cat">${a.category}</span></div>
+      <div class="art-title">${a.title}</div>
+      <div class="art-summary">${a.summary}</div>
+      <div class="art-meta">${a.date}</div>
+    </div>
+  </div>`;
+}
+function cameFromForCard(){
+  const activeView = document.querySelector('.view.active');
+  return activeView ? activeView.id.replace('view-','') : 'home';
+}
+
+function renderHome(){
+  renderTicker();
+  renderCatChips('cat-scroll','selectCat');
+  const list = currentCat==='전체' ? ARTICLES : ARTICLES.filter(a=>a.category===currentCat);
+  const sorted = [...list].sort((a,b)=> b.date.localeCompare(a.date));
+  const el = document.getElementById('home-list');
+  el.innerHTML = sorted.length ? sorted.map(artCardHtml).join('') : '<div class="empty-state">해당 카테고리 콘텐츠가 아직 없어요.</div>';
+}
+
+/* ============ SEARCH ============ */
+function doSearch(){
+  const q1 = document.getElementById('search-inp').value.trim();
+  const q2 = document.getElementById('search-inp2') ? document.getElementById('search-inp2').value.trim() : '';
+  const q = (q1 || q2);
+  if(!q){ toast('검색어를 입력해주세요'); return; }
+  go('search');
+  document.getElementById('search-inp2').value = q;
+  runSearch(q);
+}
+function runSearch(q){
+  const query = q.toLowerCase();
+  const artResults = ARTICLES.filter(a =>
+    a.title.toLowerCase().includes(query) ||
+    a.summary.toLowerCase().includes(query) ||
+    a.tags.some(t=>t.toLowerCase().includes(query)) ||
+    a.category.toLowerCase().includes(query)
+  );
+  const dictResults = DICTIONARY.filter(d =>
+    d.term.toLowerCase().includes(query) || d.meaning.toLowerCase().includes(query)
+  );
+  document.getElementById('search-summary').textContent = `"${q}" 검색 결과 · 트렌드 ${artResults.length}건`;
+  document.getElementById('search-art-list').innerHTML = artResults.length ? artResults.map(artCardHtml).join('') : '<div class="empty-state">일치하는 트렌드가 없어요.</div>';
+  const dictLabel = document.getElementById('search-dict-label');
+  const dictList = document.getElementById('search-dict-list');
+  if(dictResults.length){
+    dictLabel.style.display='block';
+    dictList.innerHTML = dictResults.map(d=>dictCardHtml(d)).join('');
+  } else {
+    dictLabel.style.display='none';
+    dictList.innerHTML='';
+  }
+}
+
+/* ============ ARTICLE DETAIL ============ */
+function openArticle(id, from){
+  currentArticleId = id;
+  cameFrom = from || 'home';
+  const a = ARTICLES.find(x=>x.id===id);
+  if(!a) return;
+  if(!state.history.includes(id)){
+    state.history.unshift(id);
+    state.history = state.history.slice(0,20);
+  } else {
+    state.history = [id, ...state.history.filter(h=>h!==id)];
+  }
+  saveState();
+  document.getElementById('article-content').innerHTML = `
+    <span class="detail-cat">${a.category}</span>
+    ${badgeHtml(a.badge)}
+    <div class="detail-title">${a.title}</div>
+    <div class="detail-meta">${a.date} · 캐치업 트렌드팀</div>
+    <div class="detail-thumb">${a.emoji}</div>
+    <div class="detail-body">${a.body.map(p=>`<p>${p}</p>`).join('')}</div>
+    <div class="tag-row">${a.tags.map(t=>`<span class="tag-chip">#${t}</span>`).join('')}</div>
+  `;
+  updateBookmarkBtn();
+  const related = ARTICLES.filter(x=>x.category===a.category && x.id!==a.id).slice(0,3);
+  document.getElementById('related-list').innerHTML = related.length ? related.map(artCardHtml).join('') : '<div class="empty-state">관련 트렌드가 없어요.</div>';
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-article').classList.add('active');
+}
+function updateBookmarkBtn(){
+  const btn = document.getElementById('bookmark-btn');
+  btn.classList.toggle('on', state.bookmarks.includes(currentArticleId));
+}
+function toggleBookmark(){
+  if(currentArticleId==null) return;
+  if(state.bookmarks.includes(currentArticleId)){
+    state.bookmarks = state.bookmarks.filter(id=>id!==currentArticleId);
+    toast('북마크를 해제했어요');
+  } else {
+    state.bookmarks.push(currentArticleId);
+    toast('북마크에 저장했어요');
+  }
+  saveState();
+  updateBookmarkBtn();
+}
+
+/* ============ DICTIONARY ============ */
+const DICT_TAGS = [...new Set(DICTIONARY.map(d=>d.tag))];
+let currentDictTag = "전체";
+function selectDictTag(t){ currentDictTag = t; renderDictionary(); }
+function dictCardHtml(d){
+  return `<div class="dict-card">
+    <div onclick="toggleDictCard(this)">
+      <div class="dict-term-row"><span class="dict-term">${d.term}</span><span class="dict-tag">${d.tag}</span></div>
+      <div class="dict-meaning">${d.meaning}</div>
+    </div>
+    <div class="dict-detail">
+      <div class="dict-detail-row"><span class="dict-detail-label">유래</span>${d.origin}</div>
+      <div class="dict-detail-row"><span class="dict-detail-label">예문</span>"${d.example}"</div>
+      <button class="dict-save-btn${state.savedTerms.includes(d.id)?' on':''}" data-term-id="${d.id}" onclick="event.stopPropagation();toggleSaveTerm(${d.id})">${state.savedTerms.includes(d.id)?'✓ 저장됨':'+ 단어 저장'}</button>
+    </div>
+  </div>`;
+}
+function toggleDictCard(innerEl){
+  const card = innerEl.closest('.dict-card');
+  const list = card.parentElement;
+  Array.from(list.children).forEach(c=>{
+    if(c!==card && c.classList.contains('dict-card')) c.classList.remove('open');
+  });
+  card.classList.toggle('open');
+}
+function toggleSaveTerm(id){
+  const nowSaved = !state.savedTerms.includes(id);
+  if(nowSaved){
+    state.savedTerms.push(id);
+    toast('사전 단어를 저장했어요');
+  } else {
+    state.savedTerms = state.savedTerms.filter(t=>t!==id);
+    toast('저장한 단어에서 제거했어요');
+  }
+  saveState();
+  document.querySelectorAll(`.dict-save-btn[data-term-id="${id}"]`).forEach(b=>{
+    b.classList.toggle('on', nowSaved);
+    b.textContent = nowSaved ? '✓ 저장됨' : '+ 단어 저장';
+  });
+  if(document.getElementById('view-my').classList.contains('active')) renderMy();
+}
+function renderDictionary(){
+  const q = (document.getElementById('dict-search-inp').value||'').toLowerCase().trim();
+  const catsEl = document.getElementById('dict-cat-scroll');
+  const cats = ["전체", ...DICT_TAGS];
+  catsEl.innerHTML = cats.map(c=>`<button class="cat-chip${c===currentDictTag?' sel':''}" onclick="selectDictTag('${c}')">${c}</button>`).join('');
+  let list = currentDictTag==='전체' ? DICTIONARY : DICTIONARY.filter(d=>d.tag===currentDictTag);
+  if(q) list = list.filter(d=>d.term.toLowerCase().includes(q) || d.meaning.toLowerCase().includes(q));
+  const el = document.getElementById('dict-list');
+  el.innerHTML = list.length ? list.map(dictCardHtml).join('') : '<div class="empty-state">일치하는 단어가 없어요.</div>';
+}
+
+/* ============ CALENDAR ============ */
+function pad(n){ return n<10 ? '0'+n : ''+n; }
+function shiftMonth(delta){
+  calMonth += delta;
+  if(calMonth<0){ calMonth=11; calYear--; }
+  if(calMonth>11){ calMonth=0; calYear++; }
+  calSelDate = null;
+  renderCalendar();
+}
+function renderCalendar(){
+  const label = document.getElementById('cal-month-label');
+  label.textContent = `${calYear}년 ${calMonth+1}월`;
+  const grid = document.getElementById('cal-grid');
+  const dow = ['일','월','화','수','목','금','토'];
+  let html = dow.map(d=>`<div class="cal-dow">${d}</div>`).join('');
+  const first = new Date(calYear, calMonth, 1);
+  const startDay = first.getDay();
+  const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+  const today = new Date();
+  const todayStr = `${today.getFullYear()}-${pad(today.getMonth()+1)}-${pad(today.getDate())}`;
+  const eventDates = new Set(CAL_EVENTS.map(e=>e.date));
+  for(let i=0;i<startDay;i++) html += '<div class="cal-cell"></div>';
+  for(let d=1; d<=daysInMonth; d++){
+    const dateStr = `${calYear}-${pad(calMonth+1)}-${pad(d)}`;
+    const isToday = dateStr===todayStr;
+    const isSel = dateStr===calSelDate;
+    const hasEvent = eventDates.has(dateStr);
+    html += `<div class="cal-cell${hasEvent?' has-day':''}${isToday?' today':''}${isSel?' sel':''}" onclick="${hasEvent?`selectCalDate('${dateStr}')`:''}">${d}${hasEvent?'<span class=\"cal-dot\"></span>':''}</div>`;
+  }
+  grid.innerHTML = html;
+  renderCalEvents();
+}
+function selectCalDate(dateStr){
+  calSelDate = calSelDate===dateStr ? null : dateStr;
+  renderCalendar();
+}
+function renderCalEvents(){
+  const el = document.getElementById('cal-events');
+  let events = CAL_EVENTS;
+  if(calSelDate){
+    events = events.filter(e=>e.date===calSelDate);
+  } else {
+    const monthPrefix = `${calYear}-${pad(calMonth+1)}`;
+    events = events.filter(e=>e.date.startsWith(monthPrefix));
+    if(!events.length) events = CAL_EVENTS.slice(0,5);
+  }
+  events = [...events].sort((a,b)=>a.date.localeCompare(b.date));
+  const monthNames = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+  el.innerHTML = events.length ? events.map(e=>{
+    const [y,m,d] = e.date.split('-');
+    return `<div class="cal-event-card">
+      <div class="cal-event-date"><div class="d">${parseInt(d)}</div><div class="m">${monthNames[parseInt(m)-1]}</div></div>
+      <div class="cal-event-body"><div class="t">${e.title}</div><div class="desc">${e.desc}</div></div>
+    </div>`;
+  }).join('') : '<div class="empty-state">해당 날짜에 등록된 이슈가 없어요.</div>';
+}
+
+/* ============ MY PAGE ============ */
+let myTab = 'bookmarks';
+function switchMyTab(tab){
+  myTab = tab;
+  document.querySelectorAll('.my-tab').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
+  document.getElementById('my-bookmarks-list').style.display = tab==='bookmarks' ? 'flex' : 'none';
+  document.getElementById('my-terms-list').style.display = tab==='terms' ? 'flex' : 'none';
+  document.getElementById('my-history-list').style.display = tab==='history' ? 'flex' : 'none';
+}
+function renderMy(){
+  document.getElementById('my-sub-stat').textContent = `북마크 ${state.bookmarks.length} · 저장한 단어 ${state.savedTerms.length} · 최근 본 글 ${state.history.length}`;
+  const bmList = ARTICLES.filter(a=>state.bookmarks.includes(a.id));
+  document.getElementById('my-bookmarks-list').innerHTML = bmList.length ? bmList.map(artCardHtml).join('') : '<div class="empty-state">아직 북마크한 트렌드가 없어요.<br>마음에 드는 글을 저장해보세요!</div>';
+  const termList = DICTIONARY.filter(d=>state.savedTerms.includes(d.id));
+  document.getElementById('my-terms-list').innerHTML = termList.length ? termList.map(dictCardHtml).join('') : '<div class="empty-state">아직 저장한 단어가 없어요.</div>';
+  const histList = state.history.map(id=>ARTICLES.find(a=>a.id===id)).filter(Boolean);
+  document.getElementById('my-history-list').innerHTML = histList.length ? histList.map(artCardHtml).join('') : '<div class="empty-state">최근 본 글이 없어요.</div>';
+  switchMyTab(myTab);
+  const nlForm = document.getElementById('nl-form');
+  const nlStatus = document.getElementById('nl-status');
+  if(state.subscribed){
+    nlForm.style.display='none';
+    nlStatus.style.display='block';
+    nlStatus.textContent = `✅ ${state.email} 로 매주 화요일 트렌드 레터가 발송돼요`;
+  } else {
+    nlForm.style.display='flex';
+    nlStatus.style.display='none';
+  }
+}
+function subscribeNewsletter(){
+  const email = document.getElementById('nl-email').value.trim();
+  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if(!re.test(email)){ toast('올바른 이메일을 입력해주세요'); return; }
+  state.subscribed = true;
+  state.email = email;
+  saveState();
+  toast('구독 완료! 매주 화요일에 만나요 📬');
+  renderMy();
+}
+
+/* ============ INIT ============ */
+renderHome();
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  });
+}
 </script>
 </body>
 </html>
