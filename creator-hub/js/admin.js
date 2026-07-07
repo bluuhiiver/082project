@@ -315,7 +315,7 @@
       }
       const lines = targets.map((r) => {
         const info = PH.TIER_LABELS[r.tier];
-        return `안녕하세요 ${r.name}님, 피어나라입니다 :) 현재 ${info.ko} 등급이시고, 이번 달 매출은 ${fmtMoney(r.revenue)}예요. Creator Hub에서 새 미션을 확인해보세요!`;
+        return `안녕하세요 ${r.name}님, 피요나입니다 :) 현재 ${info.ko} 등급이시고, 이번 달 매출은 ${fmtMoney(r.revenue)}예요. Creator Hub에서 새 미션을 확인해보세요!`;
       });
       copyText(lines.join('\n\n'));
       toast(`${targets.length}명 대상 메시지 템플릿을 클립보드에 복사했어요.`);
