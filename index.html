@@ -1,13 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>Skinly — Ingredient Analyzer</title>
+  <title>Skinly — 화장품 성분 분석</title>
   <link rel="manifest" href="manifest.json"/>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' fill='%23E11D48' rx='40'/><circle cx='96' cy='80' r='34' fill='white' opacity='0.95'/><ellipse cx='96' cy='140' rx='50' ry='28' fill='white' opacity='0.95'/></svg>"/>
   <meta name="theme-color" content="#E11D48"/>
-  <meta name="description" content="Personalized skincare ingredient analyzer."/>
+  <meta name="description" content="화해 스타일의 개인 맞춤 화장품 성분 분석 앱."/>
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
@@ -211,6 +211,14 @@
     .cmp-fab{position:fixed;bottom:24px;right:16px;z-index:500;display:none;}
     .cmp-fab-btn{background:var(--black);color:#fff;border:none;border-radius:100px;padding:12px 18px;font-family:var(--font);font-size:.82rem;font-weight:700;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.25);display:flex;align-items:center;gap:7px;white-space:nowrap;-webkit-tap-highlight-color:transparent;}
 
+    /* ── MY REVIEW ── */
+    .star-row{display:flex;gap:2px;margin-bottom:10px;}
+    .star-btn{background:none;border:none;font-size:1.6rem;line-height:1;color:var(--border);cursor:pointer;padding:2px 4px;font-family:var(--font);transition:color .1s;-webkit-tap-highlight-color:transparent;}
+    .star-btn.on{color:#F59E0B;}
+    .rev-ta{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;font-family:var(--font);font-size:.85rem;line-height:1.5;resize:vertical;outline:none;background:var(--bg);color:var(--black);margin-bottom:10px;}
+    .rev-ta:focus{border-color:var(--primary);background:var(--white);}
+    .rev-save-btn{padding:11px;font-size:.85rem;}
+
     /* toast */
     .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--black);color:#fff;padding:10px 20px;border-radius:100px;font-size:.8rem;font-weight:600;white-space:nowrap;opacity:0;pointer-events:none;transition:all .28s cubic-bezier(.34,1.56,.64,1);z-index:9999;}
     .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
@@ -225,35 +233,35 @@
     <div class="ob-bar" id="ob-p2"></div>
   </div>
   <div class="ob-content" id="ob-s1">
-    <div class="ob-tag">Step 1 of 2</div>
-    <h1 class="ob-title">What's your skin type?</h1>
-    <p class="ob-sub">We'll flag harmful ingredients and highlight ones that benefit you.</p>
+    <div class="ob-tag">1 / 2 단계</div>
+    <h1 class="ob-title">피부 타입을 알려주세요</h1>
+    <p class="ob-sub">피부에 해로운 성분은 경고하고, 도움이 되는 성분은 강조해 드려요.</p>
     <div class="skin-grid">
-      <div class="skin-card" data-t="oily"><span class="sc-emoji">✨</span><div class="sc-name">Oily</div><div class="sc-desc">Shiny, large pores, breakout-prone</div></div>
-      <div class="skin-card" data-t="dry"><span class="sc-emoji">🌵</span><div class="sc-name">Dry</div><div class="sc-desc">Tight, flaky, rough texture</div></div>
-      <div class="skin-card" data-t="combination"><span class="sc-emoji">☯️</span><div class="sc-name">Combination</div><div class="sc-desc">Oily T-zone, dry cheeks</div></div>
-      <div class="skin-card" data-t="sensitive"><span class="sc-emoji">🌸</span><div class="sc-name">Sensitive</div><div class="sc-desc">Easily irritated, reactive</div></div>
-      <div class="skin-card" data-t="normal"><span class="sc-emoji">🍃</span><div class="sc-name">Normal</div><div class="sc-desc">Balanced, minimal concerns</div></div>
+      <div class="skin-card" data-t="oily"><span class="sc-emoji">✨</span><div class="sc-name">지성</div><div class="sc-desc">번들거림, 넓은 모공, 트러블</div></div>
+      <div class="skin-card" data-t="dry"><span class="sc-emoji">🌵</span><div class="sc-name">건성</div><div class="sc-desc">당김, 각질, 거친 결</div></div>
+      <div class="skin-card" data-t="combination"><span class="sc-emoji">☯️</span><div class="sc-name">복합성</div><div class="sc-desc">T존은 지성, 볼은 건조</div></div>
+      <div class="skin-card" data-t="sensitive"><span class="sc-emoji">🌸</span><div class="sc-name">민감성</div><div class="sc-desc">자극에 쉽게 반응, 예민함</div></div>
+      <div class="skin-card" data-t="normal"><span class="sc-emoji">🍃</span><div class="sc-name">중성</div><div class="sc-desc">균형 잡힌 편안한 피부</div></div>
     </div>
     <div class="ob-footer">
-      <button class="btn btn-primary" id="ob-next" disabled>Continue →</button>
+      <button class="btn btn-primary" id="ob-next" disabled>다음 →</button>
     </div>
   </div>
   <div class="ob-content" id="ob-s2" style="display:none;">
-    <div class="ob-tag">Step 2 of 2</div>
-    <h1 class="ob-title">Any skin concerns?</h1>
-    <p class="ob-sub">Select all that apply.</p>
+    <div class="ob-tag">2 / 2 단계</div>
+    <h1 class="ob-title">피부 고민이 있나요?</h1>
+    <p class="ob-sub">해당하는 항목을 모두 선택하세요.</p>
     <div class="concern-wrap">
-      <button class="concern-chip" data-c="acne">🔴 Acne &amp; Breakouts</button>
-      <button class="concern-chip" data-c="dry">💧 Dryness</button>
-      <button class="concern-chip" data-c="aging">🕐 Anti-Aging</button>
-      <button class="concern-chip" data-c="hyperpigmentation">🌑 Dark Spots</button>
-      <button class="concern-chip" data-c="redness">😊 Redness</button>
-      <button class="concern-chip" data-c="none">✨ No concerns</button>
+      <button class="concern-chip" data-c="acne">🔴 여드름 · 트러블</button>
+      <button class="concern-chip" data-c="dry">💧 건조함</button>
+      <button class="concern-chip" data-c="aging">🕐 주름 · 노화</button>
+      <button class="concern-chip" data-c="hyperpigmentation">🌑 색소침착 · 잡티</button>
+      <button class="concern-chip" data-c="redness">😊 홍조 · 붉은기</button>
+      <button class="concern-chip" data-c="none">✨ 없어요</button>
     </div>
     <div class="ob-footer">
-      <button class="btn btn-primary" id="ob-finish">Get Started ✓</button>
-      <button class="btn btn-ghost" id="ob-back">← Back</button>
+      <button class="btn btn-primary" id="ob-finish">시작하기 ✓</button>
+      <button class="btn btn-ghost" id="ob-back">← 이전</button>
     </div>
   </div>
 </div>
@@ -265,36 +273,37 @@
     <button class="icon-btn" id="profile-btn">👤</button>
   </div>
   <div class="home-hero">
-    <div class="home-eyebrow">Personalized for you</div>
-    <h1 class="home-headline">Find products<br/>made for your skin</h1>
-    <div class="profile-tag" id="profile-tag">Loading...</div>
+    <div class="home-eyebrow">내 피부 맞춤 분석</div>
+    <h1 class="home-headline">내 피부에 맞는<br/>화장품을 찾아보세요</h1>
+    <div class="profile-tag" id="profile-tag">불러오는 중...</div>
   </div>
   <div class="search-area">
     <div class="search-wrap">
       <span class="search-icon-l">🔍</span>
-      <input class="search-inp" id="home-inp" type="text" placeholder="Product name or brand..." autocomplete="off" autocorrect="off" spellcheck="false"/>
+      <input class="search-inp" id="home-inp" type="text" placeholder="제품명 또는 브랜드 검색..." autocomplete="off" autocorrect="off" spellcheck="false"/>
       <button class="search-go" id="home-go">→</button>
     </div>
-    <button class="scan-btn" id="scan-open" title="Scan barcode">📷</button>
+    <button class="scan-btn" id="scan-open" title="바코드 스캔">📷</button>
   </div>
   <div class="home-tabs">
-    <button class="h-tab active" data-t="recent">🕐 Recent</button>
-    <button class="h-tab" data-t="saved">❤️ Saved</button>
-    <button class="h-tab" data-t="search">🔥 Popular</button>
+    <button class="h-tab active" data-t="recent">🕐 최근 본</button>
+    <button class="h-tab" data-t="saved">❤️ 찜</button>
+    <button class="h-tab" data-t="search">🔥 인기 검색</button>
   </div>
   <div id="tab-recent" class="tab-pane"></div>
   <div id="tab-saved" class="tab-pane" style="display:none;"></div>
   <div id="tab-search" class="tab-pane" style="display:none;">
-    <div class="sugg-label" style="margin-bottom:10px;">Try searching</div>
+    <div class="sugg-label" style="margin-bottom:10px;">이런 검색어는 어때요</div>
     <div class="sugg-chips">
+      <button class="sugg-chip" data-q="COSRX snail mucin">코스알엑스</button>
+      <button class="sugg-chip" data-q="Beauty of Joseon">조선미녀</button>
+      <button class="sugg-chip" data-q="Innisfree green tea">이니스프리</button>
+      <button class="sugg-chip" data-q="Laneige water sleeping mask">라네즈</button>
+      <button class="sugg-chip" data-q="Sulwhasoo first care">설화수</button>
+      <button class="sugg-chip" data-q="Round Lab dokdo">라운드랩</button>
       <button class="sugg-chip" data-q="CeraVe moisturizer">CeraVe</button>
       <button class="sugg-chip" data-q="The Ordinary niacinamide">The Ordinary</button>
       <button class="sugg-chip" data-q="La Roche-Posay sunscreen">La Roche-Posay</button>
-      <button class="sugg-chip" data-q="COSRX snail mucin">COSRX</button>
-      <button class="sugg-chip" data-q="Neutrogena hydro boost">Neutrogena</button>
-      <button class="sugg-chip" data-q="Innisfree green tea">Innisfree</button>
-      <button class="sugg-chip" data-q="Laneige water sleeping mask">Laneige</button>
-      <button class="sugg-chip" data-q="Sulwhasoo first care">Sulwhasoo</button>
     </div>
   </div>
 </div>
@@ -303,7 +312,7 @@
 <div id="view-results" class="view">
   <div class="nav-bar">
     <button class="back-btn" id="res-back">←</button>
-    <input class="nav-inp" id="res-inp" type="text" placeholder="Search..." autocomplete="off"/>
+    <input class="nav-inp" id="res-inp" type="text" placeholder="검색..." autocomplete="off"/>
     <button class="nav-go" id="res-go">→</button>
   </div>
   <div class="results-meta" id="res-meta"></div>
@@ -315,8 +324,8 @@
   <div class="nav-bar">
     <button class="back-btn" id="prod-back">←</button>
     <div id="prod-nav-title" style="flex:1;font-size:.85rem;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></div>
-    <button class="icon-btn" id="prod-fav-btn" title="Save">🤍</button>
-    <button class="icon-btn" id="prod-cmp-btn" title="Compare" style="font-size:.85rem;font-weight:800;">⊞</button>
+    <button class="icon-btn" id="prod-fav-btn" title="찜하기">🤍</button>
+    <button class="icon-btn" id="prod-cmp-btn" title="비교하기" style="font-size:.85rem;font-weight:800;">⊞</button>
   </div>
   <div id="prod-content"></div>
 </div>
@@ -330,23 +339,23 @@
       <div class="scan-corners"></div>
       <div class="scan-line"></div>
     </div>
-    <p class="scan-hint" id="scan-hint">Point camera at a barcode</p>
+    <p class="scan-hint" id="scan-hint">바코드를 화면에 맞춰주세요</p>
   </div>
   <div class="scan-controls">
     <div class="scan-status" id="scan-status"></div>
     <div class="scan-manual-row">
-      <input class="scan-inp" id="scan-inp" type="tel" placeholder="Or type barcode number (EAN-13)..."/>
+      <input class="scan-inp" id="scan-inp" type="tel" placeholder="바코드 번호 직접 입력 (EAN-13)..."/>
       <button class="scan-inp-go" id="scan-inp-go">→</button>
     </div>
-    <button class="scan-cancel-btn" id="scan-cancel">Cancel</button>
+    <button class="scan-cancel-btn" id="scan-cancel">취소</button>
   </div>
   <div id="scan-unsupported">
     <div style="font-size:2.4rem;">📷</div>
-    <div style="font-size:1rem;font-weight:800;">Camera scan not supported</div>
-    <p style="font-size:.85rem;color:var(--gray);line-height:1.6;">Your browser doesn't support barcode detection.<br/>Try Chrome on Android, or type the barcode number below.</p>
-    <input class="nav-inp" id="scan-fb-inp" type="tel" placeholder="Type barcode number..." style="margin-top:8px;width:100%;"/>
-    <button class="btn btn-primary" id="scan-fb-go" style="margin-top:8px;">Search →</button>
-    <button class="btn btn-ghost" id="scan-fb-cancel">Cancel</button>
+    <div style="font-size:1rem;font-weight:800;">카메라 스캔을 지원하지 않아요</div>
+    <p style="font-size:.85rem;color:var(--gray);line-height:1.6;">이 브라우저는 바코드 인식을 지원하지 않아요.<br/>안드로이드 Chrome을 쓰거나, 아래에 번호를 직접 입력하세요.</p>
+    <input class="nav-inp" id="scan-fb-inp" type="tel" placeholder="바코드 번호 입력..." style="margin-top:8px;width:100%;"/>
+    <button class="btn btn-primary" id="scan-fb-go" style="margin-top:8px;">검색 →</button>
+    <button class="btn btn-ghost" id="scan-fb-cancel">취소</button>
   </div>
 </div>
 
@@ -354,15 +363,15 @@
 <div id="view-compare" class="view">
   <div class="nav-bar">
     <button class="back-btn" id="cmp-back">←</button>
-    <div style="flex:1;font-size:.9rem;font-weight:800;">Compare Products</div>
-    <button class="icon-btn" id="cmp-clear" title="Clear all" style="font-size:.8rem;">✕</button>
+    <div style="flex:1;font-size:.9rem;font-weight:800;">제품 비교</div>
+    <button class="icon-btn" id="cmp-clear" title="전체 비우기" style="font-size:.8rem;">✕</button>
   </div>
   <div id="cmp-content"></div>
 </div>
 
 <!-- Compare FAB -->
 <div class="cmp-fab" id="cmp-fab">
-  <button class="cmp-fab-btn" id="cmp-fab-btn">⊞ Compare · <span id="cmp-count">0</span></button>
+  <button class="cmp-fab-btn" id="cmp-fab-btn">⊞ 비교 · <span id="cmp-count">0</span></button>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -372,6 +381,7 @@
 const PKEY   = 'skinly-profile-v1';
 const HKEY   = 'skinly-hist-v1';
 const FAVKEY = 'skinly-favs-v1';
+const RKEY   = 'skinly-reviews-v1';
 
 // ══ STATE ══
 let profile = null;
@@ -383,88 +393,148 @@ let scanActive = false;
 let scanStream = null;
 
 // ══ INGREDIENT DB ══
+// ko: 대한민국 화장품 성분명(전성분 표기명) 병기
 const DB = {
-  'isopropyl myristate':       {flag:'comedogenic',severity:5,bad_for:['acne','oily']},
-  'isopropyl palmitate':       {flag:'comedogenic',severity:4,bad_for:['acne','oily']},
-  'myristyl myristate':        {flag:'comedogenic',severity:5,bad_for:['acne']},
-  'isopropyl isostearate':     {flag:'comedogenic',severity:4,bad_for:['acne','oily']},
-  'butyl stearate':            {flag:'comedogenic',severity:3,bad_for:['acne']},
-  'wheat germ oil':            {flag:'comedogenic',severity:5,bad_for:['acne']},
-  'acetylated lanolin':        {flag:'comedogenic',severity:4,bad_for:['acne']},
-  'cocoa butter':              {flag:'comedogenic',severity:4,bad_for:['acne']},
-  'coconut oil':               {flag:'comedogenic',severity:4,bad_for:['acne','oily']},
-  'flaxseed oil':              {flag:'comedogenic',severity:4,bad_for:['acne']},
-  'linseed oil':               {flag:'comedogenic',severity:4,bad_for:['acne']},
-  'soybean oil':               {flag:'comedogenic',severity:3,bad_for:['acne']},
-  'sesame oil':                {flag:'comedogenic',severity:3,bad_for:['acne']},
-  'fragrance':                 {flag:'irritant',severity:4,bad_for:['sensitive','redness']},
-  'parfum':                    {flag:'irritant',severity:4,bad_for:['sensitive','redness']},
-  'alcohol denat':             {flag:'irritant',severity:4,bad_for:['sensitive','dry']},
-  'denatured alcohol':         {flag:'irritant',severity:4,bad_for:['sensitive','dry']},
-  'sd alcohol':                {flag:'irritant',severity:3,bad_for:['sensitive','dry']},
-  'sodium lauryl sulfate':     {flag:'irritant',severity:4,bad_for:['sensitive','dry']},
-  'sodium laureth sulfate':    {flag:'irritant',severity:2,bad_for:['sensitive']},
-  'methylisothiazolinone':     {flag:'irritant',severity:5,bad_for:['sensitive','redness']},
-  'methylchloroisothiazolinone':{flag:'irritant',severity:5,bad_for:['sensitive']},
-  'dmdm hydantoin':            {flag:'irritant',severity:3,bad_for:['sensitive'],note:'Formaldehyde releaser'},
-  'imidazolidinyl urea':       {flag:'irritant',severity:3,bad_for:['sensitive'],note:'Formaldehyde releaser'},
-  'diazolidinyl urea':         {flag:'irritant',severity:3,bad_for:['sensitive'],note:'Formaldehyde releaser'},
-  'limonene':                  {flag:'allergen',severity:3,bad_for:['sensitive','redness']},
-  'linalool':                  {flag:'allergen',severity:3,bad_for:['sensitive','redness']},
-  'citronellol':               {flag:'allergen',severity:2,bad_for:['sensitive']},
-  'eugenol':                   {flag:'allergen',severity:3,bad_for:['sensitive']},
-  'geraniol':                  {flag:'allergen',severity:2,bad_for:['sensitive']},
-  'cinnamyl alcohol':          {flag:'allergen',severity:3,bad_for:['sensitive']},
-  'benzyl benzoate':           {flag:'allergen',severity:2,bad_for:['sensitive']},
-  'isoeugenol':                {flag:'allergen',severity:3,bad_for:['sensitive']},
-  'hyaluronic acid':           {flag:'beneficial',good_for:['dry','all']},
-  'sodium hyaluronate':        {flag:'beneficial',good_for:['dry','all']},
-  'glycerin':                  {flag:'beneficial',good_for:['dry','all']},
-  'glycerol':                  {flag:'beneficial',good_for:['dry','all']},
-  'niacinamide':               {flag:'beneficial',good_for:['acne','oily','hyperpigmentation','redness']},
-  'retinol':                   {flag:'beneficial',good_for:['aging','acne']},
-  'retinal':                   {flag:'beneficial',good_for:['aging','acne']},
-  'ascorbic acid':             {flag:'beneficial',good_for:['hyperpigmentation','aging']},
-  'l-ascorbic acid':           {flag:'beneficial',good_for:['hyperpigmentation','aging']},
-  'ceramide':                  {flag:'beneficial',good_for:['dry','sensitive']},
-  'ceramide np':               {flag:'beneficial',good_for:['dry','sensitive']},
-  'ceramide ap':               {flag:'beneficial',good_for:['dry','sensitive']},
-  'centella asiatica':         {flag:'beneficial',good_for:['sensitive','acne','redness']},
-  'madecassoside':             {flag:'beneficial',good_for:['sensitive','redness']},
-  'asiaticoside':              {flag:'beneficial',good_for:['sensitive','redness']},
-  'aloe vera':                 {flag:'beneficial',good_for:['sensitive','dry','redness']},
-  'aloe barbadensis':          {flag:'beneficial',good_for:['sensitive','dry','redness']},
-  'salicylic acid':            {flag:'beneficial',good_for:['acne','oily']},
-  'zinc oxide':                {flag:'beneficial',good_for:['acne','sensitive']},
-  'allantoin':                 {flag:'beneficial',good_for:['sensitive','dry']},
-  'panthenol':                 {flag:'beneficial',good_for:['dry','sensitive']},
-  'squalane':                  {flag:'beneficial',good_for:['dry','all']},
-  'shea butter':               {flag:'beneficial',good_for:['dry']},
-  'butyrospermum parkii':      {flag:'beneficial',good_for:['dry']},
-  'adenosine':                 {flag:'beneficial',good_for:['aging']},
-  'ubiquinone':                {flag:'beneficial',good_for:['aging']},
-  'palmitoyl tripeptide':      {flag:'beneficial',good_for:['aging']},
-  'palmitoyl pentapeptide':    {flag:'beneficial',good_for:['aging']},
-  'alpha arbutin':             {flag:'beneficial',good_for:['hyperpigmentation']},
-  'kojic acid':                {flag:'beneficial',good_for:['hyperpigmentation']},
-  'tranexamic acid':           {flag:'beneficial',good_for:['hyperpigmentation']},
-  'azelaic acid':              {flag:'beneficial',good_for:['acne','hyperpigmentation','redness']},
-  'avena sativa':              {flag:'beneficial',good_for:['sensitive','dry']},
-  'camellia sinensis':         {flag:'beneficial',good_for:['oily','aging','sensitive']},
-  'bakuchiol':                 {flag:'beneficial',good_for:['aging','sensitive']},
-  'ferulic acid':              {flag:'beneficial',good_for:['aging','hyperpigmentation']},
-  'resveratrol':               {flag:'beneficial',good_for:['aging']},
-  'tocopherol':                {flag:'beneficial',good_for:['dry','aging','all']},
-  'jojoba':                    {flag:'beneficial',good_for:['acne','oily','dry']},
-  'simmondsia chinensis':      {flag:'beneficial',good_for:['acne','dry']},
-  'rosehip':                   {flag:'beneficial',good_for:['aging','hyperpigmentation']},
-  'snail secretion filtrate':  {flag:'beneficial',good_for:['acne','aging','dry']},
-  'propolis':                  {flag:'beneficial',good_for:['acne','sensitive']},
-  'beta-glucan':               {flag:'beneficial',good_for:['dry','sensitive','aging']},
-  'beta glucan':               {flag:'beneficial',good_for:['dry','sensitive','aging']},
-  'lactic acid':               {flag:'beneficial',good_for:['dry','hyperpigmentation']},
-  'glycolic acid':             {flag:'beneficial',good_for:['hyperpigmentation','aging','acne']},
-  'mandelic acid':             {flag:'beneficial',good_for:['acne','hyperpigmentation','sensitive']},
+  /* ── 모공 막힘 유발 (코메도제닉) ── */
+  'isopropyl myristate':       {ko:'아이소프로필미리스테이트',flag:'comedogenic',severity:5,bad_for:['acne','oily']},
+  'isopropyl palmitate':       {ko:'아이소프로필팔미테이트',flag:'comedogenic',severity:4,bad_for:['acne','oily']},
+  'myristyl myristate':        {ko:'미리스틸미리스테이트',flag:'comedogenic',severity:5,bad_for:['acne']},
+  'isopropyl isostearate':     {ko:'아이소프로필아이소스테아레이트',flag:'comedogenic',severity:4,bad_for:['acne','oily']},
+  'butyl stearate':            {ko:'부틸스테아레이트',flag:'comedogenic',severity:3,bad_for:['acne']},
+  'laureth-4':                 {ko:'라우레스-4',flag:'comedogenic',severity:5,bad_for:['acne','oily']},
+  'oleth-3':                   {ko:'올레스-3',flag:'comedogenic',severity:5,bad_for:['acne','oily']},
+  'wheat germ oil':            {ko:'밀배아오일',flag:'comedogenic',severity:5,bad_for:['acne']},
+  'acetylated lanolin':        {ko:'아세틸레이티드라놀린',flag:'comedogenic',severity:4,bad_for:['acne']},
+  'lanolin':                   {ko:'라놀린',flag:'comedogenic',severity:3,bad_for:['acne']},
+  'cocoa butter':              {ko:'코코아버터',flag:'comedogenic',severity:4,bad_for:['acne']},
+  'theobroma cacao':           {ko:'코코아버터',flag:'comedogenic',severity:4,bad_for:['acne']},
+  'coconut oil':               {ko:'코코넛오일',flag:'comedogenic',severity:4,bad_for:['acne','oily']},
+  'cocos nucifera oil':        {ko:'코코넛오일',flag:'comedogenic',severity:4,bad_for:['acne','oily']},
+  'flaxseed oil':              {ko:'아마씨오일',flag:'comedogenic',severity:4,bad_for:['acne']},
+  'linseed oil':               {ko:'아마씨오일(린시드)',flag:'comedogenic',severity:4,bad_for:['acne']},
+  'soybean oil':               {ko:'대두오일',flag:'comedogenic',severity:3,bad_for:['acne']},
+  'sesame oil':                {ko:'참깨오일',flag:'comedogenic',severity:3,bad_for:['acne']},
+  'mineral oil':               {ko:'미네랄오일',flag:'comedogenic',severity:2,bad_for:['acne','oily']},
+  'paraffinum liquidum':       {ko:'미네랄오일',flag:'comedogenic',severity:2,bad_for:['acne','oily']},
+  /* ── 자극 성분 ── */
+  'fragrance':                 {ko:'향료',flag:'irritant',severity:4,bad_for:['sensitive','redness']},
+  'parfum':                    {ko:'향료',flag:'irritant',severity:4,bad_for:['sensitive','redness']},
+  'alcohol denat':             {ko:'변성알코올',flag:'irritant',severity:4,bad_for:['sensitive','dry']},
+  'denatured alcohol':         {ko:'변성알코올',flag:'irritant',severity:4,bad_for:['sensitive','dry']},
+  'sd alcohol':                {ko:'변성알코올',flag:'irritant',severity:3,bad_for:['sensitive','dry']},
+  'sodium lauryl sulfate':     {ko:'소듐라우릴설페이트',flag:'irritant',severity:4,bad_for:['sensitive','dry']},
+  'sodium laureth sulfate':    {ko:'소듐라우레스설페이트',flag:'irritant',severity:2,bad_for:['sensitive']},
+  'methylisothiazolinone':     {ko:'메칠이소치아졸리논',flag:'irritant',severity:5,bad_for:['sensitive','redness']},
+  'methylchloroisothiazolinone':{ko:'메칠클로로이소치아졸리논',flag:'irritant',severity:5,bad_for:['sensitive']},
+  'dmdm hydantoin':            {ko:'디엠디엠하이단토인',flag:'irritant',severity:3,bad_for:['sensitive'],note:'포름알데하이드 방출제'},
+  'imidazolidinyl urea':       {ko:'이미다졸리디닐우레아',flag:'irritant',severity:3,bad_for:['sensitive'],note:'포름알데하이드 방출제'},
+  'diazolidinyl urea':         {ko:'디아졸리디닐우레아',flag:'irritant',severity:3,bad_for:['sensitive'],note:'포름알데하이드 방출제'},
+  'quaternium-15':             {ko:'쿼터늄-15',flag:'irritant',severity:4,bad_for:['sensitive'],note:'포름알데하이드 방출제'},
+  'triclosan':                 {ko:'트리클로산',flag:'irritant',severity:4,bad_for:['sensitive']},
+  'benzophenone-3':            {ko:'벤조페논-3(옥시벤존)',flag:'irritant',severity:3,bad_for:['sensitive']},
+  'oxybenzone':                {ko:'옥시벤존',flag:'irritant',severity:3,bad_for:['sensitive']},
+  'butylparaben':              {ko:'부틸파라벤',flag:'irritant',severity:2,bad_for:['sensitive']},
+  'propylparaben':             {ko:'프로필파라벤',flag:'irritant',severity:2,bad_for:['sensitive']},
+  'menthol':                   {ko:'멘톨',flag:'irritant',severity:3,bad_for:['sensitive','redness']},
+  'mentha piperita':           {ko:'페퍼민트오일',flag:'irritant',severity:3,bad_for:['sensitive','redness']},
+  'peppermint oil':            {ko:'페퍼민트오일',flag:'irritant',severity:3,bad_for:['sensitive','redness']},
+  'eucalyptus':                {ko:'유칼립투스',flag:'irritant',severity:2,bad_for:['sensitive']},
+  'hamamelis virginiana':      {ko:'위치하젤',flag:'irritant',severity:2,bad_for:['sensitive','dry']},
+  'witch hazel':               {ko:'위치하젤',flag:'irritant',severity:2,bad_for:['sensitive','dry']},
+  'benzyl alcohol':            {ko:'벤질알코올',flag:'irritant',severity:2,bad_for:['sensitive']},
+  /* ── 알레르기 주의 (EU 지정 향료 알레르겐) ── */
+  'limonene':                  {ko:'리모넨',flag:'allergen',severity:3,bad_for:['sensitive','redness']},
+  'linalool':                  {ko:'리날룰',flag:'allergen',severity:3,bad_for:['sensitive','redness']},
+  'citronellol':               {ko:'시트로넬올',flag:'allergen',severity:2,bad_for:['sensitive']},
+  'eugenol':                   {ko:'유제놀',flag:'allergen',severity:3,bad_for:['sensitive']},
+  'geraniol':                  {ko:'제라니올',flag:'allergen',severity:2,bad_for:['sensitive']},
+  'cinnamyl alcohol':          {ko:'신나밀알코올',flag:'allergen',severity:3,bad_for:['sensitive']},
+  'benzyl benzoate':           {ko:'벤질벤조에이트',flag:'allergen',severity:2,bad_for:['sensitive']},
+  'benzyl salicylate':         {ko:'벤질살리실레이트',flag:'allergen',severity:2,bad_for:['sensitive']},
+  'isoeugenol':                {ko:'이소유제놀',flag:'allergen',severity:3,bad_for:['sensitive']},
+  'hexyl cinnamal':            {ko:'헥실신남알',flag:'allergen',severity:2,bad_for:['sensitive']},
+  'butylphenyl methylpropional':{ko:'부틸페닐메칠프로피오날(릴리알)',flag:'allergen',severity:4,bad_for:['sensitive']},
+  'hydroxycitronellal':        {ko:'하이드록시시트로넬알',flag:'allergen',severity:3,bad_for:['sensitive']},
+  'amyl cinnamal':             {ko:'아밀신남알',flag:'allergen',severity:2,bad_for:['sensitive']},
+  'coumarin':                  {ko:'쿠마린',flag:'allergen',severity:3,bad_for:['sensitive']},
+  'citral':                    {ko:'시트랄',flag:'allergen',severity:3,bad_for:['sensitive']},
+  'farnesol':                  {ko:'파네솔',flag:'allergen',severity:2,bad_for:['sensitive']},
+  'lavandula angustifolia':    {ko:'라벤더오일',flag:'allergen',severity:2,bad_for:['sensitive']},
+  'lavender oil':              {ko:'라벤더오일',flag:'allergen',severity:2,bad_for:['sensitive']},
+  /* ── 유익 성분: 보습 ── */
+  'hyaluronic acid':           {ko:'히알루론산',flag:'beneficial',good_for:['dry','all']},
+  'sodium hyaluronate':        {ko:'소듐하이알루로네이트',flag:'beneficial',good_for:['dry','all']},
+  'glycerin':                  {ko:'글리세린',flag:'beneficial',good_for:['dry','all']},
+  'glycerol':                  {ko:'글리세롤',flag:'beneficial',good_for:['dry','all']},
+  'ceramide':                  {ko:'세라마이드',flag:'beneficial',good_for:['dry','sensitive']},
+  'ceramide np':               {ko:'세라마이드엔피',flag:'beneficial',good_for:['dry','sensitive']},
+  'ceramide ap':               {ko:'세라마이드에이피',flag:'beneficial',good_for:['dry','sensitive']},
+  'squalane':                  {ko:'스쿠알란',flag:'beneficial',good_for:['dry','all']},
+  'shea butter':               {ko:'시어버터',flag:'beneficial',good_for:['dry']},
+  'butyrospermum parkii':      {ko:'시어버터',flag:'beneficial',good_for:['dry']},
+  'panthenol':                 {ko:'판테놀',flag:'beneficial',good_for:['dry','sensitive']},
+  'allantoin':                 {ko:'알란토인',flag:'beneficial',good_for:['sensitive','dry']},
+  'betaine':                   {ko:'베타인',flag:'beneficial',good_for:['dry']},
+  'trehalose':                 {ko:'트레할로스',flag:'beneficial',good_for:['dry']},
+  'sodium pca':                {ko:'소듐피씨에이',flag:'beneficial',good_for:['dry']},
+  'polyglutamic acid':         {ko:'폴리글루타믹애씨드',flag:'beneficial',good_for:['dry']},
+  'ectoin':                    {ko:'엑토인',flag:'beneficial',good_for:['sensitive','dry']},
+  'tocopherol':                {ko:'토코페롤(비타민E)',flag:'beneficial',good_for:['dry','aging','all']},
+  /* ── 유익 성분: 트러블·진정 ── */
+  'niacinamide':               {ko:'나이아신아마이드',flag:'beneficial',good_for:['acne','oily','hyperpigmentation','redness']},
+  'salicylic acid':            {ko:'살리실릭애씨드(BHA)',flag:'beneficial',good_for:['acne','oily']},
+  'zinc oxide':                {ko:'징크옥사이드',flag:'beneficial',good_for:['acne','sensitive']},
+  'centella asiatica':         {ko:'병풀추출물(센텔라)',flag:'beneficial',good_for:['sensitive','acne','redness']},
+  'madecassoside':             {ko:'마데카소사이드',flag:'beneficial',good_for:['sensitive','redness']},
+  'asiaticoside':              {ko:'아시아티코사이드',flag:'beneficial',good_for:['sensitive','redness']},
+  'aloe vera':                 {ko:'알로에베라',flag:'beneficial',good_for:['sensitive','dry','redness']},
+  'aloe barbadensis':          {ko:'알로에베라',flag:'beneficial',good_for:['sensitive','dry','redness']},
+  'avena sativa':              {ko:'귀리추출물',flag:'beneficial',good_for:['sensitive','dry']},
+  'camellia sinensis':         {ko:'녹차추출물',flag:'beneficial',good_for:['oily','aging','sensitive']},
+  'snail secretion filtrate':  {ko:'달팽이점액여과물',flag:'beneficial',good_for:['acne','aging','dry']},
+  'propolis':                  {ko:'프로폴리스',flag:'beneficial',good_for:['acne','sensitive']},
+  'beta-glucan':               {ko:'베타글루칸',flag:'beneficial',good_for:['dry','sensitive','aging']},
+  'beta glucan':               {ko:'베타글루칸',flag:'beneficial',good_for:['dry','sensitive','aging']},
+  'melaleuca alternifolia':    {ko:'티트리잎오일',flag:'beneficial',good_for:['acne','oily']},
+  'tea tree':                  {ko:'티트리',flag:'beneficial',good_for:['acne','oily']},
+  'houttuynia cordata':        {ko:'어성초추출물',flag:'beneficial',good_for:['acne','sensitive']},
+  'artemisia':                 {ko:'쑥추출물(아르테미시아)',flag:'beneficial',good_for:['sensitive','redness']},
+  'glycyrrhiza glabra':        {ko:'감초뿌리추출물',flag:'beneficial',good_for:['hyperpigmentation','redness','sensitive']},
+  'licorice':                  {ko:'감초추출물',flag:'beneficial',good_for:['hyperpigmentation','redness','sensitive']},
+  'jojoba':                    {ko:'호호바오일',flag:'beneficial',good_for:['acne','oily','dry']},
+  'simmondsia chinensis':      {ko:'호호바오일',flag:'beneficial',good_for:['acne','dry']},
+  /* ── 유익 성분: 안티에이징 ── */
+  'retinol':                   {ko:'레티놀',flag:'beneficial',good_for:['aging','acne']},
+  'retinal':                   {ko:'레티날',flag:'beneficial',good_for:['aging','acne']},
+  'bakuchiol':                 {ko:'바쿠치올',flag:'beneficial',good_for:['aging','sensitive']},
+  'adenosine':                 {ko:'아데노신',flag:'beneficial',good_for:['aging']},
+  'ubiquinone':                {ko:'유비퀴논(코엔자임Q10)',flag:'beneficial',good_for:['aging']},
+  'palmitoyl tripeptide':      {ko:'팔미토일트리펩타이드',flag:'beneficial',good_for:['aging']},
+  'palmitoyl pentapeptide':    {ko:'팔미토일펜타펩타이드',flag:'beneficial',good_for:['aging']},
+  'copper tripeptide':         {ko:'구리트리펩타이드',flag:'beneficial',good_for:['aging']},
+  'acetyl hexapeptide':        {ko:'아세틸헥사펩타이드',flag:'beneficial',good_for:['aging']},
+  'sh-oligopeptide':           {ko:'에스에이치올리고펩타이드(EGF)',flag:'beneficial',good_for:['aging']},
+  'resveratrol':               {ko:'레스베라트롤',flag:'beneficial',good_for:['aging']},
+  'ferulic acid':              {ko:'페룰릭애씨드',flag:'beneficial',good_for:['aging','hyperpigmentation']},
+  'caffeine':                  {ko:'카페인',flag:'beneficial',good_for:['oily','aging']},
+  'panax ginseng':             {ko:'인삼추출물',flag:'beneficial',good_for:['aging']},
+  'galactomyces ferment':      {ko:'갈락토미세스발효여과물',flag:'beneficial',good_for:['oily','aging','hyperpigmentation']},
+  'bifida ferment':            {ko:'비피다발효용해물',flag:'beneficial',good_for:['aging','sensitive']},
+  'sodium dna':                {ko:'소듐디엔에이(PDRN)',flag:'beneficial',good_for:['aging','sensitive']},
+  'rosehip':                   {ko:'로즈힙오일',flag:'beneficial',good_for:['aging','hyperpigmentation']},
+  /* ── 유익 성분: 미백·각질 ── */
+  'ascorbic acid':             {ko:'아스코빅애씨드(비타민C)',flag:'beneficial',good_for:['hyperpigmentation','aging']},
+  'l-ascorbic acid':           {ko:'비타민C(L-아스코빅애씨드)',flag:'beneficial',good_for:['hyperpigmentation','aging']},
+  'alpha arbutin':             {ko:'알파-알부틴',flag:'beneficial',good_for:['hyperpigmentation']},
+  'kojic acid':                {ko:'코직애씨드',flag:'beneficial',good_for:['hyperpigmentation']},
+  'tranexamic acid':           {ko:'트라넥사믹애씨드',flag:'beneficial',good_for:['hyperpigmentation']},
+  'azelaic acid':              {ko:'아젤라익애씨드',flag:'beneficial',good_for:['acne','hyperpigmentation','redness']},
+  'glutathione':               {ko:'글루타치온',flag:'beneficial',good_for:['hyperpigmentation']},
+  'butylresorcinol':           {ko:'부틸레조시놀',flag:'beneficial',good_for:['hyperpigmentation']},
+  'oryza sativa':              {ko:'쌀추출물',flag:'beneficial',good_for:['dry','hyperpigmentation']},
+  'lactic acid':               {ko:'락틱애씨드(AHA)',flag:'beneficial',good_for:['dry','hyperpigmentation']},
+  'glycolic acid':             {ko:'글라이콜릭애씨드(AHA)',flag:'beneficial',good_for:['hyperpigmentation','aging','acne']},
+  'mandelic acid':             {ko:'만델릭애씨드',flag:'beneficial',good_for:['acne','hyperpigmentation','sensitive']},
 };
 
 // ══ UTILS ══
@@ -507,30 +577,54 @@ function toggleFav(p) {
   return true;
 }
 
+// ══ STORAGE: MY REVIEWS ══
+function getReviews() { try { return JSON.parse(localStorage.getItem(RKEY)) || {}; } catch { return {}; } }
+function saveReview(code, stars, text) {
+  const all = getReviews();
+  if (!stars && !text.trim()) delete all[code];
+  else all[code] = {stars, text: text.trim(), updated: Date.now()};
+  localStorage.setItem(RKEY, JSON.stringify(all));
+}
+
 // ══ ANALYSIS ══
 function parseIngs(text) {
   if (!text) return [];
+  // 농도(%)·번호 목록·괄호 주석만 제거하고 성분명 안의 숫자는 보존 (예: benzophenone-3, laureth-4)
   return text.toLowerCase().split(/[,;\/]/)
-    .map(i => i.replace(/\*+|\d+(\.\d+)?%?|\(.*?\)|^\d+\.\s*/g,'').replace(/\s+/g,' ').trim())
+    .map(i => i.replace(/\*+|\d+(\.\d+)?\s*%|\(.*?\)|^\d+[\.)]\s*/g,'').replace(/\s+/g,' ').trim())
     .filter(i => i.length > 2);
+}
+
+// 같은 성분의 표기 변형(향료/parfum, 세라마이드/세라마이드엔피 등)이 중복 집계되지 않도록 정리
+function dedupeMatches(list) {
+  const kept = [];
+  for (const item of [...list].sort((a,b) => b.name.length - a.name.length)) {
+    if (kept.some(k => k.name.includes(item.name) || (item.ko && k.ko === item.ko))) continue;
+    kept.push(item);
+  }
+  return kept;
 }
 
 function analyze(ingredientsText) {
   if (!profile || !ingredientsText) return null;
   const parsed = parseIngs(ingredientsText);
   const traits = new Set([profile.skinType, ...profile.concerns]);
-  const seen = new Set(), flags = [], benefits = [];
+  let flags = [], benefits = [];
   for (const [name, data] of Object.entries(DB)) {
-    if (seen.has(name)) continue;
-    const found = parsed.some(i => i.includes(name) || (name.length > 6 && name.includes(i) && i.length > 5));
+    // 짧은 이름(urea 등)은 완전 일치만 허용해 오탐 방지
+    const found = parsed.some(i =>
+      i === name ||
+      (name.length >= 6 && i.includes(name)) ||
+      (name.length > 6 && name.includes(i) && i.length > 5));
     if (!found) continue;
-    seen.add(name);
     if (data.flag !== 'beneficial') {
       if (data.bad_for?.some(t => traits.has(t))) flags.push({name, ...data});
     } else {
       if (data.good_for?.some(g => g === 'all' || traits.has(g))) benefits.push({name, ...data});
     }
   }
+  flags = dedupeMatches(flags);
+  benefits = dedupeMatches(benefits);
   const penalty = flags.reduce((s,f) => s + (f.severity||3), 0);
   const score = Math.max(0, Math.min(100, 70 - penalty*7 + benefits.length*4));
   const grade = score>=82?'A':score>=62?'B':score>=42?'C':'D';
@@ -538,7 +632,9 @@ function analyze(ingredientsText) {
 }
 
 function gradeClass(g) { return {A:'g-A',B:'g-B',C:'g-C',D:'g-D'}[g]||'g-x'; }
-function gradeText(g) { return {A:'Great match',B:'Good match',C:'Use caution',D:'Not recommended'}[g]||'No data'; }
+function gradeText(g) { return {A:'잘 맞아요',B:'무난해요',C:'주의가 필요해요',D:'추천하지 않아요'}[g]||'정보 없음'; }
+const FLAG_LABELS = {comedogenic:'모공 막힘 유발', irritant:'자극 유발', allergen:'알레르기 주의'};
+const dispName = n => DB[n]?.ko || cap(n);
 
 // ══ OPEN BEAUTY FACTS ══
 async function searchOBF(q) {
@@ -550,8 +646,8 @@ async function searchOBF(q) {
 }
 
 async function fetchByBarcode(code) {
-  $('scan-hint').textContent = 'Found! Loading product...';
-  $('scan-status').textContent = `Barcode: ${code}`;
+  $('scan-hint').textContent = '찾았어요! 제품 불러오는 중...';
+  $('scan-status').textContent = `바코드: ${code}`;
   try {
     const res = await fetch(`https://world.openbeautyfacts.org/api/v2/product/${code}?fields=code,product_name,brands,ingredients_text,image_front_url`);
     const data = await res.json();
@@ -568,13 +664,13 @@ async function fetchByBarcode(code) {
       renderProduct(p, code);
       renderHomeContent();
     } else {
-      toast('Product not found — try searching by name');
-      $('scan-hint').textContent = 'Point camera at a barcode';
+      toast('제품을 찾지 못했어요 — 이름으로 검색해 보세요');
+      $('scan-hint').textContent = '바코드를 화면에 맞춰주세요';
       $('scan-status').textContent = '';
       if (scanActive) startScanLoop();
     }
   } catch {
-    toast('Network error'); $('scan-hint').textContent = 'Point camera at a barcode';
+    toast('네트워크 오류'); $('scan-hint').textContent = '바코드를 화면에 맞춰주세요';
   }
 }
 
@@ -582,10 +678,10 @@ async function fetchByBarcode(code) {
 function buyLinks(name, brand) {
   const q = encodeURIComponent([brand,name].filter(Boolean).join(' '));
   return [
-    {name:'Amazon',           url:`https://www.amazon.com/s?k=${q}`,              icon:'🛒'},
-    {name:'iHerb',            url:`https://www.iherb.com/search?query=${q}`,      icon:'🌿'},
-    {name:'Sephora',          url:`https://www.sephora.com/search?keyword=${q}`,  icon:'💄'},
-    {name:'Olive Young Global',url:`https://global.oliveyoung.com/search?keyword=${q}`, icon:'🌸'},
+    {name:'쿠팡',        url:`https://www.coupang.com/np/search?q=${q}`,                icon:'🚀'},
+    {name:'네이버쇼핑',  url:`https://search.shopping.naver.com/search/all?query=${q}`, icon:'🟢'},
+    {name:'올리브영 글로벌', url:`https://global.oliveyoung.com/search?keyword=${q}`,   icon:'🌸'},
+    {name:'Amazon',      url:`https://www.amazon.com/s?k=${q}`,                         icon:'🛒'},
   ];
 }
 
@@ -630,12 +726,12 @@ $('ob-finish').addEventListener('click', () => {
   profile = {skinType:obType, concerns:[...obConcerns].filter(c=>c!=='none')};
   localStorage.setItem(PKEY, JSON.stringify(profile));
   updateHomeProfile(); renderHomeContent();
-  showView('view-home'); toast('Profile saved ✓');
+  showView('view-home'); toast('프로필이 저장됐어요 ✓');
 });
 
 // ══ HOME ══
-const TYPE_LABELS = {oily:'Oily',dry:'Dry',combination:'Combination',sensitive:'Sensitive',normal:'Normal'};
-const CONCERN_LABELS = {acne:'Acne',dry:'Dryness',aging:'Anti-Aging',hyperpigmentation:'Dark Spots',redness:'Redness'};
+const TYPE_LABELS = {oily:'지성',dry:'건성',combination:'복합성',sensitive:'민감성',normal:'중성'};
+const CONCERN_LABELS = {acne:'여드름',dry:'건조함',aging:'노화',hyperpigmentation:'색소침착',redness:'홍조'};
 
 function updateHomeProfile() {
   if (!profile) return;
@@ -662,11 +758,11 @@ function renderHomeContent() {
   // Recent tab
   $('tab-recent').innerHTML = hist.length
     ? `<div class="hist-scroll">${hist.map(p=>{pCache[p.code]=p;return miniCard(p,'view-home');}).join('')}</div>`
-    : `<p class="tab-empty">Products you view will appear here.</p>`;
+    : `<p class="tab-empty">조회한 제품이 여기에 표시돼요.</p>`;
   // Saved tab
   $('tab-saved').innerHTML = favs.length
     ? `<div class="hist-scroll">${favs.map(p=>{pCache[p.code]=p;return miniCard(p,'view-home');}).join('')}</div>`
-    : `<p class="tab-empty">Tap ❤️ on a product to save it here.</p>`;
+    : `<p class="tab-empty">제품에서 ❤️를 누르면 여기에 저장돼요.</p>`;
 }
 
 // tabs
@@ -702,24 +798,24 @@ $('res-go').addEventListener('click', () => { const q=$('res-inp').value.trim();
 $('res-inp').addEventListener('keydown', e => { if(e.key==='Enter'){ const q=$('res-inp').value.trim(); if(q) loadResults(q); } });
 
 async function loadResults(query) {
-  $('res-list').innerHTML = `<div class="state-box"><div class="spinner"></div><div class="state-sub">Searching Open Beauty Facts...</div></div>`;
+  $('res-list').innerHTML = `<div class="state-box"><div class="spinner"></div><div class="state-sub">성분 데이터베이스 검색 중...</div></div>`;
   $('res-meta').textContent = '';
   try {
     const products = await searchOBF(query);
     if (!products.length) {
-      $('res-list').innerHTML = `<div class="state-box"><div class="state-emoji">🔍</div><div class="state-title">No products found</div><div class="state-sub">Try a different name or brand.</div></div>`;
+      $('res-list').innerHTML = `<div class="state-box"><div class="state-emoji">🔍</div><div class="state-title">검색 결과가 없어요</div><div class="state-sub">다른 이름이나 브랜드로 검색해 보세요.<br/>영문 제품명이 더 잘 검색돼요.</div></div>`;
       return;
     }
-    $('res-meta').textContent = `${products.length} product${products.length!==1?'s':''} found`;
+    $('res-meta').textContent = `제품 ${products.length}개`;
     $('res-list').innerHTML = products.map((p,i) => {
       const id = (p.code||`p${i}`).replace(/['"<>]/g,'');
       pCache[id] = p;
       const an = analyze(p.ingredients_text);
       const hasIng = !!p.ingredients_text;
       const badge = !hasIng
-        ? `<span class="gbadge g-x">No ingredient data</span>`
+        ? `<span class="gbadge g-x">성분 정보 없음</span>`
         : an ? `<span class="gbadge ${gradeClass(an.grade)}">${an.grade} — ${gradeText(an.grade)}</span>`
-             : `<span class="gbadge g-x">Set profile to analyze</span>`;
+             : `<span class="gbadge g-x">프로필 설정 후 분석</span>`;
       const imgHtml = p.image_front_url
         ? `<img class="prod-img" src="${esc(p.image_front_url)}" alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"/><div class="prod-img-ph" style="display:none;">🧴</div>`
         : `<div class="prod-img-ph">🧴</div>`;
@@ -735,7 +831,7 @@ async function loadResults(query) {
       </div>`;
     }).join('');
   } catch {
-    $('res-list').innerHTML = `<div class="state-box"><div class="state-emoji">😕</div><div class="state-title">Couldn't load results</div><div class="state-sub">Check your connection and try again.</div></div>`;
+    $('res-list').innerHTML = `<div class="state-box"><div class="state-emoji">😕</div><div class="state-title">결과를 불러오지 못했어요</div><div class="state-sub">연결 상태를 확인하고 다시 시도해 주세요.</div></div>`;
   }
 }
 
@@ -748,18 +844,18 @@ $('prod-fav-btn').addEventListener('click', () => {
   if (!p) return;
   const added = toggleFav(p);
   $('prod-fav-btn').textContent = added ? '❤️' : '🤍';
-  toast(added ? 'Saved ❤️' : 'Removed from saved');
+  toast(added ? '찜 목록에 저장했어요 ❤️' : '찜을 해제했어요');
   renderHomeContent();
 });
 
 $('prod-cmp-btn').addEventListener('click', () => {
   if (!currentProdId) return;
   const inList = compareList.includes(currentProdId);
-  if (inList) { compareList = compareList.filter(id=>id!==currentProdId); toast('Removed from compare'); }
+  if (inList) { compareList = compareList.filter(id=>id!==currentProdId); toast('비교함에서 뺐어요'); }
   else {
     if (compareList.length >= 2) compareList.shift();
     compareList.push(currentProdId);
-    toast(compareList.length===2 ? 'Ready! Tap ⊞ below to compare →' : 'Added to compare');
+    toast(compareList.length===2 ? '2개 준비 완료! 아래 ⊞ 버튼을 눌러 비교 →' : '비교함에 담았어요');
   }
   updateCmpBtn(currentProdId);
   updateCmpFab();
@@ -783,7 +879,7 @@ function openProduct(id, backView='view-results') {
 
 function openCached(id, backView) {
   const p = pCache[id];
-  if (!p) { toast('Product data unavailable — search again'); return; }
+  if (!p) { toast('제품 정보가 없어요 — 다시 검색해 주세요'); return; }
   openProduct(id, backView);
 }
 
@@ -792,6 +888,7 @@ function renderProduct(p, id) {
   const hasIng = !!p.ingredients_text;
   const brand = p.brands ? p.brands.split(',')[0].trim() : '';
   const links = buyLinks(p.product_name, brand);
+  const rev = getReviews()[p.code || id] || {};
 
   const imgHtml = p.image_front_url
     ? `<img class="hero-img" src="${esc(p.image_front_url)}" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"/><div class="hero-img-ph" style="display:none;">🧴</div>`
@@ -800,22 +897,27 @@ function renderProduct(p, id) {
   let scoreHtml = '';
   if (an) {
     const fc = an.score>=70?'sf-hi':an.score>=45?'sf-md':'sf-lo';
-    scoreHtml = `<div class="section"><div class="sec-title">📊 Skin Match Score</div><div class="score-row"><span>${gradeText(an.grade)}</span><span><strong>${an.score}</strong>/100</span></div><div class="score-track"><div class="score-fill ${fc}" style="width:${an.score}%"></div></div></div>`;
+    scoreHtml = `<div class="section"><div class="sec-title">📊 피부 매치 점수</div><div class="score-row"><span>${gradeText(an.grade)}</span><span><strong>${an.score}</strong>/100</span></div><div class="score-track"><div class="score-fill ${fc}" style="width:${an.score}%"></div></div></div>`;
   }
 
   let flagsBody = !hasIng
-    ? `<p class="empty-note">No ingredient list in database for this product.</p>`
+    ? `<p class="empty-note">이 제품의 성분 정보가 데이터베이스에 없어요.</p>`
     : an && an.flags.length
-      ? an.flags.map(f=>{const sev=f.severity>=4?'hi':f.severity>=3?'md':'lo';const icon=f.flag==='comedogenic'?'🔴':f.flag==='allergen'?'⚠️':'⚡';return`<div class="flag-item"><div class="flag-ic fi-${sev}">${icon}</div><div><div class="flag-name">${esc(cap(f.name))}</div><div class="flag-sub">${cap(f.flag)}${f.note?' · '+f.note:''}</div></div></div>`;}).join('')
-      : an ? `<p class="empty-note">🎉 No flagged ingredients for your skin type.</p>` : '';
+      ? an.flags.map(f=>{const sev=f.severity>=4?'hi':f.severity>=3?'md':'lo';const icon=f.flag==='comedogenic'?'🔴':f.flag==='allergen'?'⚠️':'⚡';return`<div class="flag-item"><div class="flag-ic fi-${sev}">${icon}</div><div><div class="flag-name">${esc(dispName(f.name))}</div><div class="flag-sub">${FLAG_LABELS[f.flag]||cap(f.flag)} · ${esc(cap(f.name))}${f.note?' · '+f.note:''}</div></div></div>`;}).join('')
+      : an ? `<p class="empty-note">🎉 내 피부 타입에 해당하는 주의 성분이 없어요.</p>` : '';
 
   let bensBody = hasIng && an
     ? an.benefits.length
-      ? `<div class="benefit-chips">${an.benefits.map(b=>`<span class="benefit-chip">✓ ${esc(cap(b.name))}</span>`).join('')}</div>`
-      : `<p class="empty-note">No standout beneficial ingredients detected.</p>`
-    : '<p class="empty-note">Complete your profile to see personalized benefits.</p>';
+      ? `<div class="benefit-chips">${an.benefits.map(b=>`<span class="benefit-chip">✓ ${esc(dispName(b.name))}</span>`).join('')}</div>`
+      : `<p class="empty-note">눈에 띄는 유익 성분이 감지되지 않았어요.</p>`
+    : '<p class="empty-note">프로필을 설정하면 맞춤 분석을 볼 수 있어요.</p>';
 
-  const ingToggle = hasIng ? `<div class="section"><button class="ing-toggle" onclick="this.nextElementSibling.classList.toggle('open');this.textContent=this.nextElementSibling.classList.contains('open')?'Hide full list ↑':'Show full ingredient list ↓'">Show full ingredient list ↓</button><div class="ing-text">${esc(p.ingredients_text)}</div></div>` : '';
+  const ingToggle = hasIng ? `<div class="section"><button class="ing-toggle" onclick="this.nextElementSibling.classList.toggle('open');this.textContent=this.nextElementSibling.classList.contains('open')?'전체 성분 숨기기 ↑':'전체 성분 보기 ↓'">전체 성분 보기 ↓</button><div class="ing-text">${esc(p.ingredients_text)}</div></div>` : '';
+
+  const revHtml = `<div class="section"><div class="sec-title">📝 나의 리뷰</div>
+    <div class="star-row" id="rev-stars">${[1,2,3,4,5].map(n=>`<button class="star-btn${(rev.stars||0)>=n?' on':''}" data-n="${n}" aria-label="${n}점">★</button>`).join('')}</div>
+    <textarea class="rev-ta" id="rev-text" rows="3" placeholder="사용감, 트러블 여부 등 나만의 기록을 남겨보세요">${esc(rev.text||'')}</textarea>
+    <button class="btn btn-primary rev-save-btn" id="rev-save">리뷰 저장</button></div>`;
 
   $('prod-content').innerHTML = `
     <div class="product-hero">
@@ -823,15 +925,30 @@ function renderProduct(p, id) {
       <div class="hero-info">
         ${brand?`<div class="hero-brand">${esc(brand)}</div>`:''}
         <div class="hero-name">${esc(p.product_name)}</div>
-        ${an?`<span class="gbadge ${gradeClass(an.grade)}" style="padding:5px 12px;font-size:.78rem;">${an.grade} — ${gradeText(an.grade)}</span>`:`<span class="gbadge g-x" style="padding:5px 12px;font-size:.78rem;">No data</span>`}
+        ${an?`<span class="gbadge ${gradeClass(an.grade)}" style="padding:5px 12px;font-size:.78rem;">${an.grade} — ${gradeText(an.grade)}</span>`:`<span class="gbadge g-x" style="padding:5px 12px;font-size:.78rem;">정보 없음</span>`}
       </div>
     </div>
     ${scoreHtml}
-    <div class="section"><div class="sec-title">⚠️ Flagged Ingredients <span class="sec-count">${an?an.flags.length:'?'}</span></div>${flagsBody}</div>
-    <div class="section"><div class="sec-title">✅ Good for Your Skin <span class="sec-count">${an?an.benefits.length:'?'}</span></div>${bensBody}</div>
+    <div class="section"><div class="sec-title">⚠️ 주의 성분 <span class="sec-count">${an?an.flags.length:'?'}</span></div>${flagsBody}</div>
+    <div class="section"><div class="sec-title">✅ 내 피부에 좋은 성분 <span class="sec-count">${an?an.benefits.length:'?'}</span></div>${bensBody}</div>
     ${ingToggle}
-    <div class="section" style="margin-bottom:0;"><div class="sec-title">🛒 Where to Buy</div>${links.map(l=>`<a class="buy-link" href="${l.url}" target="_blank" rel="noopener"><div class="buy-ic">${l.icon}</div><div class="buy-name">${l.name}</div><div class="buy-arrow">→</div></a>`).join('')}</div>
+    ${revHtml}
+    <div class="section" style="margin-bottom:0;"><div class="sec-title">🛒 구매하기</div>${links.map(l=>`<a class="buy-link" href="${l.url}" target="_blank" rel="noopener"><div class="buy-ic">${l.icon}</div><div class="buy-name">${l.name}</div><div class="buy-arrow">→</div></a>`).join('')}</div>
     <div style="height:36px;"></div>`;
+
+  // 나의 리뷰: 별점·메모 위젯 동작 연결
+  let revStars = rev.stars || 0;
+  document.querySelectorAll('#rev-stars .star-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const n = +btn.dataset.n;
+      revStars = (n === revStars) ? 0 : n;
+      document.querySelectorAll('#rev-stars .star-btn').forEach(b => b.classList.toggle('on', +b.dataset.n <= revStars));
+    });
+  });
+  $('rev-save').addEventListener('click', () => {
+    saveReview(p.code || id, revStars, $('rev-text').value);
+    toast('리뷰가 저장됐어요 ✓');
+  });
 }
 
 // ══ BARCODE SCAN ══
@@ -854,17 +971,17 @@ function openScanView() {
 
 async function startScan() {
   scanActive = true;
-  $('scan-hint').textContent = 'Starting camera...';
+  $('scan-hint').textContent = '카메라 켜는 중...';
   try {
     scanStream = await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}, width:{ideal:1280}}});
     const vid = $('scan-vid');
     vid.srcObject = scanStream;
     await vid.play();
-    $('scan-hint').textContent = 'Point camera at a barcode';
+    $('scan-hint').textContent = '바코드를 화면에 맞춰주세요';
     startScanLoop();
   } catch(e) {
-    $('scan-hint').textContent = 'Camera access denied';
-    $('scan-status').textContent = 'Use the text field below to enter a barcode';
+    $('scan-hint').textContent = '카메라 접근이 거부됐어요';
+    $('scan-status').textContent = '아래 입력창에 바코드 번호를 입력하세요';
     scanActive = false;
   }
 }
@@ -918,7 +1035,7 @@ function removeCmpItem(id) {
 function renderCompare() {
   const content = $('cmp-content');
   if (compareList.length === 0) {
-    content.innerHTML = `<div class="state-box"><div class="state-emoji">⊞</div><div class="state-title">Nothing to compare yet</div><div class="state-sub">Open a product and tap ⊞ to add it to compare.</div></div>`;
+    content.innerHTML = `<div class="state-box"><div class="state-emoji">⊞</div><div class="state-title">아직 비교할 제품이 없어요</div><div class="state-sub">제품 상세에서 ⊞ 버튼을 눌러 담아보세요.</div></div>`;
     return;
   }
   const products = compareList.map(id=>pCache[id]).filter(Boolean);
@@ -929,15 +1046,15 @@ function renderCompare() {
     const imgHtml = p.image_front_url
       ? `<img class="cmp-pimg" src="${esc(p.image_front_url)}" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"/><div class="cmp-pimg-ph" style="display:none;">🧴</div>`
       : `<div class="cmp-pimg-ph">🧴</div>`;
-    return `<div class="cmp-pcard">${imgHtml}<div class="cmp-pname">${esc((p.product_name||'').substring(0,40))}</div>${an?`<span class="gbadge ${gradeClass(an.grade)}" style="font-size:.68rem;">${an.grade}</span>`:''}<button class="cmp-remove-btn" onclick="removeCmpItem('${id}')">✕ Remove</button></div>`;
+    return `<div class="cmp-pcard">${imgHtml}<div class="cmp-pname">${esc((p.product_name||'').substring(0,40))}</div>${an?`<span class="gbadge ${gradeClass(an.grade)}" style="font-size:.68rem;">${an.grade}</span>`:''}<button class="cmp-remove-btn" onclick="removeCmpItem('${id}')">✕ 빼기</button></div>`;
   };
 
-  const emptySlot = `<div class="cmp-empty-slot" onclick="showView('view-results')"><div style="font-size:1.6rem;">+</div><span>Add a product</span></div>`;
+  const emptySlot = `<div class="cmp-empty-slot" onclick="showView('view-results')"><div style="font-size:1.6rem;">+</div><span>제품 추가</span></div>`;
 
   let cardsHtml;
   if (products.length === 1) {
     cardsHtml = `<div class="cmp-cards-row">${slot(products[0],compareList[0])}<div class="cmp-vs-col">vs</div>${emptySlot}</div>`;
-    content.innerHTML = cardsHtml + `<div class="state-box" style="padding:32px 24px;"><div class="state-sub">Add a second product to see the comparison.</div></div>`;
+    content.innerHTML = cardsHtml + `<div class="state-box" style="padding:32px 24px;"><div class="state-sub">비교할 제품을 하나 더 추가해 주세요.</div></div>`;
     return;
   }
 
@@ -948,15 +1065,15 @@ function renderCompare() {
   let winnerHtml = '';
   if (a1 && a2) {
     const winner = a1.score >= a2.score ? p1 : p2;
-    winnerHtml = `<div class="cmp-winner">🏆 ${esc(winner.product_name?.split(' ').slice(0,4).join(' '))} is a better match for your skin</div>`;
+    winnerHtml = `<div class="cmp-winner">🏆 ${esc(winner.product_name?.split(' ').slice(0,4).join(' '))} — 내 피부에 더 잘 맞아요</div>`;
   }
 
   // Flags
   const f1Names = (a1?.flags||[]).map(f=>f.name);
   const f2Names = (a2?.flags||[]).map(f=>f.name);
-  const flagsHtml = `<div class="section"><div class="sec-title">⚠️ Flagged Ingredients</div><div class="cmp-2col">
-    <div><div class="cmp-col-head">${esc((p1.product_name||'').split(' ')[0])}</div>${f1Names.length?f1Names.map(n=>`<div class="cmp-row cmp-bad">• ${esc(cap(n))}</div>`).join(''):'<div class="cmp-row cmp-good">None ✓</div>'}</div>
-    <div><div class="cmp-col-head">${esc((p2.product_name||'').split(' ')[0])}</div>${f2Names.length?f2Names.map(n=>`<div class="cmp-row cmp-bad">• ${esc(cap(n))}</div>`).join(''):'<div class="cmp-row cmp-good">None ✓</div>'}</div>
+  const flagsHtml = `<div class="section"><div class="sec-title">⚠️ 주의 성분</div><div class="cmp-2col">
+    <div><div class="cmp-col-head">${esc((p1.product_name||'').split(' ')[0])}</div>${f1Names.length?f1Names.map(n=>`<div class="cmp-row cmp-bad">• ${esc(dispName(n))}</div>`).join(''):'<div class="cmp-row cmp-good">없음 ✓</div>'}</div>
+    <div><div class="cmp-col-head">${esc((p2.product_name||'').split(' ')[0])}</div>${f2Names.length?f2Names.map(n=>`<div class="cmp-row cmp-bad">• ${esc(dispName(n))}</div>`).join(''):'<div class="cmp-row cmp-good">없음 ✓</div>'}</div>
   </div></div>`;
 
   // Benefits
@@ -965,13 +1082,13 @@ function renderCompare() {
   const shared = [...b1].filter(n=>b2.has(n));
   const only1  = [...b1].filter(n=>!b2.has(n));
   const only2  = [...b2].filter(n=>!b1.has(n));
-  const bensHtml = `<div class="section" style="margin-bottom:0;"><div class="sec-title">✅ Benefits</div>
-    ${shared.length?`<div class="cmp-shared"><strong>Both have:</strong> ${shared.map(cap).join(', ')}</div>`:''}
+  const bensHtml = `<div class="section" style="margin-bottom:0;"><div class="sec-title">✅ 유익 성분</div>
+    ${shared.length?`<div class="cmp-shared"><strong>공통:</strong> ${shared.map(n=>esc(dispName(n))).join(', ')}</div>`:''}
     <div class="cmp-2col">
-      <div>${only1.length?`<div class="cmp-col-head">Only in ${esc((p1.product_name||'').split(' ')[0])}</div>${only1.map(n=>`<div class="cmp-row cmp-good">✓ ${cap(n)}</div>`).join('')}`:''}</div>
-      <div>${only2.length?`<div class="cmp-col-head">Only in ${esc((p2.product_name||'').split(' ')[0])}</div>${only2.map(n=>`<div class="cmp-row cmp-good">✓ ${cap(n)}</div>`).join('')}`:''}</div>
+      <div>${only1.length?`<div class="cmp-col-head">${esc((p1.product_name||'').split(' ')[0])}에만</div>${only1.map(n=>`<div class="cmp-row cmp-good">✓ ${esc(dispName(n))}</div>`).join('')}`:''}</div>
+      <div>${only2.length?`<div class="cmp-col-head">${esc((p2.product_name||'').split(' ')[0])}에만</div>${only2.map(n=>`<div class="cmp-row cmp-good">✓ ${esc(dispName(n))}</div>`).join('')}`:''}</div>
     </div>
-    ${!shared.length&&!only1.length&&!only2.length?'<p class="empty-note">No notable benefits detected in either product.</p>':''}
+    ${!shared.length&&!only1.length&&!only2.length?'<p class="empty-note">두 제품 모두 눈에 띄는 유익 성분이 없어요.</p>':''}
   </div><div style="height:36px;"></div>`;
 
   content.innerHTML = cardsHtml + winnerHtml + flagsHtml + bensHtml;

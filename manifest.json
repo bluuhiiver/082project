@@ -1,8 +1,10 @@
 {
-  "name": "Skinly — Ingredient Analyzer",
+  "name": "Skinly — 화장품 성분 분석",
   "short_name": "Skinly",
-  "description": "Personalized skincare ingredient analyzer. Find products matched to your skin type.",
-  "start_url": "/",
+  "description": "화해 스타일의 개인 맞춤 화장품 성분 분석 앱. 내 피부 타입에 맞는 제품을 찾아보세요.",
+  "lang": "ko",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#F7F7F5",
   "theme_color": "#E11D48",
