@@ -21,6 +21,8 @@ export class Player {
 
     this.velocity = new THREE.Vector3();
     this.moveState = { f: 0, r: 0 };
+    this.touchMove = { f: 0, r: 0 };  // fed by TouchControls
+    this.noLockMode = false;          // touch devices / pointer-lock-denied iframes
     this.sprint = false;
     this.crouch = false;
     this.grounded = true;
@@ -65,13 +67,17 @@ export class Player {
     if (['KeyW','KeyA','KeyS','KeyD','Space','ShiftLeft','ShiftRight','ControlLeft','ControlRight'].includes(k)) {
       if (down) this._keys.add(k); else this._keys.delete(k);
     }
-    if (k === 'Space' && down && this.enabled && this.grounded) {
+    if (k === 'Space' && down) this.tryJump();
+    this.sprint = this._keys.has('ShiftLeft') || this._keys.has('ShiftRight');
+    this.crouch = this._keys.has('ControlLeft') || this._keys.has('ControlRight');
+  }
+
+  tryJump() {
+    if (this.enabled && this.grounded) {
       this.velocity.y = JUMP_SPEED;
       this.grounded = false;
       if (this.onJump) this.onJump();
     }
-    this.sprint = this._keys.has('ShiftLeft') || this._keys.has('ShiftRight');
-    this.crouch = this._keys.has('ControlLeft') || this._keys.has('ControlRight');
   }
 
   getForward() {
@@ -88,14 +94,16 @@ export class Player {
   update(dt) {
     const keys = this._keys;
     let f = 0, r = 0;
-    if (this.enabled && this.locked) {
+    if (this.enabled && (this.locked || this.noLockMode)) {
       if (keys.has('KeyW')) f += 1;
       if (keys.has('KeyS')) f -= 1;
       if (keys.has('KeyD')) r += 1;
       if (keys.has('KeyA')) r -= 1;
+      f += this.touchMove.f;
+      r += this.touchMove.r;
     }
-    const len = Math.hypot(f, r) || 1;
-    f /= len; r /= len;
+    const len = Math.hypot(f, r);
+    if (len > 1) { f /= len; r /= len; }
 
     const targetSpeed = this.crouch ? CROUCH_SPEED : (this.sprint ? SPRINT_SPEED : WALK_SPEED);
     const fwd = this.getForward();

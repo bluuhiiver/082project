@@ -8,6 +8,7 @@ import { Cutscene } from './cutscene.js';
 import { AudioSystem } from './audio.js';
 import { makeHologramFigure, makeHumanFigure } from './npc.js';
 import { graph as storyGraph, endings, makeState } from './story.js';
+import { TouchControls, IS_TOUCH } from './touch.js';
 
 const $ = (sel) => document.querySelector(sel);
 
@@ -62,6 +63,41 @@ async function boot() {
   const interaction = new InteractionSystem(player, level.interactables, $('#interact-prompt'), $('#interact-label'));
   const cutscene = new Cutscene(engine.camera, $('#fade'));
 
+  // ── touch / no-pointer-lock support ──
+  const touch = new TouchControls(player, engine.camera, document.body);
+  touch.setEnabled(false);
+  if (IS_TOUCH) {
+    player.noLockMode = true;
+    document.body.classList.add('touch');
+    // lower render cost on phones
+    engine.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+  }
+  // pointer lock denied (e.g. embedded iframe) → fall back to drag-look
+  document.addEventListener('pointerlockerror', () => {
+    player.noLockMode = true;
+    enableMouseDragLook();
+  });
+  let dragLookOn = false;
+  function enableMouseDragLook() {
+    if (dragLookOn || IS_TOUCH) return;
+    dragLookOn = true;
+    const euler = new THREE.Euler(0, 0, 0, 'YXZ');
+    let dragging = false, lastX = 0, lastY = 0;
+    canvas.addEventListener('mousedown', (e) => { dragging = true; lastX = e.clientX; lastY = e.clientY; });
+    window.addEventListener('mouseup', () => { dragging = false; });
+    window.addEventListener('mousemove', (e) => {
+      if (!dragging || !player.enabled) return;
+      euler.setFromQuaternion(engine.camera.quaternion);
+      euler.y -= (e.clientX - lastX) * 0.004;
+      euler.x -= (e.clientY - lastY) * 0.004;
+      euler.x = Math.max(-Math.PI / 2 + 0.05, Math.min(Math.PI / 2 - 0.05, euler.x));
+      engine.camera.quaternion.setFromEuler(euler);
+      lastX = e.clientX; lastY = e.clientY;
+    });
+  }
+  // tappable interact prompt (mobile has no E key)
+  $('#interact-prompt').addEventListener('click', () => interaction.tryInteract());
+
   const objectiveText = $('#objective-text');
   const subtitleLog = $('#subtitle-log');
   const vitalFill = $('#vital-fill');
@@ -101,7 +137,7 @@ async function boot() {
       return;
     }
     player.enabled = true;
-    if (!paused) player.lock();
+    if (!paused && !player.noLockMode) player.lock();
   };
 
   interaction.onInteract = (it) => {
@@ -153,8 +189,9 @@ async function boot() {
   function closePause() {
     paused = false;
     $('#pause').classList.add('hidden');
-    player.lock();
+    if (!player.noLockMode) player.lock();
   }
+  touch.onPause = () => { if (paused) closePause(); else openPause(); };
   $('#btn-resume').addEventListener('click', closePause);
   $('#btn-quit').addEventListener('click', () => location.reload());
   $('#sens').addEventListener('input', (e) => player.setSensitivity(parseFloat(e.target.value)));
@@ -171,7 +208,7 @@ async function boot() {
 
   // clicking canvas re-locks if appropriate
   canvas.addEventListener('click', () => {
-    if (!paused && !dialogue.active && !inCutscene && !state.ending) player.lock();
+    if (!paused && !dialogue.active && !inCutscene && !state.ending && !player.noLockMode) player.lock();
   });
 
   // ── title / start flow ──
@@ -182,13 +219,14 @@ async function boot() {
     $('#title').classList.add('hidden');
     $('#hud').classList.remove('hidden');
     player.enabled = false;
-    player.lock();
+    if (!player.noLockMode) player.lock();
 
     player.teleport(level.markers.spawn.x, level.markers.spawn.y, level.markers.spawn.z, level.markers.spawnYaw);
     await runIntro();
     player.teleport(level.markers.spawn.x, level.markers.spawn.y, level.markers.spawn.z, level.markers.spawnYaw);
     inCutscene = false;
     player.enabled = true;
+    if (IS_TOUCH) touch.setEnabled(true);
     cutscene.fadeIn(0.8);
     showSubtitle('K-42 · 시스템 재가동 완료. 신호원을 추적한다.', 4);
   });
@@ -257,6 +295,11 @@ async function boot() {
       $('#interact-prompt').classList.add('hidden');
     }
     dialogue.update(dt);
+
+    if (IS_TOUCH) {
+      const showTouch = !inCutscene && !dialogue.active && !paused && !state.ending;
+      if (touch.enabled !== showTouch) touch.setEnabled(showTouch);
+    }
 
     if (subtitleTimer > 0) {
       subtitleTimer -= dt;
