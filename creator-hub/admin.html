@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Peonara Creator Hub — 운영자 콘솔</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22><text y=%2224%22 font-size=%2224%22>🌸</text></svg>" />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand"><span class="logo-dot"></span> Peonara Creator Hub · 운영자 콘솔</div>
+  <div>
+    <a href="index.html" class="btn ghost small">크리에이터 화면 보기</a>
+  </div>
+</header>
+
+<main class="wide">
+
+  <div class="card" style="background:#fff6f8; border-color:#ffd0dd;">
+    <strong>⚠️ 내부용 도구 안내</strong>
+    <p class="muted" style="margin-bottom:0;">이 콘솔은 크리에이터의 이메일·성과 데이터를 다룹니다. 실제 데이터를 사용할 경우 인증 없이 공개 URL(GitHub Pages 등)에 배포하지 말고, 내부망 또는 접근 제한이 걸린 환경에서만 운영하세요. 자세한 내용은 README를 참고하세요.</p>
+  </div>
+
+  <div class="grid cols-2">
+    <div class="card">
+      <h2>1. 데이터 가져오기</h2>
+      <div class="field">
+        <label>쇼피파이 주문 내역 CSV</label>
+        <input type="file" id="shopifyFile" accept=".csv" />
+      </div>
+      <div class="field">
+        <label>업프로모트 어필리에이트 성과 CSV</label>
+        <input type="file" id="uppromoteFile" accept=".csv" />
+      </div>
+      <button class="btn" id="importBtn">업로드 & 통합하기</button>
+      <button class="btn secondary" id="sampleBtn">샘플 데이터 불러오기</button>
+      <button class="btn ghost" id="resetBtn">전체 데이터 초기화</button>
+      <div class="field" style="margin-top:16px;">
+        <label>기본 커미션율 (%)</label>
+        <input type="number" id="commissionRateInput" min="0" max="100" step="1" />
+      </div>
+    </div>
+    <div class="card">
+      <h3>가져오기 로그</h3>
+      <div id="importLog"></div>
+    </div>
+  </div>
+
+  <div class="grid auto" id="kpiCards"></div>
+
+  <div class="card">
+    <h2>2. 통합 크리에이터 관리</h2>
+    <div class="filter-bar">
+      <div class="field">
+        <label>검색 (이름/이메일)</label>
+        <input type="text" id="searchInput" placeholder="검색어" />
+      </div>
+      <div class="field">
+        <label>티어</label>
+        <select id="tierFilter">
+          <option value="">전체</option>
+          <option value="0">Tier 0 · 휴면</option>
+          <option value="1">Tier 1 · 스타터</option>
+          <option value="2">Tier 2 · 액티브</option>
+          <option value="3">Tier 3 · 라이징 스타</option>
+          <option value="4">Tier 4 · 앰버서더</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>국가</label>
+        <select id="countryFilter"><option value="">전체</option></select>
+      </div>
+      <div class="field">
+        <label>미션 선택</label>
+        <select id="missionSelect"></select>
+      </div>
+      <button class="btn small" id="assignMissionBtn">선택 항목에 미션 배정</button>
+      <button class="btn secondary small" id="copyTemplateBtn">메시지 템플릿 복사</button>
+    </div>
+    <div class="table-wrap">
+      <table id="creatorTable">
+        <thead>
+          <tr>
+            <th class="checkbox-cell"><input type="checkbox" id="selectAll" /></th>
+            <th data-sort="name">이름</th>
+            <th data-sort="email">이메일</th>
+            <th data-sort="country">국가</th>
+            <th data-sort="tier">티어</th>
+            <th>세그먼트</th>
+            <th data-sort="clicks">클릭</th>
+            <th data-sort="orders">주문</th>
+            <th data-sort="revenue">매출</th>
+            <th data-sort="commission">커미션</th>
+            <th data-sort="academy">아카데미</th>
+            <th>코드</th>
+            <th>수동 지정</th>
+          </tr>
+        </thead>
+        <tbody id="creatorTableBody"></tbody>
+      </table>
+    </div>
+    <p class="hint" id="tableCount"></p>
+  </div>
+
+</main>
+
+<div class="toast" id="toast"></div>
+<textarea id="clipboardHelper" style="position:absolute; left:-9999px;"></textarea>
+
+<script src="js/data.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>

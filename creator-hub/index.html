@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Peonara Creator Hub</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22><text y=%2224%22 font-size=%2224%22>🌸</text></svg>" />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand"><span class="logo-dot"></span> Peonara Creator Hub</div>
+  <div id="userBox" style="display:none; align-items:center; gap:10px;">
+    <span class="muted" id="userLabel"></span>
+    <button class="btn ghost small" id="logoutBtn">로그아웃</button>
+  </div>
+</header>
+
+<nav class="tabs" id="tabs" style="display:none;">
+  <button data-tab="home" class="active">홈</button>
+  <button data-tab="academy">아카데미</button>
+  <button data-tab="missions">미션</button>
+  <button data-tab="dashboard">대시보드</button>
+  <button data-tab="resources">리소스</button>
+  <button data-tab="leaderboard">리더보드</button>
+</nav>
+
+<main>
+
+  <!-- LOGIN VIEW -->
+  <section id="view-login">
+    <div class="card" style="max-width:440px; margin: 40px auto;">
+      <h2>피어나라 크리에이터 허브에 오신 걸 환영해요 🌸</h2>
+      <p class="muted">이메일로 시작하면 어필리에이트 활동 현황, 교육, 미션을 한 곳에서 관리할 수 있어요. 이미 업프로모트에 등록된 이메일이라면 자동으로 내 성과와 연결돼요.</p>
+      <form id="loginForm">
+        <div class="field">
+          <label>이메일</label>
+          <input type="email" id="loginEmail" placeholder="you@example.com" required />
+        </div>
+        <div class="field" id="newFieldsBlock" style="display:none;">
+          <label>이름</label>
+          <input type="text" id="loginName" placeholder="Jane Doe" />
+        </div>
+        <div class="field" id="newFieldsBlock2" style="display:none;">
+          <label>국가</label>
+          <input type="text" id="loginCountry" placeholder="Germany" />
+        </div>
+        <button class="btn" type="submit" style="width:100%;">시작하기</button>
+      </form>
+      <p class="hint">운영팀이신가요? <a href="admin.html">운영자 콘솔로 이동</a></p>
+    </div>
+  </section>
+
+  <!-- HOME -->
+  <section id="view-home" class="tabview" style="display:none;">
+    <div class="card">
+      <h2 id="homeGreeting">안녕하세요 👋</h2>
+      <div id="tierRow"></div>
+    </div>
+    <div class="card">
+      <h3>온보딩 체크리스트</h3>
+      <div id="onboardingChecklist"></div>
+    </div>
+    <div class="card">
+      <h3>다음에 할 일 추천</h3>
+      <div id="nextActions" class="muted"></div>
+    </div>
+  </section>
+
+  <!-- ACADEMY -->
+  <section id="view-academy" class="tabview" style="display:none;">
+    <div class="card">
+      <h2>크리에이터 아카데미</h2>
+      <p class="muted">5개 모듈을 모두 들으면 성과 기반 티어 승급 대상이 됩니다.</p>
+      <div class="progress-bar"><div id="academyProgressBar" style="width:0%"></div></div>
+      <p class="hint" id="academyProgressLabel"></p>
+    </div>
+    <div id="academyList"></div>
+  </section>
+
+  <!-- MISSIONS -->
+  <section id="view-missions" class="tabview" style="display:none;">
+    <div class="card">
+      <h2>미션</h2>
+      <p class="muted">미션을 완료하면 리워드와 함께 티어 승급 기회가 생겨요.</p>
+    </div>
+    <div id="missionList"></div>
+  </section>
+
+  <!-- DASHBOARD -->
+  <section id="view-dashboard" class="tabview" style="display:none;">
+    <div class="card">
+      <h2>내 성과</h2>
+      <div class="grid cols-4" id="dashboardKpis"></div>
+    </div>
+    <div class="card">
+      <h3>클릭 · 주문 비교</h3>
+      <canvas class="spark" id="perfChart" width="600" height="80"></canvas>
+      <p class="hint" id="perfHint"></p>
+    </div>
+  </section>
+
+  <!-- RESOURCES -->
+  <section id="view-resources" class="tabview" style="display:none;">
+    <div class="card">
+      <h2>내 링크 & 코드</h2>
+      <div class="field">
+        <label>내 할인코드 (없다면 직접 입력 후 저장)</label>
+        <input type="text" id="couponInput" placeholder="예: JANE10" />
+      </div>
+      <button class="btn secondary small" id="saveCouponBtn">코드 저장</button>
+      <div class="field" style="margin-top:16px;">
+        <label>상품/스토어 URL</label>
+        <input type="url" id="baseUrlInput" placeholder="https://peonara.com/products/glow-serum" value="https://peonara.com" />
+      </div>
+      <button class="btn" id="generateLinkBtn">트래킹 링크 생성</button>
+      <div class="field" style="margin-top:16px;" id="generatedLinkBlock" style="display:none;">
+        <label>생성된 링크</label>
+        <input type="text" id="generatedLink" readonly />
+        <button class="btn ghost small" id="copyLinkBtn" style="margin-top:8px;">복사하기</button>
+      </div>
+    </div>
+    <div class="card">
+      <h3>국가별 광고 표시 문구 예시</h3>
+      <ul>
+        <li><strong>영어권</strong>: "Affiliate link — I may earn a commission at no extra cost to you. #ad"</li>
+        <li><strong>독일어권</strong>: "Werbung / Affiliate-Link — ich erhalte ggf. eine Provision. #Werbung"</li>
+        <li><strong>프랑스어권</strong>: "Lien affilié — je peux percevoir une commission. #publicité"</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- LEADERBOARD -->
+  <section id="view-leaderboard" class="tabview" style="display:none;">
+    <div class="card">
+      <h2>이달의 리더보드</h2>
+      <p class="muted">매출 기준 상위 크리에이터입니다. (이메일은 비공개 처리돼요)</p>
+      <div id="leaderboardList"></div>
+    </div>
+  </section>
+
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script src="js/data.js"></script>
+<script src="js/creator.js"></script>
+</body>
+</html>
