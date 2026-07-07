@@ -1,8 +1,13 @@
-const CACHE = 'skinly-v3';
+const CACHE = 'linguamaster-v1';
+// relative paths so the app also works under a subpath (e.g. GitHub Pages project sites)
+const ASSETS = [
+  './', './index.html', './styles.css', './app.js', './manifest.json',
+  './data/lang-fr.js', './data/lang-en.js', './data/lang-es.js',
+  './data/lang-zh.js', './data/lang-ko.js', './data/lang-ja.js', './data/lang-it.js'
+];
 
 self.addEventListener('install', e => {
-  // 상대 경로 사용: GitHub Pages처럼 하위 경로에 배포돼도 동작
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(['./', './index.html', './catalog.js'])));
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
   self.skipWaiting();
 });
 
@@ -14,9 +19,6 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
-  if (e.request.method !== 'GET') return;
-  const url = new URL(e.request.url);
-  if (url.origin !== location.origin) return; // API·CDN 요청은 네트워크로 직행
   e.respondWith(
     caches.match(e.request).then(cached => cached || fetch(e.request))
   );
