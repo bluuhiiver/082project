@@ -14,8 +14,11 @@ export class DialogueSystem {
     this._typing = false;
     this._fullText = '';
     this._typeT = 0;
+    this._lastTypedLen = 0;
     this.onEnd = null;
     this.onNodeEnter = null;
+    this.onType = null;    // fired as characters appear (throttled by caller)
+    this.onChoice = null;  // fired when a choice is picked
 
     this.root.addEventListener('click', () => this._advanceClick());
   }
@@ -50,6 +53,7 @@ export class DialogueSystem {
     this.continueEl.classList.add('hidden');
     this._fullText = typeof node.text === 'function' ? node.text(this.state) : (node.text || '');
     this._typeT = 0;
+    this._lastTypedLen = 0;
     this._typing = true;
     this.textEl.innerHTML = '<span class="cursor">▍</span>';
   }
@@ -58,6 +62,8 @@ export class DialogueSystem {
     if (!this.active || !this.current || !this._typing) return;
     this._typeT += dt * TYPE_SPEED;
     const n = Math.min(this._fullText.length, Math.floor(this._typeT));
+    if (n > this._lastTypedLen && this.onType && n % 2 === 0) this.onType();
+    this._lastTypedLen = n;
     this.textEl.innerHTML = escapeHtml(this._fullText.slice(0, n)) + '<span class="cursor">▍</span>';
     if (n >= this._fullText.length) {
       this._typing = false;
@@ -95,6 +101,7 @@ export class DialogueSystem {
   }
 
   _choose(choice) {
+    if (this.onChoice) this.onChoice();
     if (choice.effect) choice.effect(this.state);
     if (choice.next) this._goTo(choice.next);
     else this.end();

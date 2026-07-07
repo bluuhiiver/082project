@@ -129,6 +129,8 @@ async function boot() {
   dialogue.onNodeEnter = (node) => {
     audio.dialogueOpen();
   };
+  dialogue.onType = () => audio.typeTick();
+  dialogue.onChoice = () => audio.uiSelect();
 
   dialogue.onEnd = () => {
     updateObjective();
@@ -166,6 +168,7 @@ async function boot() {
   dialogue._goTo = (id) => { if (id && id.startsWith('end_')) usedStory.add('final_choice_done'); origGoTo(id); };
 
   function showEnding(id) {
+    audio.endingSting();
     const e = endings[id];
     $('#end-title').textContent = e.title;
     $('#end-desc').textContent = e.desc;
@@ -290,7 +293,9 @@ async function boot() {
     if (voss.visible) voss.position.y = level.markers.voss.y + Math.sin(elapsed * 1.3) * 0.01;
 
     if (!dialogue.active) {
+      const prevNearest = interaction.nearest;
       interaction.update();
+      if (interaction.nearest && interaction.nearest !== prevNearest) audio.promptShow();
     } else {
       $('#interact-prompt').classList.add('hidden');
     }
@@ -316,7 +321,7 @@ async function boot() {
 
   engine.start();
 
-  window.__game = { player, state, level, dialogue, usedStory, engine, interaction, get inCutscene() { return inCutscene; } };
+  window.__game = { player, state, level, dialogue, usedStory, engine, interaction, audio, get inCutscene() { return inCutscene; } };
 }
 
 boot();
