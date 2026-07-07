@@ -1,20 +1,20 @@
 {
-  "name": "Skinly — Ingredient Analyzer",
-  "short_name": "Skinly",
-  "description": "Personalized skincare ingredient analyzer. Find products matched to your skin type.",
+  "name": "LinguaMaster — 7개 언어 마스터 코치",
+  "short_name": "LinguaMaster",
+  "description": "프랑스어, 영어, 스페인어, 중국어, 한국어, 일본어, 이탈리아어를 배우는 개인 맞춤형 언어 학습 앱",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#F7F7F5",
-  "theme_color": "#E11D48",
+  "background_color": "#F7F7FB",
+  "theme_color": "#4F46E5",
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' fill='%23E11D48' rx='40'/><circle cx='96' cy='80' r='34' fill='white' opacity='0.95'/><ellipse cx='96' cy='140' rx='50' ry='28' fill='white' opacity='0.95'/></svg>",
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' fill='%234F46E5' rx='40'/><text x='96' y='120' font-size='92' text-anchor='middle' fill='white' font-family='sans-serif'>語</text></svg>",
       "sizes": "192x192",
       "type": "image/svg+xml"
     },
     {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' fill='%23E11D48' rx='100'/><circle cx='256' cy='210' r='90' fill='white' opacity='0.95'/><ellipse cx='256' cy='370' rx='130' ry='75' fill='white' opacity='0.95'/></svg>",
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' fill='%234F46E5' rx='100'/><text x='256' y='320' font-size='245' text-anchor='middle' fill='white' font-family='sans-serif'>語</text></svg>",
       "sizes": "512x512",
       "type": "image/svg+xml"
     }
