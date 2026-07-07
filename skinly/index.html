@@ -219,6 +219,17 @@
     .rev-ta:focus{border-color:var(--primary);background:var(--white);}
     .rev-save-btn{padding:11px;font-size:.85rem;}
 
+    /* ── RANKING ── */
+    .rank-row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--gray-light);cursor:pointer;-webkit-tap-highlight-color:transparent;}
+    .rank-row:last-child{border-bottom:none;}
+    .rank-num{width:26px;text-align:center;font-weight:800;font-size:.95rem;color:var(--gray);flex-shrink:0;font-variant-numeric:tabular-nums;}
+    .rank-num.top{color:var(--primary);}
+    .rank-info{flex:1;min-width:0;}
+    .rank-brand{font-size:.64rem;font-weight:600;color:var(--gray);text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px;}
+    .rank-name{font-size:.82rem;font-weight:700;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    .rank-note{font-size:.68rem;color:var(--gray);margin-top:12px;line-height:1.5;}
+    .sugg-chip.rc-on{background:var(--primary);color:#fff;}
+
     /* toast */
     .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--black);color:#fff;padding:10px 20px;border-radius:100px;font-size:.8rem;font-weight:600;white-space:nowrap;opacity:0;pointer-events:none;transition:all .28s cubic-bezier(.34,1.56,.64,1);z-index:9999;}
     .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
@@ -288,10 +299,12 @@
   <div class="home-tabs">
     <button class="h-tab active" data-t="recent">🕐 최근 본</button>
     <button class="h-tab" data-t="saved">❤️ 찜</button>
+    <button class="h-tab" data-t="rank">🏆 랭킹</button>
     <button class="h-tab" data-t="search">🧭 둘러보기</button>
   </div>
   <div id="tab-recent" class="tab-pane"></div>
   <div id="tab-saved" class="tab-pane" style="display:none;"></div>
+  <div id="tab-rank" class="tab-pane" style="display:none;"></div>
   <div id="tab-search" class="tab-pane" style="display:none;">
     <div class="sugg-label" style="margin-bottom:10px;">카테고리로 둘러보기</div>
     <div class="sugg-chips" style="margin-bottom:18px;">
@@ -322,6 +335,7 @@
       <button class="sugg-chip" data-q="라로슈포제">라로슈포제</button>
     </div>
   </div>
+  <div id="home-reco" style="padding:10px 20px 24px;"></div>
 </div>
 
 <!-- ══ RESULTS ══ -->
@@ -653,6 +667,66 @@ function gradeText(g) { return {A:'잘 맞아요',B:'무난해요',C:'주의가 
 const FLAG_LABELS = {comedogenic:'모공 막힘 유발', irritant:'자극 유발', allergen:'알레르기 주의'};
 const dispName = n => DB[n]?.ko || cap(n);
 
+// ══ SIMILARITY & CATEGORY ══
+// 성분 지문: 성분 텍스트에서 DB 등록 성분 집합을 추출 (표기 변형은 한글명으로 통합)
+const fpCache = {};
+function ingredientFingerprint(p) {
+  const key = p.code || p.product_name || '';
+  if (fpCache[key]) return fpCache[key];
+  const parsed = parseIngs(p.ingredients_text || '');
+  const set = new Set();
+  for (const [name, data] of Object.entries(DB)) {
+    const found = parsed.some(i =>
+      i === name ||
+      (name.length >= 6 && i.includes(name)) ||
+      (name.length > 6 && name.includes(i) && i.length > 5));
+    if (found) set.add(data.ko || name);
+  }
+  fpCache[key] = set;
+  return set;
+}
+function jaccard(a, b) {
+  if (!a.size || !b.size) return 0;
+  let inter = 0;
+  for (const x of a) if (b.has(x)) inter++;
+  return inter / (a.size + b.size - inter);
+}
+
+// 카테고리: kw의 카테고리 단어로 판별 (순서 중요 — 구체적인 것 먼저)
+const CAT_RULES = [
+  ['선케어', ['선크림']],
+  ['립케어', ['립']],
+  ['아이케어', ['아이크림','아이패치']],
+  ['클렌징', ['클렌징','클렌저']],
+  ['마스크·팩', ['마스크','패드','패치','팩']],
+  ['바디', ['바디']],
+  ['헤어', ['샴푸','헤어','트리트먼트']],
+  ['미스트', ['미스트']],
+  ['베이스', ['쿠션','비비크림','파우더','틴트']],
+  ['토너', ['토너','닦토']],
+  ['세럼·에센스', ['세럼','앰플','에센스']],
+  ['크림·로션', ['크림','로션','수딩젤','밤','젤리']],
+];
+function catOf(p) {
+  const kw = p.kw || '';
+  for (const [cat, words] of CAT_RULES) if (words.some(w => kw.includes(w))) return cat;
+  return '기타';
+}
+
+// 성분 지문 기반 유사 제품 (제품 상세용)
+function similarProducts(p, limit = 6) {
+  if (typeof LOCAL_CATALOG === 'undefined') return [];
+  const base = ingredientFingerprint(p);
+  const baseCat = catOf(p);
+  return LOCAL_CATALOG
+    .filter(c => c.code !== (p.code || ''))
+    .map(c => ({c, s: jaccard(base, ingredientFingerprint(c)) + (baseCat !== '기타' && catOf(c) === baseCat ? 0.08 : 0)}))
+    .filter(x => x.s > 0.18)
+    .sort((a, b) => b.s - a.s)
+    .slice(0, limit)
+    .map(x => x.c);
+}
+
 // ══ OPEN BEAUTY FACTS ══
 // 로컬 큐레이션 카탈로그 검색 — OBF가 약한 한국어 검색을 보완
 function searchLocal(q) {
@@ -797,6 +871,65 @@ function renderHomeContent() {
   $('tab-saved').innerHTML = favs.length
     ? `<div class="hist-scroll">${favs.map(p=>{pCache[p.code]=p;return miniCard(p,'view-home');}).join('')}</div>`
     : `<p class="tab-empty">제품에서 ❤️를 누르면 여기에 저장돼요.</p>`;
+  renderHomeReco();
+}
+
+// ══ RANKING ══
+let rankCat = '전체';
+function setRankCat(c) { rankCat = c; renderRank(); }
+function renderRank() {
+  const pane = $('tab-rank');
+  if (!profile || typeof LOCAL_CATALOG === 'undefined') {
+    pane.innerHTML = '<p class="tab-empty">프로필을 설정하면 내 피부 기준 랭킹을 볼 수 있어요.</p>';
+    return;
+  }
+  const cats = ['전체', ...new Set(LOCAL_CATALOG.map(catOf))].filter(c => c !== '기타');
+  const rows = LOCAL_CATALOG
+    .map(p => ({p, an: analyze(p.ingredients_text)}))
+    .filter(x => x.an && (rankCat === '전체' || catOf(x.p) === rankCat))
+    .sort((a, b) => b.an.score - a.an.score)
+    .slice(0, 10);
+  pane.innerHTML = `
+    <div class="sugg-chips" style="margin-bottom:6px;">${cats.map(c => `<button class="sugg-chip${c === rankCat ? ' rc-on' : ''}" onclick="setRankCat('${c}')">${c}</button>`).join('')}</div>
+    <div class="rank-list">${rows.map((x, i) => { const id = x.p.code; pCache[id] = x.p; return `
+      <div class="rank-row" onclick="openCached('${id}','view-home')">
+        <div class="rank-num${i < 3 ? ' top' : ''}">${i + 1}</div>
+        <div class="rank-info"><div class="rank-brand">${esc(x.p.brands)}</div><div class="rank-name">${esc(x.p.product_name)}</div></div>
+        <span class="gbadge ${gradeClass(x.an.grade)}">${x.an.grade} · ${x.an.score}점</span>
+      </div>`; }).join('')}</div>
+    <p class="rank-note">내 피부 프로필(${[TYPE_LABELS[profile.skinType], ...profile.concerns.map(c => CONCERN_LABELS[c])].filter(Boolean).join(' · ')}) 기준 매치 점수 순위 · 큐레이션 카탈로그 ${LOCAL_CATALOG.length}개 대상</p>`;
+}
+
+// ══ HOME RECOMMENDATIONS ══
+// 내가 쓰는 제품(찜·별점 4+ 리뷰·최근 본)의 성분 지문과 비슷한 제품 추천
+function renderHomeReco() {
+  const box = $('home-reco');
+  if (!box) return;
+  if (!profile || typeof LOCAL_CATALOG === 'undefined') { box.innerHTML = ''; return; }
+  const mine = [];
+  getFavs().forEach(p => mine.push({p, w: 2}));
+  Object.entries(getReviews()).forEach(([code, r]) => {
+    if (r.stars >= 4) { const p = pCache[code] || LOCAL_CATALOG.find(x => x.code === code); if (p) mine.push({p, w: 2}); }
+  });
+  getHistory().forEach(p => mine.push({p, w: 1}));
+  if (!mine.length) { box.innerHTML = ''; return; }
+  const seen = new Set(mine.map(m => m.p.code));
+  const recos = LOCAL_CATALOG
+    .filter(c => !seen.has(c.code))
+    .map(c => {
+      const fp = ingredientFingerprint(c);
+      let s = 0;
+      for (const m of mine) s += jaccard(fp, ingredientFingerprint(m.p)) * m.w;
+      const an = analyze(c.ingredients_text);
+      return {c, s: s + (an ? an.score / 200 : 0)};
+    })
+    .filter(x => x.s > 0.25)
+    .sort((a, b) => b.s - a.s)
+    .slice(0, 8)
+    .map(x => x.c);
+  box.innerHTML = recos.length
+    ? `<div class="sugg-label" style="margin-bottom:10px;">✨ 내가 쓰는 제품과 성분이 비슷해요</div><div class="hist-scroll">${recos.map(p => { pCache[p.code] = p; return miniCard(p, 'view-home'); }).join('')}</div>`
+    : '';
 }
 
 // tabs
@@ -804,7 +937,8 @@ document.querySelectorAll('.h-tab').forEach(tab => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.h-tab').forEach(t=>t.classList.remove('active'));
     tab.classList.add('active');
-    ['recent','saved','search'].forEach(id => $(`tab-${id}`).style.display = id===tab.dataset.t?'block':'none');
+    ['recent','saved','rank','search'].forEach(id => $(`tab-${id}`).style.display = id===tab.dataset.t?'block':'none');
+    if (tab.dataset.t === 'rank') renderRank();
   });
 });
 
@@ -953,6 +1087,11 @@ function renderProduct(p, id) {
 
   const ingToggle = hasIng ? `<div class="section"><button class="ing-toggle" onclick="this.nextElementSibling.classList.toggle('open');this.textContent=this.nextElementSibling.classList.contains('open')?'전체 성분 숨기기 ↑':'전체 성분 보기 ↓'">전체 성분 보기 ↓</button><div class="ing-text">${esc(p.ingredients_text)}</div></div>` : '';
 
+  const sims = hasIng ? similarProducts(p) : [];
+  const simHtml = sims.length
+    ? `<div class="section"><div class="sec-title">🧬 성분이 비슷한 제품</div><div class="hist-scroll">${sims.map(sp => { pCache[sp.code] = sp; return miniCard(sp, prodBackView); }).join('')}</div></div>`
+    : '';
+
   const revHtml = `<div class="section"><div class="sec-title">📝 나의 리뷰</div>
     <div class="star-row" id="rev-stars">${[1,2,3,4,5].map(n=>`<button class="star-btn${(rev.stars||0)>=n?' on':''}" data-n="${n}" aria-label="${n}점">★</button>`).join('')}</div>
     <textarea class="rev-ta" id="rev-text" rows="3" placeholder="사용감, 트러블 여부 등 나만의 기록을 남겨보세요">${esc(rev.text||'')}</textarea>
@@ -971,6 +1110,7 @@ function renderProduct(p, id) {
     <div class="section"><div class="sec-title">⚠️ 주의 성분 <span class="sec-count">${an?an.flags.length:'?'}</span></div>${flagsBody}</div>
     <div class="section"><div class="sec-title">✅ 내 피부에 좋은 성분 <span class="sec-count">${an?an.benefits.length:'?'}</span></div>${bensBody}</div>
     ${ingToggle}
+    ${simHtml}
     ${revHtml}
     <div class="section" style="margin-bottom:0;"><div class="sec-title">🛒 구매하기</div>${links.map(l=>`<a class="buy-link" href="${l.url}" target="_blank" rel="noopener"><div class="buy-ic">${l.icon}</div><div class="buy-name">${l.name}</div><div class="buy-arrow">→</div></a>`).join('')}</div>
     <div style="height:36px;"></div>`;
