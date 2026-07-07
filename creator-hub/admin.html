@@ -27,6 +27,11 @@
     <div class="card">
       <h2>1. 데이터 가져오기</h2>
       <div class="field">
+        <label>크리에이터 풀 시트 CSV — "Piyonna Partner Creator Pool" 형식</label>
+        <input type="file" id="poolFile" accept=".csv" />
+        <p class="hint">구글시트에서 파일 → 다운로드 → CSV로 내려받아 올리면 Handle ID·채널·팔로워·협업 이력이 이메일 기준으로 병합됩니다.</p>
+      </div>
+      <div class="field">
         <label>쇼피파이 주문 내역 CSV</label>
         <input type="file" id="shopifyFile" accept=".csv" />
       </div>
@@ -87,6 +92,7 @@
             <th data-sort="name">이름</th>
             <th data-sort="email">이메일</th>
             <th data-sort="country">국가</th>
+            <th data-sort="followers">채널·팔로워</th>
             <th data-sort="tier">티어</th>
             <th>세그먼트</th>
             <th data-sort="clicks">클릭</th>

@@ -28,6 +28,8 @@ python3 -m http.server 8080
 
 `js/data.js`가 모든 로직의 단일 소스다.
 
+- **크리에이터 풀 시트 CSV** — 사내 구글시트 "[글로벌뷰티] Piyonna Partner Creator Pool" 형식(`No. / type / 협업 이력 / Handle ID / Channel / Profile URL / Followers / Tier(Nano·Micro·Mid) / Email Address / Phone number / Discord ID / Country / 콘텐츠 제작 누적 수량 / srp 연동`)을 그대로 지원한다. 구글시트에서 CSV로 내려받아 올리면 이메일 기준으로 기존 로스터에 병합되고, 팔로워 규모 티어(Nano/Micro/Mid)는 성과 티어(Tier 0~4)와 별도 컬럼(`sizeTier`)으로 보존된다. 국가 코드(FR, IT, DE…)는 국가명으로 자동 정규화된다.
+
 - **Shopify 주문 CSV**는 `discount code` 컬럼 기준으로 매출/주문 수를 집계한다. 틱톡샵처럼 인앱 결제·픽셀 트래킹이 없는 환경에서는 **개인별 고유 할인코드**가 EU 시장에서 가장 신뢰도 높은 어필리에이트 귀속(attribution) 방법이기 때문이다.
 - **UpPromote 성과 CSV**의 `coupon code`로 위 집계와 조인해 클릭 수·전환율을 계산한다.
 - 티어(Tier 0~4)는 전략서 3장의 규칙을 그대로 구현한 `computeAllTiers()`가 매번 재계산한다(수동 저장값이 아니라 파생값). 운영자가 개별 행에서 "수동 지정"으로 override할 수 있다.

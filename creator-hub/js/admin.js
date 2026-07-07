@@ -42,6 +42,10 @@
         email,
         name: c.name || email.split('@')[0],
         country: c.country || '—',
+        channel: c.channel || '',
+        followers: c.followers || 0,
+        sizeTier: c.sizeTier || '',
+        collabHistory: c.collabHistory || '',
         tier: t.tier,
         clicks: p.clicks || 0,
         orders: p.orders || 0,
@@ -66,7 +70,15 @@
       if (myConv > avg * 1.5 && myConv > 0) tags.push('잠재 스타');
     }
     if (row.joinedDate && PH.daysSince(row.joinedDate) <= 30) tags.push('신규');
+    if (row.collabHistory && row.collabHistory.split(',').length >= 3) tags.push('다회 협업');
     return tags;
+  }
+
+  function fmtFollowers(n) {
+    if (!n) return '';
+    if (n >= 1000000) return (n / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+    if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+    return String(n);
   }
 
   function renderKPIs(rows) {
@@ -129,7 +141,7 @@
     const tbody = document.getElementById('creatorTableBody');
 
     if (!rows.length) {
-      tbody.innerHTML = `<tr><td colspan="13"><div class="empty-state">표시할 크리에이터가 없어요. 데이터를 가져오거나 필터를 조정해보세요.</div></td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="14"><div class="empty-state">표시할 크리에이터가 없어요. 데이터를 가져오거나 필터를 조정해보세요.</div></td></tr>`;
       document.getElementById('tableCount').textContent = '';
       return;
     }
@@ -143,6 +155,7 @@
         <td>${r.name}</td>
         <td class="muted">${r.email}</td>
         <td>${r.country}</td>
+        <td class="muted">${r.channel ? r.channel + ' · ' : ''}${fmtFollowers(r.followers)}${r.sizeTier ? ` <span class="badge">${r.sizeTier}</span>` : ''}</td>
         <td><span class="tier-badge" style="background:${info.color}"><span class="dot"></span>${info.ko}</span></td>
         <td>${tags.map((t) => `<span class="badge">${t}</span>`).join('')}</td>
         <td>${r.clicks}</td>
@@ -203,11 +216,19 @@
     });
   }
 
-  function runImport(shopifyText, uppromoteText) {
-    const hasShopifyData = !!(shopifyText && shopifyText.trim());
-    const byCode = hasShopifyData ? PH.importShopifyOrders(shopifyText) : {};
-    const result = PH.importUpPromote(uppromoteText, byCode, hasShopifyData);
-    toast(`가져오기 완료: ${result.total}명 처리 (신규 ${result.created})`);
+  function runImport(shopifyText, uppromoteText, poolText) {
+    const summary = [];
+    if (poolText && poolText.trim()) {
+      const poolResult = PH.importCreatorPool(poolText);
+      summary.push(`풀 시트 ${poolResult.total}행`);
+    }
+    if (uppromoteText && uppromoteText.trim()) {
+      const hasShopifyData = !!(shopifyText && shopifyText.trim());
+      const byCode = hasShopifyData ? PH.importShopifyOrders(shopifyText) : {};
+      const result = PH.importUpPromote(uppromoteText, byCode, hasShopifyData);
+      summary.push(`업프로모트 ${result.total}명 (신규 ${result.created})`);
+    }
+    toast(summary.length ? `가져오기 완료: ${summary.join(' · ')}` : '가져올 파일이 없어요.');
     refresh();
   }
 
@@ -253,26 +274,29 @@
     });
 
     document.getElementById('importBtn').addEventListener('click', async () => {
+      const poolFile = document.getElementById('poolFile').files[0];
       const shopifyFile = document.getElementById('shopifyFile').files[0];
       const uppromoteFile = document.getElementById('uppromoteFile').files[0];
-      if (!uppromoteFile) {
-        toast('업프로모트 CSV는 필수입니다.');
+      if (!poolFile && !uppromoteFile) {
+        toast('크리에이터 풀 시트 또는 업프로모트 CSV 중 하나는 필요해요.');
         return;
       }
+      const poolText = poolFile ? await readFileAsText(poolFile) : '';
       const shopifyText = shopifyFile ? await readFileAsText(shopifyFile) : '';
-      const uppromoteText = await readFileAsText(uppromoteFile);
-      runImport(shopifyText, uppromoteText);
+      const uppromoteText = uppromoteFile ? await readFileAsText(uppromoteFile) : '';
+      runImport(shopifyText, uppromoteText, poolText);
     });
 
     document.getElementById('sampleBtn').addEventListener('click', async () => {
       try {
-        const [shopifyRes, uppromoteRes] = await Promise.all([
+        const [shopifyRes, uppromoteRes, poolRes] = await Promise.all([
           fetch('sample-data/shopify_orders_sample.csv'),
           fetch('sample-data/uppromote_sample.csv'),
+          fetch('sample-data/creator_pool_sample.csv'),
         ]);
-        if (!shopifyRes.ok || !uppromoteRes.ok) throw new Error('fetch failed');
-        const [shopifyText, uppromoteText] = await Promise.all([shopifyRes.text(), uppromoteRes.text()]);
-        runImport(shopifyText, uppromoteText);
+        if (!shopifyRes.ok || !uppromoteRes.ok || !poolRes.ok) throw new Error('fetch failed');
+        const [shopifyText, uppromoteText, poolText] = await Promise.all([shopifyRes.text(), uppromoteRes.text(), poolRes.text()]);
+        runImport(shopifyText, uppromoteText, poolText);
         seedAcademyForDemo();
         refresh();
         toast('샘플 데이터를 불러왔어요. (일부 크리에이터는 아카데미 수료 상태로 시드했습니다)');

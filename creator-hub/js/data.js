@@ -256,6 +256,64 @@ const PH = (() => {
     return { created, updated, total: records.length };
   }
 
+  /* Import the "[글로벌뷰티] Piyonna Partner Creator Pool" sheet (CSV export).
+     Expected headers: No., type, 협업 이력, Handle ID, Channel, Profile URL,
+     Followers, Tier(Nano/Micro/Mid), Email Address, Phone number, Discord ID,
+     Country, 콘텐츠 제작 누적 수량, 특이사항, srp 연동.
+     Rows are merged into the creator roster by email; the follower-size tier
+     from the sheet is kept separately (sizeTier) from the performance tier. */
+  const COUNTRY_NAMES = {
+    fr: 'France', it: 'Italy', de: 'Germany', es: 'Spain', uk: 'United Kingdom',
+    gb: 'United Kingdom', nl: 'Netherlands', pt: 'Portugal', be: 'Belgium',
+    pl: 'Poland', se: 'Sweden', at: 'Austria', ie: 'Ireland', dk: 'Denmark',
+    fi: 'Finland', no: 'Norway', cz: 'Czechia', ro: 'Romania', gr: 'Greece',
+  };
+  function normalizeCountry(raw) {
+    const v = (raw || '').trim();
+    if (!v) return '';
+    return COUNTRY_NAMES[v.toLowerCase()] || v;
+  }
+
+  function importCreatorPool(text) {
+    const { records } = parseCSV(text);
+    const creators = getCreators();
+    let created = 0, updated = 0, skipped = 0;
+    records.forEach((r) => {
+      const email = normEmail(findField(r, ['email address', 'email', 'e-mail']));
+      if (!email || !email.includes('@')) { skipped++; return; }
+      const existing = creators[email];
+      const patch = {};
+      const handle = findField(r, ['handle id', 'handle', 'name']);
+      const country = normalizeCountry(findField(r, ['country']));
+      const channel = findField(r, ['channel']);
+      const profileUrl = findField(r, ['profile url', 'url']);
+      const followersRaw = findField(r, ['followers']).replace(/[^0-9]/g, '');
+      const sizeTier = findField(r, ['tier']);
+      const collabHistory = findField(r, ['협업 이력', 'collab history']);
+      const contentCount = parseInt(findField(r, ['콘텐츠 제작 누적 수량', 'content count']) || '', 10);
+      const discordId = findField(r, ['discord id', 'discord']);
+      const poolType = findField(r, ['type']);
+
+      if (handle) patch.name = handle;
+      if (country) patch.country = country;
+      if (channel) patch.channel = channel;
+      if (profileUrl) patch.profileUrl = profileUrl;
+      if (followersRaw) patch.followers = parseInt(followersRaw, 10) || 0;
+      if (sizeTier) patch.sizeTier = sizeTier;
+      if (collabHistory) patch.collabHistory = collabHistory;
+      if (!isNaN(contentCount)) patch.contentCount = contentCount;
+      if (discordId) patch.discordId = discordId;
+      if (poolType) patch.poolType = poolType;
+      // Don't clobber a proper name imported earlier with a handle.
+      if (existing && existing.name && patch.name) delete patch.name;
+
+      upsertCreator(email, patch);
+      existing ? updated++ : created++;
+    });
+    pushImportLog({ message: `크리에이터 풀 시트: ${records.length}행 처리 (신규 ${created}, 갱신 ${updated}, 이메일 없음 ${skipped})` });
+    return { created, updated, skipped, total: records.length };
+  }
+
   /* ---------- Tier computation ---------- */
   function percentile(values, p) {
     if (!values.length) return Infinity;
@@ -356,6 +414,7 @@ const PH = (() => {
     parseCSV,
     importShopifyOrders,
     importUpPromote,
+    importCreatorPool,
     computeAllTiers,
     buildAffiliateLink,
     daysSince,
