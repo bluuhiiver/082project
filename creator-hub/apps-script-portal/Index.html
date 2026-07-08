@@ -1,0 +1,1072 @@
+<meta charset="utf-8">
+<style>:root {
+  --pink: #ff7597;
+  --pink-light: #ffe4ec;
+  --cream: #fffaf6;
+  --ink: #2b2230;
+  --muted: #7a7180;
+  --line: #f0e3e8;
+  --card: #ffffff;
+  --radius: 14px;
+  --tier0: #9ca3af;
+  --tier1: #60a5fa;
+  --tier2: #34d399;
+  --tier3: #f59e0b;
+  --tier4: #f43f5e;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Pretendard", "Noto Sans KR", Arial, sans-serif;
+  background: var(--cream);
+  color: var(--ink);
+  line-height: 1.5;
+}
+
+a { color: var(--pink); text-decoration: none; }
+
+header.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 24px;
+  background: var(--card);
+  border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.brand {
+  font-weight: 800;
+  font-size: 18px;
+  color: var(--pink);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.brand .logo-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--pink); display: inline-block; }
+
+nav.tabs {
+  display: flex;
+  gap: 4px;
+  padding: 0 24px;
+  background: var(--card);
+  border-bottom: 1px solid var(--line);
+  overflow-x: auto;
+}
+nav.tabs button {
+  border: none;
+  background: transparent;
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  white-space: nowrap;
+}
+nav.tabs button.active { color: var(--pink); border-bottom-color: var(--pink); }
+nav.tabs button:hover { color: var(--ink); }
+
+main { max-width: 980px; margin: 0 auto; padding: 24px; }
+main.wide { max-width: 1280px; }
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.card h2 { margin-top: 0; font-size: 18px; }
+.card h3 { font-size: 15px; margin: 0 0 8px; }
+
+.grid { display: grid; gap: 16px; }
+.grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
+.grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+.grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+.grid.auto { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+@media (max-width: 760px) {
+  .grid.cols-2, .grid.cols-3, .grid.cols-4 { grid-template-columns: 1fr; }
+}
+
+.btn {
+  display: inline-block;
+  border: none;
+  background: var(--pink);
+  color: #fff;
+  font-weight: 700;
+  padding: 10px 18px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 14px;
+}
+.btn:hover { filter: brightness(1.05); }
+.btn.secondary { background: var(--pink-light); color: var(--pink); }
+.btn.ghost { background: transparent; color: var(--pink); border: 1px solid var(--pink); }
+.btn:disabled { background: #e5e0e2; color: #aaa; cursor: not-allowed; }
+.btn.small { padding: 6px 12px; font-size: 12px; }
+
+input[type=text], input[type=email], input[type=number], input[type=url], select, textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 14px;
+  background: #fff;
+  color: var(--ink);
+}
+label { font-size: 13px; font-weight: 600; color: var(--muted); display: block; margin-bottom: 4px; }
+.field { margin-bottom: 14px; }
+
+.tier-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+}
+.tier-badge .dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,.8); }
+
+.progress-bar { background: var(--pink-light); border-radius: 999px; height: 10px; overflow: hidden; }
+.progress-bar > div { background: var(--pink); height: 100%; transition: width .3s ease; }
+
+.kpi { text-align: center; padding: 16px; }
+.kpi .value { font-size: 26px; font-weight: 800; color: var(--pink); }
+.kpi .label { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th { color: var(--muted); font-weight: 700; position: sticky; top: 0; background: var(--card); cursor: pointer; }
+tr:hover td { background: #fff6f8; }
+.table-wrap { overflow-x: auto; }
+
+.badge { display: inline-block; padding: 2px 8px; border-radius: 6px; background: var(--pink-light); color: var(--pink); font-size: 11px; font-weight: 700; margin-right: 4px; }
+.muted { color: var(--muted); font-size: 13px; }
+.hint { color: var(--muted); font-size: 12px; margin-top: 6px; }
+
+.module-item { border: 1px solid var(--line); border-radius: 10px; padding: 14px; margin-bottom: 10px; }
+.module-item.done { border-color: var(--tier2); background: #f2fbf7; }
+.module-item ul { margin: 8px 0 0; padding-left: 18px; }
+.module-item li { margin-bottom: 6px; font-size: 14px; }
+
+.mission-item { display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--line); border-radius: 10px; padding: 14px; margin-bottom: 10px; gap: 12px; }
+.mission-item .info { flex: 1; }
+.mission-item .status { font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px; }
+.status.done { background: #d1fae5; color: #065f46; }
+.status.pending { background: #fef3c7; color: #92400e; }
+
+.leaderboard-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.leaderboard-row .rank { width: 28px; height: 28px; border-radius: 50%; background: var(--pink-light); color: var(--pink); font-weight: 800; display: flex; align-items: center; justify-content: center; font-size: 13px; }
+.leaderboard-row .rank.top1 { background: var(--pink); color: #fff; }
+
+.empty-state { text-align: center; padding: 40px 20px; color: var(--muted); }
+
+.log-line { font-family: ui-monospace, monospace; font-size: 12px; color: var(--muted); padding: 4px 0; border-bottom: 1px dashed var(--line); }
+
+.toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  background: var(--ink); color: #fff; padding: 10px 18px; border-radius: 10px;
+  font-size: 13px; opacity: 0; pointer-events: none; transition: opacity .25s ease;
+  z-index: 100;
+}
+.toast.show { opacity: 1; }
+
+.checkbox-cell { text-align: center; }
+.filter-bar { display: flex; gap: 10px; flex-wrap: wrap; align-items: end; margin-bottom: 14px; }
+.filter-bar .field { margin-bottom: 0; min-width: 160px; }
+
+canvas.spark { width: 100%; height: 60px; }
+</style>
+
+
+<header class="topbar">
+  <div class="brand"><span class="logo-dot"></span> Piyonna Creator Hub</div>
+  <div id="userBox" style="display:none; align-items:center; gap:10px;">
+    <span class="muted" id="userLabel"></span>
+    <button class="btn ghost small" id="logoutBtn">로그아웃</button>
+  </div>
+</header>
+
+<nav class="tabs" id="tabs" style="display:none;">
+  <button data-tab="home" class="active">홈</button>
+  <button data-tab="academy">아카데미</button>
+  <button data-tab="missions">미션</button>
+  <button data-tab="dashboard">대시보드</button>
+  <button data-tab="resources">리소스</button>
+  <button data-tab="leaderboard">리더보드</button>
+</nav>
+
+<main>
+
+  <!-- LOGIN VIEW -->
+  <section id="view-login">
+    <div class="card" style="max-width:440px; margin: 40px auto;">
+      <h2>피요나 크리에이터 허브에 오신 걸 환영해요 🌸</h2>
+      <p class="muted">이메일로 시작하면 어필리에이트 활동 현황, 교육, 미션을 한 곳에서 관리할 수 있어요. 이미 업프로모트에 등록된 이메일이라면 자동으로 내 성과와 연결돼요.</p>
+      <form id="loginForm">
+        <div class="field">
+          <label>이메일</label>
+          <input type="email" id="loginEmail" placeholder="you@example.com" required />
+        </div>
+        <div class="field" id="newFieldsBlock" style="display:none;">
+          <label>이름</label>
+          <input type="text" id="loginName" placeholder="Jane Doe" />
+        </div>
+        <div class="field" id="newFieldsBlock2" style="display:none;">
+          <label>국가</label>
+          <input type="text" id="loginCountry" placeholder="Germany" />
+        </div>
+        <button class="btn" type="submit" style="width:100%;">시작하기</button>
+      </form>
+          </div>
+  </section>
+
+  <!-- HOME -->
+  <section id="view-home" class="tabview" style="display:none;">
+    <div class="card">
+      <h2 id="homeGreeting">안녕하세요 👋</h2>
+      <div id="tierRow"></div>
+    </div>
+    <div class="card">
+      <h3>온보딩 체크리스트</h3>
+      <div id="onboardingChecklist"></div>
+    </div>
+    <div class="card">
+      <h3>다음에 할 일 추천</h3>
+      <div id="nextActions" class="muted"></div>
+    </div>
+  </section>
+
+  <!-- ACADEMY -->
+  <section id="view-academy" class="tabview" style="display:none;">
+    <div class="card">
+      <h2>크리에이터 아카데미</h2>
+      <p class="muted">5개 모듈을 모두 들으면 성과 기반 티어 승급 대상이 됩니다.</p>
+      <div class="progress-bar"><div id="academyProgressBar" style="width:0%"></div></div>
+      <p class="hint" id="academyProgressLabel"></p>
+    </div>
+    <div id="academyList"></div>
+  </section>
+
+  <!-- MISSIONS -->
+  <section id="view-missions" class="tabview" style="display:none;">
+    <div class="card">
+      <h2>미션</h2>
+      <p class="muted">미션을 완료하면 리워드와 함께 티어 승급 기회가 생겨요.</p>
+    </div>
+    <div id="missionList"></div>
+  </section>
+
+  <!-- DASHBOARD -->
+  <section id="view-dashboard" class="tabview" style="display:none;">
+    <div class="card">
+      <h2>내 성과</h2>
+      <div class="grid cols-4" id="dashboardKpis"></div>
+    </div>
+    <div class="card">
+      <h3>클릭 · 주문 비교</h3>
+      <canvas class="spark" id="perfChart" width="600" height="80"></canvas>
+      <p class="hint" id="perfHint"></p>
+    </div>
+  </section>
+
+  <!-- RESOURCES -->
+  <section id="view-resources" class="tabview" style="display:none;">
+    <div class="card">
+      <h2>내 링크 & 코드</h2>
+      <div class="field">
+        <label>내 할인코드 (없다면 직접 입력 후 저장)</label>
+        <input type="text" id="couponInput" placeholder="예: JANE10" />
+      </div>
+      <button class="btn secondary small" id="saveCouponBtn">코드 저장</button>
+      <div class="field" style="margin-top:16px;">
+        <label>상품/스토어 URL</label>
+        <input type="url" id="baseUrlInput" placeholder="https://piyonna.com/products/glow-serum" value="https://piyonna.com" />
+      </div>
+      <button class="btn" id="generateLinkBtn">트래킹 링크 생성</button>
+      <div class="field" style="margin-top:16px;" id="generatedLinkBlock" style="display:none;">
+        <label>생성된 링크</label>
+        <input type="text" id="generatedLink" readonly />
+        <button class="btn ghost small" id="copyLinkBtn" style="margin-top:8px;">복사하기</button>
+      </div>
+    </div>
+    <div class="card">
+      <h3>국가별 광고 표시 문구 예시</h3>
+      <ul>
+        <li><strong>영어권</strong>: "Affiliate link — I may earn a commission at no extra cost to you. #ad"</li>
+        <li><strong>독일어권</strong>: "Werbung / Affiliate-Link — ich erhalte ggf. eine Provision. #Werbung"</li>
+        <li><strong>프랑스어권</strong>: "Lien affilié — je peux percevoir une commission. #publicité"</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- LEADERBOARD -->
+  <section id="view-leaderboard" class="tabview" style="display:none;">
+    <div class="card">
+      <h2>이달의 리더보드</h2>
+      <p class="muted">매출 기준 상위 크리에이터입니다. (이메일은 비공개 처리돼요)</p>
+      <div id="leaderboardList"></div>
+    </div>
+  </section>
+
+</main>
+
+<div class="toast" id="toast"></div>
+
+
+
+
+<script>
+/* Piyonna Creator Hub — shared data layer.
+   Runs entirely client-side (localStorage) so it works as a static site
+   (GitHub Pages) with no backend. Real deployment would swap the
+   localStorage calls in this file for API calls to a small server that
+   talks to Shopify + UpPromote directly — see README.md. */
+
+const PH = (() => {
+  const KEYS = {
+    creators: 'ph_creators',
+    performance: 'ph_performance',
+    importLog: 'ph_import_log',
+    currentUser: 'ph_current_user',
+    commissionRate: 'ph_commission_rate',
+  };
+
+  const ACADEMY_MODULES = [
+    {
+      id: 'm1',
+      title: '1강 · 어필리에이트, 정확히 뭘 하는 거예요?',
+      summary: '링크/할인코드가 어떻게 나의 판매로 연결되고 커미션이 되는지 이해합니다.',
+      content: [
+        '어필리에이트 링크·전용 할인코드로 발생한 주문만 나의 성과로 집계됩니다.',
+        '틱톡샵처럼 앱 안에서 바로 결제되는 구조가 아니기 때문에, "코드 기억 → 사이트 방문 → 결제"까지 시청자가 이탈하지 않게 안내하는 것이 핵심입니다.',
+        '콘텐츠 마지막에 코드를 한 번 더, 캡션과 고정 댓글에도 반복 노출하세요.',
+      ],
+    },
+    {
+      id: 'm2',
+      title: '2강 · 클릭을 주문으로 바꾸는 CTA',
+      summary: '"코드 써주세요" 대신 어떻게 말해야 실제로 구매까지 이어지는지 배웁니다.',
+      content: [
+        '"이 세럼 3주 써보고 유분기 진짜 줄었어요, 제 코드로 15% 할인돼요" 처럼 후기+혜택을 한 문장에 붙이세요.',
+        '릴스/쇼츠는 시작 3초 안에 결과(Before/After)를, 마지막 3초에 코드를 노출하는 구조가 전환이 가장 잘 나옵니다.',
+        '프로필 링크(링크인바이오)에 내 코드가 적용된 링크를 항상 최신 상태로 유지하세요.',
+      ],
+    },
+    {
+      id: 'm3',
+      title: '3강 · 유럽 광고 표시 규정 지키기',
+      summary: '국가별 협찬/광고 표시 의무를 지키지 않으면 계정 제재나 법적 문제가 생길 수 있어요.',
+      content: [
+        '커미션을 받는 콘텐츠는 반드시 "광고" 또는 "#ad", "#소정의수수료" 등 명확한 표시가 필요합니다(국가별 문구는 리소스 페이지 참고).',
+        '독일·프랑스는 표시 규정이 특히 엄격합니다. 애매하면 캡션 맨 앞에 표시하세요.',
+        '플랫폼 자체 유료광고 라벨(예: 인스타그램의 "유료 파트너십") 기능도 함께 켜두면 안전합니다.',
+      ],
+    },
+    {
+      id: 'm4',
+      title: '4강 · K-뷰티 콘텐츠, 이렇게 만들면 반응이 좋아요',
+      summary: '성분/루틴 정보를 지루하지 않게 전달하는 포맷을 소개합니다.',
+      content: [
+        '"성분 하나 설명 + 내 피부 타입 반응" 조합이 저관여 시청자도 끝까지 보게 만듭니다.',
+        'GRWM(Get Ready With Me) 루틴 안에 자연스럽게 제품을 녹이면 광고 느낌이 줄어듭니다.',
+        '피부 타입/톤이 비슷한 팔로워를 겨냥한 문구("지성 피부라면")가 전환율을 높입니다.',
+      ],
+    },
+    {
+      id: 'm5',
+      title: '5강 · 내 성과 확인하고 다음 단계 준비하기',
+      summary: '대시보드에서 무엇을 보고, 어떻게 하면 다음 티어로 올라가는지 배웁니다.',
+      content: [
+        '클릭 수와 주문 수를 함께 보세요. 클릭은 많은데 주문이 없다면 CTA나 코드 노출 방식을 바꿔볼 시점입니다.',
+        '티어는 자동으로 계산되며, 승급하면 커미션율/리워드가 즉시 올라갑니다.',
+        '막히는 부분은 리더보드 상위 크리에이터의 공개 콘텐츠를 참고하세요.',
+      ],
+    },
+  ];
+
+  const MISSIONS = [
+    { id: 'welcome', title: '웰컴 미션: 프로필 완성 + 1강 수료', description: '프로필 정보를 채우고 아카데미 1강을 수료하면 즉시 보너스를 드려요.', reward: '스타터 뱃지 + 소액 리워드' },
+    { id: 'first-content', title: '첫 콘텐츠 업로드', description: '내 코드가 포함된 콘텐츠를 1개 업로드하세요.', reward: '콘텐츠 크리에이터 뱃지' },
+    { id: 'reels-2', title: '이번 달 릴스/쇼츠 2개', description: '이번 달 안에 릴스 또는 쇼츠 2개를 업로드하세요.', reward: '커미션 부스트 +2%p (해당 월)' },
+    { id: 'new-product', title: '신제품 리뷰 콘텐츠', description: '이번 시즌 신제품 중 1개를 리뷰해주세요.', reward: 'PR 키트 우선 발송' },
+    { id: 'click-50', title: '링크 클릭 50회 달성', description: '내 링크/코드로 50회 클릭을 달성하세요.', reward: 'Rising Star 후보 등록' },
+  ];
+
+  function read(key, fallback) {
+    try {
+      const raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : fallback;
+    } catch (e) {
+      console.error('PH.read failed', key, e);
+      return fallback;
+    }
+  }
+  function write(key, value) {
+    localStorage.setItem(key, JSON.stringify(value));
+  }
+
+  function normEmail(e) {
+    return (e || '').trim().toLowerCase();
+  }
+
+  function getCreators() {
+    return read(KEYS.creators, {});
+  }
+  function saveCreators(obj) {
+    write(KEYS.creators, obj);
+  }
+  function getPerformance() {
+    return read(KEYS.performance, {});
+  }
+  function savePerformance(obj) {
+    write(KEYS.performance, obj);
+  }
+  function getImportLog() {
+    return read(KEYS.importLog, []);
+  }
+  function pushImportLog(entry) {
+    const log = getImportLog();
+    log.unshift({ ts: entry.ts || new Date().toISOString(), message: entry.message });
+    write(KEYS.importLog, log.slice(0, 50));
+  }
+  function getCommissionRate() {
+    return read(KEYS.commissionRate, 0.15);
+  }
+  function setCommissionRate(rate) {
+    write(KEYS.commissionRate, rate);
+  }
+
+  function upsertCreator(email, patch) {
+    const creators = getCreators();
+    const key = normEmail(email);
+    const existing = creators[key] || {
+      email: key,
+      name: '',
+      country: '',
+      language: '',
+      couponCode: '',
+      joinedDate: null,
+      academyProgress: [],
+      missions: {},
+      tierOverride: null,
+    };
+    creators[key] = Object.assign({}, existing, patch);
+    saveCreators(creators);
+    return creators[key];
+  }
+
+  function getCreator(email) {
+    return getCreators()[normEmail(email)] || null;
+  }
+
+  function getCurrentUser() {
+    return read(KEYS.currentUser, null);
+  }
+  function setCurrentUser(email) {
+    write(KEYS.currentUser, normEmail(email));
+  }
+  function logout() {
+    localStorage.removeItem(KEYS.currentUser);
+  }
+
+  /* ---------- CSV parsing (RFC4180-ish, handles quoted commas) ---------- */
+  function parseCSV(text) {
+    const rows = [];
+    let row = [];
+    let field = '';
+    let inQuotes = false;
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i];
+      if (inQuotes) {
+        if (c === '"') {
+          if (text[i + 1] === '"') { field += '"'; i++; }
+          else inQuotes = false;
+        } else field += c;
+      } else {
+        if (c === '"') inQuotes = true;
+        else if (c === ',') { row.push(field); field = ''; }
+        else if (c === '\n' || c === '\r') {
+          if (c === '\r' && text[i + 1] === '\n') i++;
+          row.push(field); field = '';
+          if (row.some((v) => v !== '')) rows.push(row);
+          row = [];
+        } else field += c;
+      }
+    }
+    if (field !== '' || row.length) { row.push(field); rows.push(row); }
+    if (!rows.length) return { headers: [], records: [] };
+    const headers = rows[0].map((h) => h.trim().toLowerCase());
+    const records = rows.slice(1).map((r) => {
+      const obj = {};
+      headers.forEach((h, idx) => { obj[h] = (r[idx] || '').trim(); });
+      return obj;
+    });
+    return { headers, records };
+  }
+
+  function findField(record, candidates) {
+    for (const c of candidates) {
+      if (record[c] !== undefined && record[c] !== '') return record[c];
+    }
+    return '';
+  }
+
+  /* Import a Shopify order export CSV. Aggregates revenue/order-count by
+     discount code, since coupon-code attribution is how affiliate sales
+     are tracked without a TikTok Shop-style in-app checkout. */
+  function importShopifyOrders(text) {
+    const { records } = parseCSV(text);
+    const byCode = {};
+    let matchedRows = 0;
+    records.forEach((r) => {
+      const code = findField(r, ['discount code', 'discount codes', 'coupon', 'coupon code']).toLowerCase();
+      const total = parseFloat(findField(r, ['total', 'subtotal', 'amount']).replace(/[^0-9.\-]/g, '')) || 0;
+      if (!code) return;
+      matchedRows++;
+      if (!byCode[code]) byCode[code] = { orders: 0, revenue: 0 };
+      byCode[code].orders += 1;
+      byCode[code].revenue += total;
+    });
+    pushImportLog({ message: `Shopify 주문 CSV: ${records.length}행 파싱, 할인코드 있는 주문 ${matchedRows}건, 고유 코드 ${Object.keys(byCode).length}개` });
+    return byCode;
+  }
+
+  /* Import an UpPromote affiliate export CSV: email, name, country,
+     coupon code, clicks, joined date. If no Shopify file was provided in
+     this pass (hasShopifyData=false), previously-recorded orders/revenue
+     are preserved instead of being reset to zero. */
+  function importUpPromote(text, shopifyByCode, hasShopifyData) {
+    const { records } = parseCSV(text);
+    const creators = getCreators();
+    const perf = getPerformance();
+    let created = 0, updated = 0;
+    records.forEach((r) => {
+      const email = normEmail(findField(r, ['affiliate email', 'email']));
+      if (!email) return;
+      const name = findField(r, ['affiliate name', 'name']);
+      const country = findField(r, ['country']);
+      const couponCode = findField(r, ['coupon code', 'code', 'discount code']).toLowerCase();
+      const clicks = parseInt(findField(r, ['clicks']) || '0', 10) || 0;
+      const joinedDate = findField(r, ['joined date', 'joined', 'created at']) || null;
+
+      const isNew = !creators[email];
+      upsertCreator(email, {
+        name: name || (creators[email] && creators[email].name) || '',
+        country: country || (creators[email] && creators[email].country) || '',
+        couponCode: couponCode || (creators[email] && creators[email].couponCode) || '',
+        joinedDate: joinedDate || (creators[email] && creators[email].joinedDate) || null,
+      });
+      isNew ? created++ : updated++;
+
+      const previous = perf[email] || { orders: 0, revenue: 0 };
+      const sales = hasShopifyData
+        ? (shopifyByCode[couponCode] || { orders: 0, revenue: 0 })
+        : { orders: previous.orders, revenue: previous.revenue };
+      perf[email] = {
+        clicks,
+        orders: sales.orders,
+        revenue: Math.round(sales.revenue * 100) / 100,
+        lastActivity: joinedDate,
+      };
+    });
+    savePerformance(perf);
+    pushImportLog({ message: `UpPromote CSV: ${records.length}명 처리 (신규 ${created}, 갱신 ${updated})` });
+    return { created, updated, total: records.length };
+  }
+
+  /* Import the "[글로벌뷰티] Piyonna Partner Creator Pool" sheet (CSV export).
+     Expected headers: No., type, 협업 이력, Handle ID, Channel, Profile URL,
+     Followers, Tier(Nano/Micro/Mid), Email Address, Phone number, Discord ID,
+     Country, 콘텐츠 제작 누적 수량, 특이사항, srp 연동.
+     Rows are merged into the creator roster by email; the follower-size tier
+     from the sheet is kept separately (sizeTier) from the performance tier. */
+  const COUNTRY_NAMES = {
+    fr: 'France', it: 'Italy', de: 'Germany', es: 'Spain', uk: 'United Kingdom',
+    gb: 'United Kingdom', nl: 'Netherlands', pt: 'Portugal', be: 'Belgium',
+    pl: 'Poland', se: 'Sweden', at: 'Austria', ie: 'Ireland', dk: 'Denmark',
+    fi: 'Finland', no: 'Norway', cz: 'Czechia', ro: 'Romania', gr: 'Greece',
+  };
+  function normalizeCountry(raw) {
+    const v = (raw || '').trim();
+    if (!v) return '';
+    return COUNTRY_NAMES[v.toLowerCase()] || v;
+  }
+
+  function importCreatorPool(text) {
+    const { records } = parseCSV(text);
+    const creators = getCreators();
+    let created = 0, updated = 0, skipped = 0;
+    records.forEach((r) => {
+      const email = normEmail(findField(r, ['email address', 'email', 'e-mail']));
+      if (!email || !email.includes('@')) { skipped++; return; }
+      const existing = creators[email];
+      const patch = {};
+      const handle = findField(r, ['handle id', 'handle', 'name']);
+      const country = normalizeCountry(findField(r, ['country']));
+      const channel = findField(r, ['channel']);
+      const profileUrl = findField(r, ['profile url', 'url']);
+      const followersRaw = findField(r, ['followers']).replace(/[^0-9]/g, '');
+      const sizeTier = findField(r, ['tier']);
+      const collabHistory = findField(r, ['협업 이력', 'collab history']);
+      const contentCount = parseInt(findField(r, ['콘텐츠 제작 누적 수량', 'content count']) || '', 10);
+      const discordId = findField(r, ['discord id', 'discord']);
+      const poolType = findField(r, ['type']);
+
+      if (handle) patch.name = handle;
+      if (country) patch.country = country;
+      if (channel) patch.channel = channel;
+      if (profileUrl) patch.profileUrl = profileUrl;
+      if (followersRaw) patch.followers = parseInt(followersRaw, 10) || 0;
+      if (sizeTier) patch.sizeTier = sizeTier;
+      if (collabHistory) patch.collabHistory = collabHistory;
+      if (!isNaN(contentCount)) patch.contentCount = contentCount;
+      if (discordId) patch.discordId = discordId;
+      if (poolType) patch.poolType = poolType;
+      // Don't clobber a proper name imported earlier with a handle.
+      if (existing && existing.name && patch.name) delete patch.name;
+
+      upsertCreator(email, patch);
+      existing ? updated++ : created++;
+    });
+    pushImportLog({ message: `크리에이터 풀 시트: ${records.length}행 처리 (신규 ${created}, 갱신 ${updated}, 이메일 없음 ${skipped})` });
+    return { created, updated, skipped, total: records.length };
+  }
+
+  /* ---------- Tier computation ---------- */
+  function percentile(values, p) {
+    if (!values.length) return Infinity;
+    const sorted = [...values].sort((a, b) => a - b);
+    const idx = Math.min(sorted.length - 1, Math.floor((p / 100) * sorted.length));
+    return sorted[idx];
+  }
+
+  function daysSince(dateStr) {
+    if (!dateStr) return 0;
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return 0;
+    return Math.floor((Date.now() - d.getTime()) / 86400000);
+  }
+
+  function computeAllTiers() {
+    const creators = getCreators();
+    const perf = getPerformance();
+    const emails = Object.keys(creators);
+
+    const revenues = emails.map((e) => (perf[e] && perf[e].revenue) || 0).filter((v) => v > 0);
+    const convRates = emails
+      .map((e) => {
+        const p = perf[e];
+        if (!p || !p.clicks) return null;
+        return p.orders / p.clicks;
+      })
+      .filter((v) => v !== null && v > 0);
+
+    const p95Revenue = percentile(revenues, 95);
+    const p80Conv = percentile(convRates, 80);
+
+    const result = {};
+    emails.forEach((email) => {
+      const c = creators[email];
+      const p = perf[email] || { clicks: 0, orders: 0, revenue: 0 };
+      let tier;
+      if (c.tierOverride) {
+        tier = c.tierOverride;
+      } else if (p.clicks === 0 && daysSince(c.joinedDate) > 14) {
+        tier = 0;
+      } else if (!c.academyProgress || c.academyProgress.length === 0 || p.clicks === 0) {
+        tier = 1;
+      } else {
+        const conv = p.clicks ? p.orders / p.clicks : 0;
+        if (p.revenue > 0 && p.revenue >= p95Revenue) tier = 4;
+        else if (conv > 0 && conv >= p80Conv) tier = 3;
+        else tier = 2;
+      }
+      result[email] = { tier, perf: p, creator: c };
+    });
+    return result;
+  }
+
+  const TIER_LABELS = {
+    0: { name: 'Dormant', ko: '휴면', color: '#9ca3af' },
+    1: { name: 'Starter', ko: '스타터', color: '#60a5fa' },
+    2: { name: 'Active Creator', ko: '액티브', color: '#34d399' },
+    3: { name: 'Rising Star', ko: '라이징 스타', color: '#f59e0b' },
+    4: { name: 'Ambassador', ko: '앰버서더', color: '#f43f5e' },
+  };
+
+  function buildAffiliateLink(baseUrl, couponCode) {
+    try {
+      const u = new URL(baseUrl);
+      u.searchParams.set('ref', couponCode);
+      u.searchParams.set('discount', couponCode.toUpperCase());
+      return u.toString();
+    } catch (e) {
+      return `${baseUrl}?ref=${encodeURIComponent(couponCode)}&discount=${encodeURIComponent(couponCode.toUpperCase())}`;
+    }
+  }
+
+  function seedSampleDataIfEmpty() {
+    // no-op placeholder kept for symmetry; sample data is loaded explicitly
+    // from admin.html via the "샘플 데이터 불러오기" button (fetch of CSVs).
+  }
+
+  return {
+    KEYS,
+    ACADEMY_MODULES,
+    MISSIONS,
+    TIER_LABELS,
+    normEmail,
+    getCreators,
+    saveCreators,
+    getPerformance,
+    savePerformance,
+    getImportLog,
+    pushImportLog,
+    getCommissionRate,
+    setCommissionRate,
+    upsertCreator,
+    getCreator,
+    getCurrentUser,
+    setCurrentUser,
+    logout,
+    parseCSV,
+    importShopifyOrders,
+    importUpPromote,
+    importCreatorPool,
+    computeAllTiers,
+    buildAffiliateLink,
+    daysSince,
+    seedSampleDataIfEmpty,
+  };
+})();
+
+(function () {
+  let currentTab = 'home';
+
+  function toast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 2200);
+  }
+
+  function fmtMoney(n) {
+    return '€' + (Math.round((n || 0) * 100) / 100).toFixed(2);
+  }
+
+  function tierBadgeHTML(tier) {
+    const info = PH.TIER_LABELS[tier];
+    return `<span class="tier-badge" style="background:${info.color}"><span class="dot"></span>${info.ko} · ${info.name}</span>`;
+  }
+
+  function getMe() {
+    const email = PH.getCurrentUser();
+    if (!email) return null;
+    return PH.getCreator(email);
+  }
+
+  function showLogin() {
+    document.getElementById('view-login').style.display = 'block';
+    document.getElementById('tabs').style.display = 'none';
+    document.getElementById('userBox').style.display = 'none';
+    document.querySelectorAll('.tabview').forEach((v) => (v.style.display = 'none'));
+  }
+
+  function showApp() {
+    document.getElementById('view-login').style.display = 'none';
+    document.getElementById('tabs').style.display = 'flex';
+    document.getElementById('userBox').style.display = 'flex';
+    const me = getMe();
+    document.getElementById('userLabel').textContent = me ? (me.name || me.email) : '';
+    renderTab(currentTab);
+  }
+
+  function switchTab(tab) {
+    currentTab = tab;
+    document.querySelectorAll('nav.tabs button').forEach((b) => {
+      b.classList.toggle('active', b.dataset.tab === tab);
+    });
+    document.querySelectorAll('.tabview').forEach((v) => {
+      v.style.display = v.id === `view-${tab}` ? 'block' : 'none';
+    });
+    renderTab(tab);
+  }
+
+  function renderTab(tab) {
+    const fns = {
+      home: renderHome,
+      academy: renderAcademy,
+      missions: renderMissions,
+      dashboard: renderDashboard,
+      resources: renderResources,
+      leaderboard: renderLeaderboard,
+    };
+    if (fns[tab]) fns[tab]();
+  }
+
+  function renderHome() {
+    const me = getMe();
+    if (!me) return;
+    document.getElementById('homeGreeting').textContent = `안녕하세요, ${me.name || me.email} 님 👋`;
+    const tiers = PH.computeAllTiers();
+    const info = tiers[me.email];
+    const tier = info ? info.tier : 1;
+    document.getElementById('tierRow').innerHTML = tierBadgeHTML(tier);
+
+    const academyDone = (me.academyProgress || []).length >= PH.ACADEMY_MODULES.length;
+    const missionsDone = Object.values(me.missions || {}).filter((v) => v === 'completed').length;
+    const perf = (info && info.perf) || { clicks: 0, orders: 0 };
+    const checklist = [
+      { label: '프로필 정보 입력', done: !!(me.name && me.country) },
+      { label: '아카데미 최소 1강 수료', done: (me.academyProgress || []).length > 0 },
+      { label: '내 할인코드/링크 등록', done: !!me.couponCode },
+      { label: '첫 미션 완료', done: missionsDone > 0 },
+      { label: '첫 클릭 발생', done: perf.clicks > 0 },
+    ];
+    document.getElementById('onboardingChecklist').innerHTML = checklist
+      .map((c) => `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+        <span style="font-size:16px;">${c.done ? '✅' : '⬜️'}</span>
+        <span class="${c.done ? '' : 'muted'}">${c.label}</span>
+      </div>`)
+      .join('');
+
+    let next = '모든 온보딩 단계를 완료했어요! 리더보드에서 상위권을 노려보세요 🚀';
+    if (!checklist[1].done) next = '아카데미 1강부터 들어보세요. 5분이면 충분해요.';
+    else if (!checklist[2].done) next = '리소스 탭에서 내 할인코드를 등록하고 트래킹 링크를 만들어보세요.';
+    else if (!checklist[3].done) next = '미션 탭에서 웰컴 미션에 도전해보세요.';
+    else if (!academyDone) next = '아카데미 나머지 강의도 마저 들어보세요.';
+    document.getElementById('nextActions').textContent = next;
+  }
+
+  function renderAcademy() {
+    const me = getMe();
+    if (!me) return;
+    const progress = me.academyProgress || [];
+    const pct = Math.round((progress.length / PH.ACADEMY_MODULES.length) * 100);
+    document.getElementById('academyProgressBar').style.width = pct + '%';
+    document.getElementById('academyProgressLabel').textContent = `${progress.length} / ${PH.ACADEMY_MODULES.length}강 수료 (${pct}%)`;
+
+    document.getElementById('academyList').innerHTML = PH.ACADEMY_MODULES.map((m) => {
+      const done = progress.includes(m.id);
+      return `<div class="module-item ${done ? 'done' : ''}">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">
+          <div>
+            <h3>${m.title}</h3>
+            <p class="muted">${m.summary}</p>
+          </div>
+          <button class="btn ${done ? 'secondary' : ''} small" data-module="${m.id}" ${done ? 'disabled' : ''}>
+            ${done ? '수료 완료 ✓' : '수료하기'}
+          </button>
+        </div>
+        <ul>${m.content.map((c) => `<li>${c}</li>`).join('')}</ul>
+      </div>`;
+    }).join('');
+
+    document.querySelectorAll('#academyList button[data-module]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const moduleId = btn.dataset.module;
+        const creator = PH.getCreator(me.email);
+        const prog = creator.academyProgress || [];
+        if (!prog.includes(moduleId)) prog.push(moduleId);
+        PH.upsertCreator(me.email, { academyProgress: prog });
+        toast('강의를 수료했어요! 🎉');
+        renderAcademy();
+      });
+    });
+  }
+
+  function renderMissions() {
+    const me = getMe();
+    if (!me) return;
+    document.getElementById('missionList').innerHTML = PH.MISSIONS.map((m) => {
+      const status = (me.missions || {})[m.id];
+      const done = status === 'completed';
+      return `<div class="mission-item">
+        <div class="info">
+          <strong>${m.title}</strong>
+          <div class="muted">${m.description}</div>
+          <div class="badge">리워드: ${m.reward}</div>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span class="status ${done ? 'done' : 'pending'}">${done ? '완료' : '진행중'}</span>
+          <button class="btn small ${done ? 'secondary' : ''}" data-mission="${m.id}" ${done ? 'disabled' : ''}>${done ? '완료됨' : '완료 인증'}</button>
+        </div>
+      </div>`;
+    }).join('');
+
+    document.querySelectorAll('#missionList button[data-mission]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const missionId = btn.dataset.mission;
+        const creator = PH.getCreator(me.email);
+        const missions = creator.missions || {};
+        missions[missionId] = 'completed';
+        PH.upsertCreator(me.email, { missions });
+        toast('미션 완료! 리워드가 곧 지급돼요 🎁');
+        renderMissions();
+      });
+    });
+  }
+
+  function drawBars(canvas, bars) {
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width, h = canvas.height;
+    ctx.clearRect(0, 0, w, h);
+    const max = Math.max(1, ...bars.map((b) => b.value));
+    const gap = 24;
+    const barW = (w - gap * (bars.length + 1)) / bars.length;
+    bars.forEach((b, i) => {
+      const barH = Math.max(2, (b.value / max) * (h - 24));
+      const x = gap + i * (barW + gap);
+      const y = h - barH - 16;
+      ctx.fillStyle = b.color;
+      ctx.fillRect(x, y, barW, barH);
+      ctx.fillStyle = '#7a7180';
+      ctx.font = '11px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(`${b.label} (${b.value})`, x + barW / 2, h - 4);
+    });
+  }
+
+  function renderDashboard() {
+    const me = getMe();
+    if (!me) return;
+    const tiers = PH.computeAllTiers();
+    const info = tiers[me.email] || { tier: 1, perf: { clicks: 0, orders: 0, revenue: 0 } };
+    const perf = info.perf;
+    const rate = PH.getCommissionRate();
+    const commission = (perf.revenue || 0) * rate;
+    const conv = perf.clicks ? ((perf.orders / perf.clicks) * 100).toFixed(1) : '0.0';
+
+    document.getElementById('dashboardKpis').innerHTML = `
+      <div class="card kpi"><div class="value">${perf.clicks || 0}</div><div class="label">클릭 수</div></div>
+      <div class="card kpi"><div class="value">${perf.orders || 0}</div><div class="label">주문 수</div></div>
+      <div class="card kpi"><div class="value">${fmtMoney(perf.revenue)}</div><div class="label">발생 매출</div></div>
+      <div class="card kpi"><div class="value">${fmtMoney(commission)}</div><div class="label">예상 커미션 (${Math.round(rate * 100)}%)</div></div>
+    `;
+    document.getElementById('perfHint').textContent = `전환율 ${conv}% · 현재 티어: ${PH.TIER_LABELS[info.tier].ko}`;
+    drawBars(document.getElementById('perfChart'), [
+      { label: '클릭', value: perf.clicks || 0, color: '#ffe4ec' },
+      { label: '주문', value: perf.orders || 0, color: '#ff7597' },
+    ]);
+  }
+
+  function renderResources() {
+    const me = getMe();
+    if (!me) return;
+    document.getElementById('couponInput').value = me.couponCode || '';
+  }
+
+  function renderLeaderboard() {
+    const me = getMe();
+    const tiers = PH.computeAllTiers();
+    const rows = Object.keys(tiers)
+      .map((email) => ({ email, ...tiers[email] }))
+      .filter((r) => (r.perf.revenue || 0) > 0)
+      .sort((a, b) => (b.perf.revenue || 0) - (a.perf.revenue || 0))
+      .slice(0, 10);
+
+    if (!rows.length) {
+      document.getElementById('leaderboardList').innerHTML = '<div class="empty-state">아직 리더보드에 표시할 성과 데이터가 없어요.<br/>운영자 콘솔에서 성과 데이터를 업로드하면 여기에 표시됩니다.</div>';
+      return;
+    }
+
+    document.getElementById('leaderboardList').innerHTML = rows
+      .map((r, i) => {
+        const name = (r.creator && r.creator.name) || r.email.split('@')[0];
+        const isMe = me && r.email === me.email;
+        return `<div class="leaderboard-row" style="${isMe ? 'background:#fff6f8;border-radius:8px;' : ''}">
+          <div class="rank ${i === 0 ? 'top1' : ''}">${i + 1}</div>
+          <div style="flex:1;">
+            <strong>${name}${isMe ? ' (나)' : ''}</strong>
+            <div class="muted" style="font-size:12px;">${(r.creator && r.creator.country) || ''}</div>
+          </div>
+          ${tierBadgeHTML(r.tier)}
+          <div style="width:90px;text-align:right;font-weight:700;">${fmtMoney(r.perf.revenue)}</div>
+        </div>`;
+      })
+      .join('');
+  }
+
+  function init() {
+    document.querySelectorAll('nav.tabs button').forEach((btn) => {
+      btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      PH.logout();
+      showLogin();
+    });
+
+    const emailInput = document.getElementById('loginEmail');
+    emailInput.addEventListener('input', () => {
+      const exists = !!PH.getCreator(emailInput.value);
+      document.getElementById('newFieldsBlock').style.display = exists ? 'none' : 'block';
+      document.getElementById('newFieldsBlock2').style.display = exists ? 'none' : 'block';
+    });
+
+    document.getElementById('loginForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const email = emailInput.value.trim();
+      if (!email) return;
+      const existing = PH.getCreator(email);
+      if (!existing) {
+        PH.upsertCreator(email, {
+          name: document.getElementById('loginName').value.trim(),
+          country: document.getElementById('loginCountry').value.trim(),
+          joinedDate: new Date().toISOString().slice(0, 10),
+        });
+      }
+      PH.setCurrentUser(email);
+      showApp();
+    });
+
+    document.getElementById('saveCouponBtn').addEventListener('click', () => {
+      const me = getMe();
+      if (!me) return;
+      const code = document.getElementById('couponInput').value.trim().toUpperCase();
+      PH.upsertCreator(me.email, { couponCode: code });
+      toast('할인코드를 저장했어요.');
+    });
+
+    document.getElementById('generateLinkBtn').addEventListener('click', () => {
+      const me = getMe();
+      if (!me) return;
+      const creator = PH.getCreator(me.email);
+      const code = creator.couponCode;
+      if (!code) {
+        toast('먼저 할인코드를 저장해주세요.');
+        return;
+      }
+      const baseUrl = document.getElementById('baseUrlInput').value.trim() || 'https://piyonna.com';
+      const link = PH.buildAffiliateLink(baseUrl, code);
+      document.getElementById('generatedLinkBlock').style.display = 'block';
+      document.getElementById('generatedLink').value = link;
+    });
+
+    document.getElementById('copyLinkBtn').addEventListener('click', () => {
+      const el = document.getElementById('generatedLink');
+      el.select();
+      navigator.clipboard && navigator.clipboard.writeText(el.value).catch(() => {});
+      toast('링크를 복사했어요.');
+    });
+
+    if (PH.getCurrentUser() && getMe()) {
+      showApp();
+    } else {
+      showLogin();
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+})();
+
+</script>
