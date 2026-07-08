@@ -22,23 +22,25 @@ function getSnsFollowerSnapshot() {
   }
 
   // 각 raw data 탭은 날짜순으로 누적되며, 맨 아래가 최신 스냅샷이다.
-  // 중간에 결측 행이 섞여 있을 수 있어 아래에서부터 값이 있는 첫 행을 찾는다.
-  function lastSnapshot(sheet) {
-    if (!sheet) return null;
+  // 중간에 결측 행이 섞여 있을 수 있어 아래에서부터 값이 있는 행을 순서대로 모은다.
+  // 홈 대시보드 미니 추세 그래프용으로 최근 SNS_TREND_DAYS일치를 함께 반환한다.
+  var SNS_TREND_DAYS = 14;
+  function lastSnapshots(sheet, maxCount) {
+    if (!sheet) return [];
     var lastRow = sheet.getLastRow();
     var lastCol = sheet.getLastColumn();
-    if (lastRow < 2 || lastCol < 1) return null;
+    if (lastRow < 2 || lastCol < 1) return [];
     var headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0].map(function (h) { return String(h).trim(); });
-    var scanFrom = Math.min(lastRow, 2 + 2000); // 안전장치: 과도하게 큰 시트라도 아래쪽만 훑는다
-    for (var r = lastRow; r >= 2; r--) {
+    var out = [];
+    for (var r = lastRow; r >= 2 && out.length < maxCount; r--) {
       var row = sheet.getRange(r, 1, 1, lastCol).getValues()[0];
       var isEmpty = row.every(function (c) { return c === '' || c === null; });
       if (isEmpty) continue;
       var obj = {};
       headers.forEach(function (h, idx) { obj[h] = row[idx]; });
-      return obj;
+      out.push(obj);
     }
-    return null;
+    return out.reverse(); // 날짜 오름차순으로 반환
   }
 
   function num(v) {
@@ -60,12 +62,14 @@ function getSnsFollowerSnapshot() {
 
   var result = { sheetUrl: ss.getUrl() };
   Object.keys(tabs).forEach(function (key) {
-    var snap = lastSnapshot(tabs[key]);
-    if (!snap) { result[key] = null; return; }
+    var snaps = lastSnapshots(tabs[key], SNS_TREND_DAYS);
+    if (!snaps.length) { result[key] = null; return; }
+    var latest = snaps[snaps.length - 1];
     result[key] = {
-      date: pick(snap, ['데이터 수집일', '날짜', 'Date']),
-      followers: num(pick(snap, ['팔로워수', '팔로워 수', 'Followers'])),
-      delta: num(pick(snap, ['전일 증감', '증감', 'Delta'])),
+      date: pick(latest, ['데이터 수집일', '날짜', 'Date']),
+      followers: num(pick(latest, ['팔로워수', '팔로워 수', 'Followers'])),
+      delta: num(pick(latest, ['전일 증감', '증감', 'Delta'])),
+      trend: snaps.map(function (s) { return num(pick(s, ['팔로워수', '팔로워 수', 'Followers'])); }),
     };
   });
   return result;
