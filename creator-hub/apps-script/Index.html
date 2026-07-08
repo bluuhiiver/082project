@@ -139,6 +139,25 @@
   .tier-filter-chips { display: flex; gap: 6px; flex-wrap: wrap; }
   .tier-chip-btn { border: 1px solid var(--line); background: var(--panel); border-radius: 999px; padding: 6px 12px; font-size: 12.5px; cursor: pointer; }
   .tier-chip-btn.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+
+  /* --- 오늘의 운영 (액션 큐 / 분포 / 협업 이력) --- */
+  .queue-card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+  .queue-card h3 { margin: 0 0 4px; font-size: 13.5px; }
+  .queue-card .qcount { font-size: 22px; font-weight: 800; }
+  .queue-card .qhint { font-size: 11.5px; color: var(--muted); margin-bottom: 8px; }
+  .queue-card ul { list-style: none; margin: 0; padding: 0; }
+  .queue-card li { display: flex; justify-content: space-between; gap: 8px; padding: 5px 0; border-bottom: 1px dashed var(--line); font-size: 12.5px; }
+  .queue-card li:last-child { border-bottom: none; }
+  .queue-card .more { color: var(--muted); font-size: 11.5px; padding-top: 4px; }
+  .dist-row { display: flex; align-items: center; gap: 10px; margin-bottom: 7px; font-size: 12.5px; }
+  .dist-label { width: 110px; flex: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .dist-track { flex: 1; background: var(--chip); border-radius: 999px; height: 16px; overflow: hidden; }
+  .dist-fill { background: var(--accent); height: 100%; border-radius: 999px; }
+  .dist-val { width: 108px; flex: none; text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .campaign-item { border: 1px solid var(--line); border-radius: 10px; margin-bottom: 8px; overflow: hidden; }
+  .campaign-item summary { list-style: none; cursor: pointer; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; background: #fafaf8; }
+  .campaign-item summary::-webkit-details-marker { display: none; }
+  .campaign-item .participants { padding: 10px 14px; font-size: 12.5px; color: var(--muted); border-top: 1px solid var(--line); overflow-wrap: anywhere; }
 </style>
 
 <div class="wrap">
@@ -149,7 +168,7 @@
 
   <nav class="main-nav" id="mainNav">
     <button class="main-nav-btn" data-page="creator">🐣 크리에이터 풀</button>
-    <button class="main-nav-btn" data-page="perf">📊 성과 분석</button>
+    <button class="main-nav-btn" data-page="ops">📋 오늘의 운영</button>
     <button class="main-nav-btn" data-page="gmv">💰 어필리에이트 GMV</button>
     <button class="main-nav-btn" data-page="segments">🎯 티어 세그먼트</button>
   </nav>
@@ -175,13 +194,38 @@
     <div id="listArea"></div>
   </div>
 
-  <div class="page" id="page-perf">
-    <section id="perfSection" style="display:none;">
-      <header class="top" style="margin-bottom: 10px;">
-        <h1 style="font-size:17px;">📊 콘텐츠 성과 분석 (주차별)</h1>
-        <button class="group-toggle" id="perfToggle">전체 지표 보기</button>
-      </header>
-      <div id="perfTableWrap"></div>
+  <div class="page" id="page-ops">
+    <header class="top" style="margin-bottom: 10px;">
+      <h1 style="font-size:17px;">📋 오늘의 운영</h1>
+      <div class="sub">풀 시트 · UpPromote 데이터에서 자동 계산 — 수기 입력값 없음</div>
+    </header>
+
+    <section style="margin-bottom: 22px;">
+      <h1 style="font-size:14.5px; margin-bottom:8px;">🎯 액션 큐</h1>
+      <div id="opsQueueMeta" class="sub" style="margin-bottom:10px;"></div>
+      <div class="grid" id="opsQueue" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:12px;"></div>
+    </section>
+
+    <section style="margin-bottom: 22px;">
+      <h1 style="font-size:14.5px; margin-bottom:8px;">🌍 국가·채널 분포</h1>
+      <div class="grid" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:16px;">
+        <div>
+          <div class="sub" style="margin-bottom:6px;">국가별</div>
+          <div id="opsCountryDist"></div>
+        </div>
+        <div>
+          <div class="sub" style="margin-bottom:6px;">채널별</div>
+          <div id="opsChannelDist"></div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h1 style="font-size:14.5px; margin-bottom:8px;">📜 협업 이력 타임라인</h1>
+      <div class="toolbar">
+        <input type="search" id="opsCampaignSearch" placeholder="캠페인명으로 검색..." />
+      </div>
+      <div id="opsCampaignList"></div>
     </section>
   </div>
 
@@ -589,50 +633,134 @@
 
   renderAll();
 
-  // --- 콘텐츠 성과 분석 (별도 시트) ---
-  const PERF = <?!= perfJson ?>;
-  const PERF_KEY_SECTIONS = ['', '주요 지표 (전 채널)', '주요 지표 (틱톡)', '서브 지표 (틱톡)'];
-  let perfCompact = true;
+  // --- 오늘의 운영: 액션 큐 / 국가·채널 분포 / 협업 이력 타임라인 ---
+  // 전부 buildSegments()(풀 시트 × UpPromote GMV 조인)에서 파생된 값이라
+  // 수기 입력 오류가 낄 여지가 없다. 예전 "콘텐츠 성과 분석" 탭은 별도
+  // 스프레드시트의 주차별 수기 입력 데이터라 부정확해 제거했다.
+  function opsFmtCount(n) {
+    return n >= 1000 ? (n / 1000).toFixed(1).replace(/\.0$/, '') + 'k' : String(n);
+  }
 
-  function renderPerf() {
-    const section = document.getElementById('perfSection');
-    if (!PERF || !PERF.headers || PERF.headers.length === 0 || !PERF.rows || PERF.rows.length === 0) {
-      section.style.display = 'none';
+  function queueCardHtml(title, hint, rows, renderRow, emptyText) {
+    const shown = rows.slice(0, 6);
+    const items = shown.length
+      ? shown.map(renderRow).join('')
+      : `<li style="color:var(--muted);">${escapeHtml(emptyText)}</li>`;
+    const more = rows.length > shown.length ? `<div class="more">외 ${(rows.length - shown.length).toLocaleString()}명 더 있음</div>` : '';
+    return `<div class="queue-card">
+      <h3>${escapeHtml(title)}</h3>
+      <div class="qcount">${rows.length.toLocaleString()}명</div>
+      <div class="qhint">${escapeHtml(hint)}</div>
+      <ul>${items}</ul>
+      ${more}
+    </div>`;
+  }
+
+  function renderOpsQueue(poolAll, gmvOn) {
+    const meta = document.getElementById('opsQueueMeta');
+    const wrap = document.getElementById('opsQueue');
+    const noCollab = poolAll.filter(c => !c.collabHistory && !c.contentCount)
+      .sort((a, b) => b.followers - a.followers);
+
+    const cards = [queueCardHtml(
+      '협업 이력 없음 (온보딩 대상)',
+      '협업 이력·콘텐츠 제작 기록이 아직 하나도 없는 크리에이터',
+      noCollab,
+      c => `<li><span>${escapeHtml(c.handle || c.email)}</span><span>${escapeHtml(c.country || '')}${c.followers ? ' · ' + opsFmtCount(c.followers) : ''}</span></li>`,
+      '해당 없음'
+    )];
+
+    if (gmvOn) {
+      const dormant = poolAll.filter(c => c.tier === 0).sort((a, b) => b.followers - a.followers);
+      const rising = poolAll.filter(c => c.tier === 3).sort((a, b) => b.week - a.week);
+      const ambassadors = poolAll.filter(c => c.tier === 4).sort((a, b) => b.total - a.total);
+      cards.push(
+        queueCardHtml('휴면·미등록 (재활성화 대상)', '풀에는 있지만 업프로모트 계정이 없거나 미승인', dormant,
+          c => `<li><span>${escapeHtml(c.handle || c.email)}</span><span>${escapeHtml(c.country || '')}${c.followers ? ' · ' + opsFmtCount(c.followers) : ''}</span></li>`,
+          '해당 없음'),
+        queueCardHtml('라이징 스타 (부스트 대상)', '최근 7일 GMV 상위 20% — 지금 밀어주면 효과가 큼', rising,
+          c => `<li><span>${escapeHtml(c.handle || c.email)}</span><span>${fmtEur(c.week)}/7일</span></li>`,
+          '해당 없음'),
+        queueCardHtml('앰버서더 (파트너십 관리 대상)', '누적 GMV 상위 5% — 고정 파트너십·피처링 검토', ambassadors,
+          c => `<li><span>${escapeHtml(c.handle || c.email)}</span><span>${fmtEur(c.total)}</span></li>`,
+          '해당 없음')
+      );
+      meta.textContent = 'GMV 데이터 기준 ' + (GMV.fetchedAt || '') + ' · 팔로워/GMV 많은 순으로 정렬';
+    } else {
+      meta.textContent = '업프로모트 연동 전이라 휴면/라이징 스타/앰버서더 큐는 아직 계산할 수 없어요 (Code.gs의 set_uppromote_key 참고)';
+    }
+    wrap.innerHTML = cards.join('');
+  }
+
+  function renderOpsDistribution(poolAll) {
+    function distBy(keyFn) {
+      const map = new Map();
+      poolAll.forEach(c => {
+        const key = keyFn(c) || '미지정';
+        if (!map.has(key)) map.set(key, { count: 0, gmv: 0 });
+        const e = map.get(key);
+        e.count++;
+        e.gmv += c.total || 0;
+      });
+      return Array.from(map.entries()).sort((a, b) => b[1].count - a[1].count);
+    }
+    function renderDist(containerId, entries) {
+      const max = entries.length ? entries[0][1].count : 1;
+      document.getElementById(containerId).innerHTML = entries.map(([label, v]) => {
+        const pct = Math.max(4, Math.round((v.count / max) * 100));
+        const gmvPart = v.gmv > 0 ? ' · ' + fmtEur(v.gmv) : '';
+        return `<div class="dist-row">
+          <div class="dist-label" title="${escapeAttr(label)}">${escapeHtml(label)}</div>
+          <div class="dist-track"><div class="dist-fill" style="width:${pct}%"></div></div>
+          <div class="dist-val">${v.count.toLocaleString()}명${gmvPart}</div>
+        </div>`;
+      }).join('') || '<div class="sub">데이터 없음</div>';
+    }
+    renderDist('opsCountryDist', distBy(c => c.country));
+    renderDist('opsChannelDist', distBy(c => c.channel));
+  }
+
+  let opsCampaignQuery = '';
+  function renderOpsCampaigns(poolAll) {
+    const map = new Map();
+    poolAll.forEach(c => {
+      (c.collabHistory || '').split(',').map(s => s.trim()).filter(Boolean).forEach(camp => {
+        if (!map.has(camp)) map.set(camp, []);
+        map.get(camp).push(c.handle || c.email);
+      });
+    });
+    const q = opsCampaignQuery.toLowerCase();
+    const entries = Array.from(map.entries())
+      .filter(([camp]) => !q || camp.toLowerCase().includes(q))
+      .sort((a, b) => b[1].length - a[1].length);
+
+    const wrap = document.getElementById('opsCampaignList');
+    if (!entries.length) {
+      wrap.innerHTML = '<div class="sub">조건에 맞는 캠페인이 없습니다</div>';
       return;
     }
-    section.style.display = '';
-
-    const startDateHeader = PERF.headers.find(h => h.label === '시작일 (월요일)');
-    const rows = PERF.rows.slice();
-    if (startDateHeader) {
-      rows.sort((a, b) => String(b[startDateHeader.key]).localeCompare(String(a[startDateHeader.key])));
-    }
-
-    const headers = perfCompact
-      ? PERF.headers.filter(h => PERF_KEY_SECTIONS.includes(h.section))
-      : PERF.headers;
-
-    const thead = '<thead><tr>' + headers.map(h => `<th>${escapeHtml(h.label)}</th>`).join('') + '</tr></thead>';
-    const tbody = '<tbody>' + rows.map(row =>
-      '<tr>' + headers.map(h => `<td>${escapeHtml(formatPerfVal(row[h.key]))}</td>`).join('') + '</tr>'
-    ).join('') + '</tbody>';
-
-    document.getElementById('perfTableWrap').innerHTML = `<div class="table-scroll"><table>${thead}${tbody}</table></div>`;
-    document.getElementById('perfToggle').textContent = perfCompact ? '전체 지표 보기' : '핵심 지표만 보기';
+    wrap.innerHTML = entries.map(([camp, participants]) => `
+      <details class="campaign-item">
+        <summary><span>${escapeHtml(camp)}</span><span class="tab-count">${participants.length.toLocaleString()}명 참여</span></summary>
+        <div class="participants">${escapeHtml(participants.join(', '))}</div>
+      </details>`).join('');
   }
 
-  function formatPerfVal(v) {
-    if (v === null || v === undefined) return '';
-    if (typeof v === 'number') return v.toLocaleString();
-    return String(v);
+  let opsPoolAllCache = null;
+  function renderOps() {
+    opsPoolAllCache = buildSegments().filter(c => c.inPool);
+    renderOpsQueue(opsPoolAllCache, !!(GMV && GMV.enabled));
+    renderOpsDistribution(opsPoolAllCache);
+    renderOpsCampaigns(opsPoolAllCache);
   }
 
-  document.getElementById('perfToggle').addEventListener('click', () => {
-    perfCompact = !perfCompact;
-    renderPerf();
+  document.getElementById('opsCampaignSearch').addEventListener('input', e => {
+    opsCampaignQuery = e.target.value;
+    renderOpsCampaigns(opsPoolAllCache || []);
   });
 
-  renderPerf();
+  // renderOps() 호출은 GMV(const)와 buildSegments()가 선언된 뒤(세그먼트 섹션 이후)로
+  // 미룬다 — 여기서 바로 호출하면 "Cannot access 'GMV' before initialization" 에러가 난다.
 
   // --- 어필리에이트 GMV (UpPromote) ---
   const GMV = <?!= gmvJson ?>;
@@ -728,7 +856,7 @@
       const emailIdx = headers.findIndex(h => SEG_EMAIL_HEADERS.includes(String(h).trim()));
       if (emailIdx === -1) return;
       const gi = name => headers.indexOf(name);
-      const idx = { handle: gi('Handle ID'), channel: gi('Channel'), followers: gi('Followers'), size: gi('Tier'), country: gi('Country'), status: gi(STATUS_COL_NAME) };
+      const idx = { handle: gi('Handle ID'), channel: gi('Channel'), followers: gi('Followers'), size: gi('Tier'), country: gi('Country'), status: gi(STATUS_COL_NAME), collab: gi('협업 이력'), content: gi('콘텐츠 제작 누적 수량') };
       sheet.rows.forEach(row => {
         if (idx.status !== -1 && String(row[idx.status] || '').trim() === '비활성') return;
         const email = String(row[emailIdx] || '').toLowerCase().trim();
@@ -740,6 +868,8 @@
           followers: idx.followers !== -1 ? Number(String(row[idx.followers]).replace(/[^0-9]/g, '')) || 0 : 0,
           sizeTier: idx.size !== -1 ? String(row[idx.size] || '') : '',
           country: idx.country !== -1 ? String(row[idx.country] || '') : '',
+          collabHistory: idx.collab !== -1 ? String(row[idx.collab] || '').trim() : '',
+          contentCount: idx.content !== -1 ? Number(row[idx.content]) || 0 : 0,
           tab: tab,
           inPool: true,
         });
@@ -749,7 +879,7 @@
     // 풀 시트에는 없지만 UpPromote에서 매출이 잡히는 어필리에이트
     Object.keys(gmvByEmail).forEach(email => {
       if (!creators.has(email) && gmvByEmail[email].total > 0) {
-        creators.set(email, { email: email, handle: gmvByEmail[email].name, channel: '', followers: 0, sizeTier: '', country: '', tab: '(풀 시트 밖)', inPool: false });
+        creators.set(email, { email: email, handle: gmvByEmail[email].name, channel: '', followers: 0, sizeTier: '', country: '', collabHistory: '', contentCount: 0, tab: '(풀 시트 밖)', inPool: false });
       }
     });
 
@@ -862,6 +992,7 @@
   });
 
   renderSegments();
+  renderOps();
 
   // --- 상단 메인 탭(크리에이터 풀 / 성과 분석 / GMV) ---
   function switchMainPage(pageName) {
