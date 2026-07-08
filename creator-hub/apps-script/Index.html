@@ -349,6 +349,7 @@
         <h1 style="font-size:17px;">💰 어필리에이트 GMV (UpPromote)</h1>
         <div class="sub" id="gmvMeta"></div>
       </header>
+      <div id="gmvTrackingWrap" style="margin-bottom:14px;"></div>
       <div class="toolbar">
         <input type="search" id="gmvSearch" placeholder="어필리에이트 이름/이메일 검색..." />
         <select id="gmvSort">
@@ -990,6 +991,33 @@
       meta += ` · <span style="color:var(--bad);">⚠ 건당 평균 €1 미만 ${suspiciousCount.toLocaleString()}명 확인 필요</span>`;
     }
     document.getElementById('gmvMeta').innerHTML = meta;
+
+    const trackWrap = document.getElementById('gmvTrackingWrap');
+    const t = GMV.tracking;
+    const trackTotal = t ? (t.couponOrders || 0) + (t.nonCouponOrders || 0) : 0;
+    if (t && trackTotal > 0) {
+      const couponPct = Math.round((t.couponOrders / trackTotal) * 100);
+      const otherPct = 100 - couponPct;
+      const typeEntries = Object.entries(t.byType || {}).sort((a, b) => b[1] - a[1]);
+      trackWrap.innerHTML = `
+        <div class="queue-card">
+          <h3>🔗 유입 경로 — 쿠폰 코드 vs 링크/기타</h3>
+          <div class="qhint">전체 ${trackTotal.toLocaleString()}건(거절·취소 제외) 기준</div>
+          <div class="dist-row">
+            <div class="dist-label">쿠폰 코드</div>
+            <div class="dist-track"><div class="dist-fill" style="width:${Math.max(4, couponPct)}%"></div></div>
+            <div class="dist-val">${t.couponOrders.toLocaleString()}건 (${couponPct}%)</div>
+          </div>
+          <div class="dist-row">
+            <div class="dist-label">링크/기타</div>
+            <div class="dist-track"><div class="dist-fill" style="width:${Math.max(4, otherPct)}%"></div></div>
+            <div class="dist-val">${t.nonCouponOrders.toLocaleString()}건 (${otherPct}%)</div>
+          </div>
+          ${typeEntries.length ? '<div class="qhint" style="margin-top:8px;">세부 유형: ' + typeEntries.map(([k, v]) => escapeHtml(k) + ' ' + v.toLocaleString() + '건').join(' · ') + '</div>' : ''}
+        </div>`;
+    } else {
+      trackWrap.innerHTML = '';
+    }
 
     const q = gmvQuery.toLowerCase();
     const onlyActive = document.getElementById('gmvOnlyActive').checked;
