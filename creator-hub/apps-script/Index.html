@@ -158,6 +158,13 @@
   .campaign-item summary { list-style: none; cursor: pointer; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; background: #fafaf8; }
   .campaign-item summary::-webkit-details-marker { display: none; }
   .campaign-item .participants { padding: 10px 14px; font-size: 12.5px; color: var(--muted); border-top: 1px solid var(--line); overflow-wrap: anywhere; }
+
+  /* --- 캠페인 시트 브라우저 --- */
+  .camp-file { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; margin-bottom: 8px; cursor: pointer; }
+  .camp-file:hover { border-color: var(--accent); }
+  .camp-file-name { font-size: 13.5px; font-weight: 600; }
+  .camp-file-meta { font-size: 11.5px; color: var(--muted); margin-top: 3px; }
+  .camp-loading { padding: 14px 2px; color: var(--muted); font-size: 13px; }
 </style>
 
 <div class="wrap">
@@ -169,6 +176,7 @@
   <nav class="main-nav" id="mainNav">
     <button class="main-nav-btn" data-page="creator">🐣 크리에이터 풀</button>
     <button class="main-nav-btn" data-page="ops">📋 오늘의 운영</button>
+    <button class="main-nav-btn" data-page="campaigns">🗂 캠페인 시트</button>
     <button class="main-nav-btn" data-page="gmv">💰 어필리에이트 GMV</button>
     <button class="main-nav-btn" data-page="segments">🎯 티어 세그먼트</button>
   </nav>
@@ -227,6 +235,32 @@
       </div>
       <div id="opsCampaignList"></div>
     </section>
+  </div>
+
+  <div class="page" id="page-campaigns">
+    <header class="top" style="margin-bottom: 10px;">
+      <h1 style="font-size:17px;">🗂 캠페인 시트</h1>
+      <div class="sub">드라이브에서 "글로벌뷰티" 시트를 자동으로 찾아 보여줍니다 · 새 캠페인 시트를 만들면 자동으로 목록에 잡힙니다 · 수정은 원본 시트에서</div>
+    </header>
+
+    <div id="campListView">
+      <div class="toolbar">
+        <input type="search" id="campSearch" placeholder="캠페인 시트 이름으로 검색..." />
+        <button class="group-toggle" id="campRefresh">↻ 목록 새로고침</button>
+      </div>
+      <div id="campList"></div>
+    </div>
+
+    <div id="campDetailView" style="display:none;">
+      <div class="toolbar">
+        <button class="group-toggle" id="campBack">← 목록으로</button>
+        <input type="search" id="campDetailSearch" placeholder="이 시트 안에서 검색..." />
+      </div>
+      <h2 id="campDetailTitle" style="font-size:15px; margin:4px 0 10px;"></h2>
+      <div class="tabs" id="campTabs"></div>
+      <div class="result-count" id="campCount"></div>
+      <div id="campTableWrap"></div>
+    </div>
   </div>
 
   <div class="page" id="page-gmv">
@@ -315,6 +349,9 @@
 
   function runServer(fnName, args) {
     if (typeof google === 'undefined' || !google.script || !google.script.run) {
+      if (window.MOCK_SERVER && window.MOCK_SERVER[fnName]) {
+        return Promise.resolve(window.MOCK_SERVER[fnName].apply(null, args || []));
+      }
       console.warn('[mock server call]', fnName, args);
       return Promise.resolve({ ok: true, updatedAt: 'mock' });
     }
@@ -994,10 +1031,141 @@
   renderSegments();
   renderOps();
 
+  // --- 캠페인 시트 브라우저 ---
+  // Campaigns.gs의 listCampaignSheets / getCampaignSheetData를 호출해 드라이브의
+  // "글로벌뷰티" 캠페인 시트를 목록화하고, 클릭 시 탭별 내용을 조회한다.
+  // 이메일 컬럼이 있는 탭은 풀×GMV에서 계산한 성과 티어를 옆에 붙여 보여준다.
+  let campaignListCache = null;
+  let campTierByEmail = null;
+  let campDetail = null;
+  let campActiveTab = 0;
+  let campDetailQuery = '';
+
+  function campEnsureTierMap() {
+    if (campTierByEmail) return campTierByEmail;
+    campTierByEmail = {};
+    try {
+      buildSegments().forEach(c => { campTierByEmail[c.email] = c.tier; });
+    } catch (e) { /* GMV 미연동 등 — 티어 칩 없이 표만 표시 */ }
+    return campTierByEmail;
+  }
+
+  function renderCampaignList() {
+    const q = (document.getElementById('campSearch').value || '').toLowerCase();
+    const items = (campaignListCache || []).filter(f => !q || f.name.toLowerCase().includes(q));
+    const listEl = document.getElementById('campList');
+    if (!items.length) {
+      listEl.innerHTML = '<div class="camp-loading">조건에 맞는 캠페인 시트가 없습니다</div>';
+      return;
+    }
+    listEl.innerHTML = items.map(f => `
+      <div class="camp-file" data-id="${escapeAttr(f.id)}">
+        <div class="camp-file-name">${escapeHtml(f.name)}</div>
+        <div class="camp-file-meta">수정 ${escapeHtml(f.updated)} · <a class="link" href="${escapeAttr(f.url)}" target="_blank" rel="noopener">원본 시트 열기</a></div>
+      </div>`).join('');
+    listEl.querySelectorAll('.camp-file').forEach(el => {
+      el.addEventListener('click', (e) => {
+        if (e.target.closest('a')) return; // 원본 링크 클릭은 통과
+        openCampaignSheet(el.dataset.id);
+      });
+    });
+  }
+
+  function loadCampaignList(force) {
+    if (campaignListCache && !force) { renderCampaignList(); return; }
+    document.getElementById('campList').innerHTML = '<div class="camp-loading">드라이브에서 캠페인 시트를 찾는 중...</div>';
+    runServer('listCampaignSheets', []).then(list => {
+      campaignListCache = Array.isArray(list) ? list : [];
+      renderCampaignList();
+    }).catch(err => {
+      document.getElementById('campList').innerHTML = '<div class="camp-loading">목록을 불러오지 못했습니다: ' +
+        escapeHtml(err && err.message ? err.message : String(err)) +
+        '<br>드라이브 권한(drive.readonly)이 매니페스트에 추가됐는지, 재승인을 했는지 확인해주세요.</div>';
+    });
+  }
+
+  function openCampaignSheet(id) {
+    document.getElementById('campListView').style.display = 'none';
+    document.getElementById('campDetailView').style.display = '';
+    document.getElementById('campDetailTitle').textContent = '불러오는 중...';
+    document.getElementById('campTabs').innerHTML = '';
+    document.getElementById('campTableWrap').innerHTML = '<div class="camp-loading">시트 내용을 불러오는 중... (큰 시트는 몇 초 걸릴 수 있어요)</div>';
+    document.getElementById('campCount').textContent = '';
+    campDetailQuery = '';
+    document.getElementById('campDetailSearch').value = '';
+    runServer('getCampaignSheetData', [id]).then(data => {
+      campDetail = data;
+      campActiveTab = 0;
+      renderCampaignDetail();
+    }).catch(err => {
+      document.getElementById('campDetailTitle').textContent = '불러오기 실패';
+      document.getElementById('campTableWrap').innerHTML = '<div class="camp-loading">' + escapeHtml(err && err.message ? err.message : String(err)) + '</div>';
+    });
+  }
+
+  function renderCampaignDetail() {
+    if (!campDetail) return;
+    document.getElementById('campDetailTitle').textContent = campDetail.name;
+    const tabs = campDetail.tabs || [];
+    document.getElementById('campTabs').innerHTML = tabs.map((t, i) =>
+      `<button class="tab-btn ${i === campActiveTab ? 'active' : ''}" data-idx="${i}">${escapeHtml(t.name)} <span class="tab-count">${t.totalRows.toLocaleString()}</span></button>`
+    ).join('');
+    document.getElementById('campTabs').querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => { campActiveTab = Number(btn.dataset.idx); renderCampaignDetail(); });
+    });
+
+    const tab = tabs[campActiveTab];
+    if (!tab) {
+      document.getElementById('campTableWrap').innerHTML = '<div class="camp-loading">표시할 탭이 없습니다</div>';
+      document.getElementById('campCount').textContent = '';
+      return;
+    }
+
+    const emailIdx = tab.headers.findIndex(h => /email|이메일/i.test(String(h)));
+    const tierMap = emailIdx !== -1 ? campEnsureTierMap() : {};
+    const hasTierCol = emailIdx !== -1 && Object.keys(tierMap).length > 0;
+
+    const q = campDetailQuery.toLowerCase();
+    const rows = tab.rows.filter(r => !q || r.map(v => String(v ?? '')).join(' | ').toLowerCase().includes(q));
+
+    const thead = '<thead><tr>' + tab.headers.map(h => `<th>${escapeHtml(h)}</th>`).join('') +
+      (hasTierCol ? '<th>성과 티어</th>' : '') + '</tr></thead>';
+    const tbody = rows.length === 0
+      ? `<tbody><tr><td colspan="${tab.headers.length + (hasTierCol ? 1 : 0)}" class="empty-state">조건에 맞는 결과가 없습니다</td></tr></tbody>`
+      : '<tbody>' + rows.map(r => {
+          const cells = tab.headers.map((h, i) => `<td>${renderCell(h, r[i])}</td>`).join('');
+          let tierCell = '';
+          if (hasTierCol) {
+            const email = String(r[emailIdx] || '').toLowerCase().trim();
+            const tier = tierMap[email];
+            tierCell = '<td>' + (tier !== undefined
+              ? `<span class="ptier" style="background:${PTIER[tier].color}">${PTIER[tier].name}</span>`
+              : '') + '</td>';
+          }
+          return `<tr>${cells}${tierCell}</tr>`;
+        }).join('') + '</tbody>';
+
+    document.getElementById('campTableWrap').innerHTML = `<div class="table-scroll"><table>${thead}${tbody}</table></div>`;
+    document.getElementById('campCount').textContent = rows.length.toLocaleString() + ' / ' + tab.totalRows.toLocaleString() + '건' +
+      (tab.truncated ? ` · 최대 ${tab.rows.length.toLocaleString()}행까지만 표시 (전체는 원본 시트에서)` : '');
+  }
+
+  document.getElementById('campSearch').addEventListener('input', renderCampaignList);
+  document.getElementById('campRefresh').addEventListener('click', () => loadCampaignList(true));
+  document.getElementById('campBack').addEventListener('click', () => {
+    document.getElementById('campDetailView').style.display = 'none';
+    document.getElementById('campListView').style.display = '';
+  });
+  document.getElementById('campDetailSearch').addEventListener('input', e => {
+    campDetailQuery = e.target.value;
+    renderCampaignDetail();
+  });
+
   // --- 상단 메인 탭(크리에이터 풀 / 성과 분석 / GMV) ---
   function switchMainPage(pageName) {
     document.querySelectorAll('.page').forEach(el => el.classList.toggle('active', el.id === 'page-' + pageName));
     document.querySelectorAll('.main-nav-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.page === pageName));
+    if (pageName === 'campaigns') loadCampaignList(false); // 첫 진입 시에만 드라이브 조회
     try { localStorage.setItem('piyonna_creator_pool_page', pageName); } catch (e) {}
   }
   document.getElementById('mainNav').addEventListener('click', (e) => {
