@@ -54,12 +54,32 @@ function getCampaignSheetData(fileId) {
     var lastCol = sheet.getLastColumn();
     if (totalRows < 2 || lastCol < 1) return;
 
-    var readRows = Math.min(totalRows, CAMPAIGN_MAX_ROWS_PER_TAB + 1);
+    var readRows = Math.min(totalRows, CAMPAIGN_MAX_ROWS_PER_TAB + 2);
     var values = sheet.getRange(1, 1, readRows, lastCol).getValues();
-    var headers = values[0].map(function (h) { return String(h).trim(); });
+
+    // 2단 헤더 감지: 첫 행이 병합 그룹(틱톡/인스타그램 등)이라 대부분 비어 있고
+    // 둘째 행에 실제 필드명이 있으면 "그룹 · 필드"로 합치고 데이터는 3행부터 읽는다.
+    var firstRow = values[0].map(function (h) { return String(h).trim(); });
+    var secondRow = values.length > 1 ? values[1].map(function (h) { return String(h).trim(); }) : null;
+    function countFilled(arr) { return arr.filter(function (v) { return v !== ''; }).length; }
+    var headers, dataStart;
+    if (secondRow &&
+        countFilled(firstRow) <= Math.max(2, Math.floor(firstRow.length * 0.5)) &&
+        countFilled(secondRow) > countFilled(firstRow)) {
+      var group = '';
+      headers = secondRow.map(function (f, idx) {
+        if (firstRow[idx]) group = firstRow[idx];
+        if (!f) return group;
+        return (group && group !== f) ? (group + ' · ' + f) : f;
+      });
+      dataStart = 2;
+    } else {
+      headers = firstRow;
+      dataStart = 1;
+    }
 
     var rows = [];
-    for (var i = 1; i < values.length; i++) {
+    for (var i = dataStart; i < values.length; i++) {
       var row = values[i];
       var isEmpty = row.every(function (c) { return c === '' || c === null; });
       if (isEmpty) continue;
@@ -72,8 +92,8 @@ function getCampaignSheetData(fileId) {
         name: tabName,
         headers: headers,
         rows: rows,
-        totalRows: totalRows - 1,
-        truncated: totalRows - 1 > rows.length,
+        totalRows: totalRows - dataStart,
+        truncated: totalRows - dataStart > rows.length,
       });
     }
   });

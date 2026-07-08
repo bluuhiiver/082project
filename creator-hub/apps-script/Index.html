@@ -165,6 +165,24 @@
   .camp-file-name { font-size: 13.5px; font-weight: 600; }
   .camp-file-meta { font-size: 11.5px; color: var(--muted); margin-top: 3px; }
   .camp-loading { padding: 14px 2px; color: var(--muted); font-size: 13px; }
+
+  /* --- 홈 대시보드 --- */
+  .home-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 16px; }
+  .home-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
+  .home-card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; cursor: pointer; transition: border-color .15s ease; display: flex; flex-direction: column; }
+  .home-card:hover { border-color: var(--accent); }
+  .home-card .hc-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .home-card h3 { margin: 0; font-size: 14px; }
+  .home-card .hc-num { font-size: 24px; font-weight: 800; margin: 6px 0 2px; }
+  .home-card .hc-sub { font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+  .home-card ul { list-style: none; margin: 0; padding: 0; flex: 1; }
+  .home-card li { display: flex; justify-content: space-between; gap: 8px; padding: 5px 0; border-bottom: 1px dashed var(--line); font-size: 12.5px; }
+  .home-card li:last-child { border-bottom: none; }
+  .home-card .hc-link { margin-top: 10px; font-size: 12.5px; color: var(--accent); font-weight: 600; }
+
+  /* 캠페인 표: 컬럼이 많아도 세로로 쪼개지지 않고 옆으로 스크롤 */
+  #campTableWrap table { width: auto; min-width: 100%; }
+  #campTableWrap th, #campTableWrap td { white-space: nowrap; max-width: 360px; overflow: hidden; text-overflow: ellipsis; }
 </style>
 
 <div class="wrap">
@@ -174,12 +192,22 @@
   </header>
 
   <nav class="main-nav" id="mainNav">
+    <button class="main-nav-btn" data-page="home">🏠 홈</button>
     <button class="main-nav-btn" data-page="creator">🐣 크리에이터 풀</button>
     <button class="main-nav-btn" data-page="ops">📋 오늘의 운영</button>
     <button class="main-nav-btn" data-page="campaigns">🗂 캠페인 시트</button>
     <button class="main-nav-btn" data-page="gmv">💰 어필리에이트 GMV</button>
     <button class="main-nav-btn" data-page="segments">🎯 티어 세그먼트</button>
   </nav>
+
+  <div class="page" id="page-home">
+    <header class="top" style="margin-bottom: 10px;">
+      <h1 style="font-size:17px;">🏠 오늘의 브리핑</h1>
+      <div class="sub" id="homeMeta"></div>
+    </header>
+    <div class="home-kpis" id="homeKpis"></div>
+    <div class="home-grid" id="homeCards"></div>
+  </div>
 
   <div class="page" id="page-creator">
     <div class="tabs" id="tabs"></div>
@@ -1161,18 +1189,102 @@
     renderCampaignDetail();
   });
 
+  // --- 홈 대시보드: 접속하면 제일 먼저 보이는 브리핑 카드 ---
+  function homeGoSegments(tier) {
+    segState.tier = tier === undefined ? '' : String(tier);
+    renderSegments();
+    switchMainPage('segments');
+  }
+
+  function renderHomeDash() {
+    const gmvOn = !!(GMV && GMV.enabled && !GMV.error);
+    let pool = [];
+    try { pool = buildSegments().filter(c => c.inPool); } catch (e) {}
+    const registered = pool.filter(c => c.registered).length;
+    const selling = pool.filter(c => c.orders > 0).length;
+    const totalGmv = pool.reduce((s, c) => s + c.total, 0);
+    const weekGmv = pool.reduce((s, c) => s + c.week, 0);
+
+    document.getElementById('homeMeta').textContent = gmvOn
+      ? 'GMV 데이터 기준 ' + (GMV.fetchedAt || '') + ' · 카드를 누르면 상세로 이동합니다'
+      : '업프로모트 연동 전 — 풀 시트 데이터만 표시 중';
+
+    const kpi = (v, l) => '<div class="kpi-card"><div class="v">' + v + '</div><div class="l">' + l + '</div></div>';
+    document.getElementById('homeKpis').innerHTML =
+      kpi(pool.length.toLocaleString(), '활성 풀 인원') +
+      kpi((pool.length ? Math.round(registered / pool.length * 100) : 0) + '%', '업프로모트 등록률') +
+      kpi(selling.toLocaleString(), '매출 발생 인원') +
+      kpi(fmtEur(totalGmv), '누적 GMV') +
+      kpi(fmtEur(weekGmv), '최근 7일 GMV');
+
+    const rising = pool.filter(c => c.tier === 3).sort((a, b) => b.week - a.week);
+    const amb = pool.filter(c => c.tier === 4).sort((a, b) => b.total - a.total);
+    const dormant = pool.filter(c => c.tier === 0).sort((a, b) => b.followers - a.followers);
+    const noCollab = pool.filter(c => !c.collabHistory && !c.contentCount).sort((a, b) => b.followers - a.followers);
+
+    const li = (l, r) => '<li><span>' + escapeHtml(l) + '</span><span>' + escapeHtml(r) + '</span></li>';
+    const card = (emoji, title, num, sub, itemsHtml, linkLabel, goKey) =>
+      '<div class="home-card" data-go="' + goKey + '">' +
+      '<div class="hc-head"><h3>' + emoji + ' ' + escapeHtml(title) + '</h3></div>' +
+      '<div class="hc-num">' + num + '</div><div class="hc-sub">' + escapeHtml(sub) + '</div>' +
+      '<ul>' + (itemsHtml || '<li style="color:var(--muted)">해당 없음</li>') + '</ul>' +
+      '<div class="hc-link">' + escapeHtml(linkLabel) + ' →</div></div>';
+
+    const cards = [];
+    if (gmvOn) {
+      cards.push(card('🔥', '지금 밀어줄 라이징 스타', rising.length + '명', '최근 7일 GMV 상위 — 부스트·PR 키트 타이밍',
+        rising.slice(0, 3).map(c => li(c.handle || c.email, fmtEur(c.week) + '/7일')).join(''), '티어 세그먼트에서 보기', 'seg3'));
+      cards.push(card('👑', '앰버서더', amb.length + '명', '누적 GMV 상위 — 파트너십 관리 대상',
+        amb.slice(0, 3).map(c => li(c.handle || c.email, fmtEur(c.total))).join(''), '티어 세그먼트에서 보기', 'seg4'));
+      cards.push(card('😴', '재활성화 대상', dormant.length + '명', '업프로모트 미등록·휴면 — 아웃리치 필요',
+        dormant.slice(0, 3).map(c => li(c.handle || c.email, (c.country || '') + (c.followers ? ' · ' + opsFmtCount(c.followers) : ''))).join(''), '오늘의 운영에서 보기', 'ops'));
+    }
+    cards.push(card('🌱', '온보딩 대기', noCollab.length + '명', '협업 이력이 아직 없는 크리에이터',
+      noCollab.slice(0, 3).map(c => li(c.handle || c.email, (c.country || '') + (c.followers ? ' · ' + opsFmtCount(c.followers) : ''))).join(''), '오늘의 운영에서 보기', 'ops'));
+    cards.push('<div class="home-card" data-go="campaigns"><div class="hc-head"><h3>🗂 최근 캠페인 시트</h3></div>' +
+      '<div class="hc-num" id="homeCampNum">—</div><div class="hc-sub">최근 수정된 순</div>' +
+      '<ul id="homeCampList"><li style="color:var(--muted)">불러오는 중...</li></ul>' +
+      '<div class="hc-link">캠페인 시트 전체 보기 →</div></div>');
+
+    document.getElementById('homeCards').innerHTML = cards.join('');
+    document.getElementById('homeCards').querySelectorAll('.home-card').forEach(el => {
+      el.addEventListener('click', () => {
+        const go = el.dataset.go;
+        if (go === 'seg3') homeGoSegments(3);
+        else if (go === 'seg4') homeGoSegments(4);
+        else switchMainPage(go === 'ops' ? 'ops' : 'campaigns');
+      });
+    });
+
+    const fillCamp = () => {
+      const listEl = document.getElementById('homeCampList');
+      if (!listEl) return;
+      const all = campaignListCache || [];
+      document.getElementById('homeCampNum').textContent = all.length + '개';
+      listEl.innerHTML = all.slice(0, 3).map(f => li(f.name.replace('[글로벌뷰티] ', ''), f.updated.slice(5, 16))).join('') ||
+        '<li style="color:var(--muted)">시트 없음</li>';
+    };
+    if (campaignListCache) fillCamp();
+    else runServer('listCampaignSheets', []).then(list => {
+      campaignListCache = Array.isArray(list) ? list : [];
+      fillCamp();
+    }).catch(() => {
+      const listEl = document.getElementById('homeCampList');
+      if (listEl) listEl.innerHTML = '<li style="color:var(--muted)">캠페인 시트 탭에서 권한 승인 후 표시됩니다</li>';
+    });
+  }
+
   // --- 상단 메인 탭(크리에이터 풀 / 성과 분석 / GMV) ---
   function switchMainPage(pageName) {
     document.querySelectorAll('.page').forEach(el => el.classList.toggle('active', el.id === 'page-' + pageName));
     document.querySelectorAll('.main-nav-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.page === pageName));
     if (pageName === 'campaigns') loadCampaignList(false); // 첫 진입 시에만 드라이브 조회
+    if (pageName === 'home') renderHomeDash();
     try { localStorage.setItem('piyonna_creator_pool_page', pageName); } catch (e) {}
   }
   document.getElementById('mainNav').addEventListener('click', (e) => {
     const btn = e.target.closest('.main-nav-btn');
     if (btn) switchMainPage(btn.dataset.page);
   });
-  let initialPage = 'creator';
-  try { initialPage = localStorage.getItem('piyonna_creator_pool_page') || 'creator'; } catch (e) {}
-  switchMainPage(initialPage);
+  switchMainPage('home'); // 접속하면 항상 브리핑(홈)부터
 </script>
