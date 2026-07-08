@@ -801,16 +801,7 @@
   function renderOpsQueue(poolAll, gmvOn) {
     const meta = document.getElementById('opsQueueMeta');
     const wrap = document.getElementById('opsQueue');
-    const noCollab = poolAll.filter(c => !c.collabHistory && !c.contentCount)
-      .sort((a, b) => b.followers - a.followers);
-
-    const cards = [queueCardHtml(
-      '협업 이력 없음 (온보딩 대상)',
-      '협업 이력·콘텐츠 제작 기록이 아직 하나도 없는 크리에이터',
-      noCollab,
-      c => `<li><span>${escapeHtml(c.handle || c.email)}</span><span>${escapeHtml(c.country || '')}${c.followers ? ' · ' + opsFmtCount(c.followers) : ''}</span></li>`,
-      '해당 없음'
-    )];
+    const cards = [];
 
     if (gmvOn) {
       const dormant = poolAll.filter(c => c.tier === 0).sort((a, b) => b.followers - a.followers);
@@ -1548,7 +1539,6 @@
     const rising = pool.filter(c => c.tier === 3).sort((a, b) => b.week - a.week);
     const amb = pool.filter(c => c.tier === 4).sort((a, b) => b.total - a.total);
     const dormant = pool.filter(c => c.tier === 0).sort((a, b) => b.followers - a.followers);
-    const noCollab = pool.filter(c => !c.collabHistory && !c.contentCount).sort((a, b) => b.followers - a.followers);
 
     const li = (l, r) => '<li><span>' + escapeHtml(l) + '</span><span>' + escapeHtml(r) + '</span></li>';
     const card = (emoji, title, num, sub, itemsHtml, linkLabel, goKey) =>
@@ -1567,8 +1557,6 @@
       cards.push(card('😴', '재활성화 대상', dormant.length + '명', '업프로모트 미등록·휴면 — 아웃리치 필요',
         dormant.slice(0, 3).map(c => li(c.handle || c.email, (c.country || '') + (c.followers ? ' · ' + opsFmtCount(c.followers) : ''))).join(''), '오늘의 운영에서 보기', 'ops'));
     }
-    cards.push(card('🌱', '온보딩 대기', noCollab.length + '명', '협업 이력이 아직 없는 크리에이터',
-      noCollab.slice(0, 3).map(c => li(c.handle || c.email, (c.country || '') + (c.followers ? ' · ' + opsFmtCount(c.followers) : ''))).join(''), '오늘의 운영에서 보기', 'ops'));
     cards.push('<div class="home-card" data-go="campaigns"><div class="hc-head"><h3>🗂 최근 캠페인 시트</h3></div>' +
       '<div class="hc-num" id="homeCampNum">—</div><div class="hc-sub">최근 수정된 순</div>' +
       '<ul id="homeCampList"><li style="color:var(--muted)">불러오는 중...</li></ul>' +
