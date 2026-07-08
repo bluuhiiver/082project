@@ -230,6 +230,31 @@
   const DATA = <?!= dataJson ?>;
   const tabNames = Object.keys(DATA);
 
+  // 시트에서 내용을 지웠지만 체크박스(false)·숫자(0)·상태 기본값 등 잔여 값이 남아
+  // "빈 행" 판정을 통과해버린 행을 화면에서 숨긴다.
+  // 1순위: 신원 컬럼(핸들/이메일/이름류)이 모두 비어 있으면 잔여 행으로 간주.
+  // 신원 컬럼이 없는 탭은 2순위 휴리스틱: 0/false/활성·비활성/순번 외에 아무 값도 없으면 잔여 행.
+  const IDENTITY_HEADERS = ['Handle ID', 'Email Address', 'Email', '이메일', '이름', 'Name', '업체명', '에이전시명', '채널명'];
+  function cleanResidualRows(sheet) {
+    const headers = sheet.headers;
+    const idIdxs = [];
+    headers.forEach((h, i) => { if (IDENTITY_HEADERS.includes(String(h).trim())) idIdxs.push(i); });
+    const noIdx = headers.findIndex(h => /^no\.?$/i.test(String(h).trim()));
+    sheet.rows = sheet.rows.filter(row => {
+      if (idIdxs.length) {
+        return idIdxs.some(i => String(row[i] ?? '').trim() !== '');
+      }
+      for (let i = 0; i < Math.min(headers.length, row.length - 1); i++) {
+        if (i === noIdx) continue;
+        const v = String(row[i] ?? '').trim();
+        if (v === '' || v === '0' || v.toLowerCase() === 'false' || v === '활성' || v === '비활성') continue;
+        return true;
+      }
+      return false;
+    });
+  }
+  tabNames.forEach(t => cleanResidualRows(DATA[t]));
+
   const FILTER_CANDIDATES = ['Tier', 'Country', 'Channel', 'type', 'srp 연동'];
   const GROUP_CANDIDATES = ['Tier', 'Country', 'Channel', 'type', 'srp 연동'];
   const STATUS_COL_NAME = '상태';
