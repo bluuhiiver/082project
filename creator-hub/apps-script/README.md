@@ -21,7 +21,20 @@
 슬랙 `#team_글로벌뷰티제품-마케팅` 채널에 매일 올라오는 "Piyonna SNS 팔로워 리포트"(n8n 자동화)와 **같은 원본 시트**("[글로벌뷰티] Piyonna SNS 채널 raw data")를 `SnsMetrics.gs`가 직접 읽어 홈 카드로 보여준다. Partner/Official × TikTok/Instagram 4개 탭에서 최신 행(팔로워 수, 전일 증감)을 가져오며, 탭 이름에 `partner`/`official` + `tt`/`ig`가 포함되어 있으면 자동으로 찾는다 — 시트 소유자가 탭을 재배치해도 이름 패턴만 유지되면 깨지지 않는다.
 
 - **적용**: 새 파일 `SnsMetrics` 추가 → [SnsMetrics.gs](https://github.com/bluuhiiver/082project/raw/claude/peonara-affiliate-strategy-odvuqf/creator-hub/apps-script/SnsMetrics.gs) 붙여넣기. **추가 권한 승인 불필요** (이미 있는 스프레드시트 읽기 권한만 사용).
-- 슬랙에는 SNS 팔로워 외에도 TikTok 해시태그 videoCount, Discord 멤버 현황이 매일 올라오는데, 이 둘은 뒤에 명확한 추적용 스프레드시트를 찾지 못해 이번엔 제외했다. 해당 지표를 쌓는 시트가 따로 있다면 알려주면 같은 방식으로 추가할 수 있다.
+- TikTok 해시태그(videoCount)와 Discord 멤버 현황은 별도 시트 없이 크롤링 → 슬랙 게시만 되는 구조라, `SlackMetrics.gs`가 **슬랙 채널 히스토리를 직접 읽어 봇 메시지 텍스트를 파싱**한다.
+
+### 슬랙 연동 설정 (최초 1회)
+
+1. [api.slack.com/apps](https://api.slack.com/apps) → **Create New App** → From scratch → 워크스페이스 선택
+2. **OAuth & Permissions** → Scopes → Bot Token Scopes에 `channels:history`, `channels:read` 추가
+3. **Install to Workspace** → 발급된 `xoxb-...` 토큰 복사
+4. 슬랙에서 `#team_글로벌뷰티제품-마케팅` 채널에 이 봇을 초대: `/invite @앱이름`
+5. Apps Script 편집기 → 새 파일 `SlackMetrics` 추가 → [SlackMetrics.gs](https://github.com/bluuhiiver/082project/raw/claude/peonara-affiliate-strategy-odvuqf/creator-hub/apps-script/SlackMetrics.gs) 붙여넣기
+6. `SlackMetrics.gs` 안의 `setSlackToken()` 함수에서 `token` 값을 3번의 토큰으로 교체 → 상단 함수 선택 드롭다운에서 `setSlackToken` 선택 → ▶ 실행 (최초 실행 시 권한 승인 필요할 수 있음)
+7. 실행 로그에 "저장 완료"가 뜨면 성공. 보안상 `token` 변수 값은 다시 지우고 저장해도 무방 (Script Properties에 이미 안전하게 저장됨)
+8. `Index.html`을 최신본으로 교체 → 배포 → 새 버전
+
+추가 OAuth 스코프(appsscript.json 수정)는 필요 없다 — 외부 URL 호출은 기존 `script.external_request` 권한으로 이미 충분하다. 채널 ID가 바뀌거나 다른 채널을 보고 싶으면 `SlackMetrics.gs`의 `SLACK_CHANNEL_ID` 값만 바꾸면 된다.
 
 ## ⚠️ 보안 권고
 

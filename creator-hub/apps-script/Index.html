@@ -287,6 +287,7 @@
         <input type="search" id="campDetailSearch" placeholder="이 시트 안에서 검색..." />
       </div>
       <h2 id="campDetailTitle" style="font-size:15px; margin:4px 0 10px;"></h2>
+      <div class="kpi-strip" id="campSummary"></div>
       <div class="tabs" id="campTabs"></div>
       <div class="result-count" id="campCount"></div>
       <div id="campTableWrap"></div>
@@ -1123,14 +1124,91 @@
     document.getElementById('campCount').textContent = '';
     campDetailQuery = '';
     document.getElementById('campDetailSearch').value = '';
+    document.getElementById('campSummary').innerHTML = '';
     runServer('getCampaignSheetData', [id]).then(data => {
       campDetail = data;
       campActiveTab = 0;
+      renderCampSummary();
       renderCampaignDetail();
     }).catch(err => {
       document.getElementById('campDetailTitle').textContent = '불러오기 실패';
       document.getElementById('campTableWrap').innerHTML = '<div class="camp-loading">' + escapeHtml(err && err.message ? err.message : String(err)) + '</div>';
     });
+  }
+
+  // 캠페인 시트의 탭마다 컬럼 구성이 제각각이라, Views/Likes/Comments/Shares/ER처럼
+  // 흔히 쓰는 성과 컬럼명을 헤더에서 찾아 전체 탭에 걸쳐 자동 합산한다.
+  // 참여자 명단 탭(핸들/이메일만 있고 성과 컬럼이 없는 탭)은 집계에서 자연히 제외된다.
+  const CAMP_METRIC_DEFS = [
+    { key: 'views', label: '조회수', test: h => /view/i.test(h) },
+    { key: 'likes', label: '좋아요', test: h => /like/i.test(h) },
+    { key: 'comments', label: '댓글', test: h => /comment/i.test(h) },
+    { key: 'shares', label: '공유', test: h => /share/i.test(h) },
+    { key: 'saves', label: '저장', test: h => /\bsave/i.test(h) },
+  ];
+
+  function computeCampaignSummary(tabs) {
+    const totals = {};
+    CAMP_METRIC_DEFS.forEach(m => { totals[m.key] = 0; });
+    let contentRows = 0;
+    const creators = new Set();
+    let erSum = 0, erCount = 0;
+
+    (tabs || []).forEach(tab => {
+      const headers = (tab.headers || []).map(h => String(h));
+      const metricCols = CAMP_METRIC_DEFS.map(m => ({
+        key: m.key,
+        idxs: headers.reduce((arr, h, i) => (m.test(h) ? arr.concat(i) : arr), []),
+      })).filter(m => m.idxs.length);
+      const handleIdxs = headers.reduce((arr, h, i) => (/handle/i.test(h) ? arr.concat(i) : arr), []);
+      const erIdxs = headers.reduce((arr, h, i) => (/^er$/i.test(h.trim()) || /engagement rate/i.test(h) ? arr.concat(i) : arr), []);
+      if (!metricCols.length && !erIdxs.length) return; // 성과 컬럼이 없는 탭(예: 시딩/참여자 명단)은 제외
+
+      (tab.rows || []).forEach(row => {
+        let hasAnyMetric = false;
+        metricCols.forEach(m => {
+          m.idxs.forEach(idx => {
+            const raw = row[idx];
+            if (raw === '' || raw === null || raw === undefined) return;
+            const v = Number(String(raw).replace(/[^0-9.\-]/g, ''));
+            if (!isNaN(v)) { totals[m.key] += v; hasAnyMetric = true; }
+          });
+        });
+        erIdxs.forEach(idx => {
+          const raw = row[idx];
+          if (raw === '' || raw === null || raw === undefined) return;
+          const v = Number(String(raw).replace(/[^0-9.\-]/g, ''));
+          if (!isNaN(v)) { erSum += v; erCount++; }
+        });
+        if (hasAnyMetric) {
+          contentRows++;
+          handleIdxs.forEach(idx => { if (row[idx]) creators.add(String(row[idx]).trim().toLowerCase()); });
+        }
+      });
+    });
+
+    return { totals, contentRows, creatorCount: creators.size, avgER: erCount ? erSum / erCount : null };
+  }
+
+  function renderCampSummary() {
+    const wrap = document.getElementById('campSummary');
+    if (!campDetail) { wrap.innerHTML = ''; return; }
+    const s = computeCampaignSummary(campDetail.tabs);
+    const cards = [];
+    cards.push('<div class="kpi-card"><div class="v">' + s.contentRows.toLocaleString() + '</div><div class="l">총 콘텐츠 수</div></div>');
+    cards.push('<div class="kpi-card"><div class="v">' + s.creatorCount.toLocaleString() + '</div><div class="l">참여 크리에이터 (추정)</div></div>');
+    CAMP_METRIC_DEFS.forEach(m => {
+      if (s.totals[m.key] > 0) {
+        cards.push('<div class="kpi-card"><div class="v">' + opsFmtCount(s.totals[m.key]) + '</div><div class="l">' + escapeHtml(m.label) + '</div></div>');
+      }
+    });
+    if (s.avgER !== null) {
+      const pct = s.avgER < 1 ? s.avgER * 100 : s.avgER;
+      cards.push('<div class="kpi-card"><div class="v">' + pct.toFixed(1) + '%</div><div class="l">평균 ER</div></div>');
+    }
+    wrap.innerHTML = s.contentRows
+      ? cards.join('')
+      : '<div class="sub">이 캠페인 시트에서 성과 컬럼(Views/Likes/Comments 등)을 찾지 못했습니다.</div>';
   }
 
   function renderCampaignDetail() {
@@ -1252,6 +1330,13 @@
       '<div class="hc-num" id="homeSnsNum">—</div><div class="hc-sub">Partner + Official 계정 합계 · 전일 대비</div>' +
       '<ul id="homeSnsList"><li style="color:var(--muted)">불러오는 중...</li></ul>' +
       '<div class="hc-link" id="homeSnsLink">원본 시트 열기 →</div></div>');
+    // 슬랙 #team_글로벌뷰티제품-마케팅 채널의 봇 메시지(TikTok 해시태그 리포트 / Discord 멤버 현황)를 직접 파싱
+    cards.push('<div class="home-card" id="homeTiktokCard"><div class="hc-head"><h3>🎬 TikTok 해시태그</h3></div>' +
+      '<div class="hc-num" id="homeTiktokNum">—</div><div class="hc-sub" id="homeTiktokSub">누적 videoCount</div>' +
+      '<ul id="homeTiktokList"><li style="color:var(--muted)">불러오는 중...</li></ul></div>');
+    cards.push('<div class="home-card" id="homeDiscordCard"><div class="hc-head"><h3>💬 Discord 멤버</h3></div>' +
+      '<div class="hc-num" id="homeDiscordNum">—</div><div class="hc-sub" id="homeDiscordSub">전체 멤버 수</div>' +
+      '<ul id="homeDiscordList"><li style="color:var(--muted)">불러오는 중...</li></ul></div>');
 
     document.getElementById('homeCards').innerHTML = cards.join('');
     document.getElementById('homeCards').querySelectorAll('.home-card[data-go]').forEach(el => {
@@ -1293,6 +1378,53 @@
     }).catch(err => {
       document.getElementById('homeSnsNum').textContent = '—';
       document.getElementById('homeSnsList').innerHTML = '<li style="color:var(--muted)">불러오기 실패: ' + escapeHtml(err && err.message ? err.message : String(err)) + '</li>';
+    });
+
+    runServer('getSlackDailyMetrics', []).then(slack => {
+      const ttNum = document.getElementById('homeTiktokNum');
+      const ttList = document.getElementById('homeTiktokList');
+      const dcNum = document.getElementById('homeDiscordNum');
+      const dcList = document.getElementById('homeDiscordList');
+
+      if (!slack || !slack.enabled) {
+        const msg = '<li style="color:var(--muted)">슬랙 연동 전 — Apps Script 편집기에서 setSlackToken 실행 후 표시됩니다</li>';
+        ttNum.textContent = '—'; ttList.innerHTML = msg;
+        dcNum.textContent = '—'; dcList.innerHTML = msg;
+        return;
+      }
+      if (slack.error) {
+        const msg = '<li style="color:var(--muted)">' + escapeHtml(slack.error) + '</li>';
+        ttNum.textContent = '—'; ttList.innerHTML = msg;
+        dcNum.textContent = '—'; dcList.innerHTML = msg;
+        return;
+      }
+
+      if (slack.tiktok && slack.tiktok.tags && Object.keys(slack.tiktok.tags).length) {
+        const tagEntries = Object.entries(slack.tiktok.tags);
+        const totalVideos = tagEntries.reduce((s, [, v]) => s + (v.videoCount || 0), 0);
+        ttNum.textContent = totalVideos.toLocaleString();
+        document.getElementById('homeTiktokSub').textContent = '누적 videoCount · ' + (slack.tiktok.date || '');
+        ttList.innerHTML = tagEntries.map(([tag, v]) =>
+          li('#' + tag, (v.videoCount != null ? v.videoCount.toLocaleString() : '—') + (v.newYesterday ? ' (신규 ' + v.newYesterday + ')' : ''))
+        ).join('');
+      } else {
+        ttNum.textContent = '—';
+        ttList.innerHTML = '<li style="color:var(--muted)">최근 메시지를 찾지 못했습니다</li>';
+      }
+
+      if (slack.discord && slack.discord.total != null) {
+        dcNum.textContent = slack.discord.total.toLocaleString() + '명';
+        document.getElementById('homeDiscordSub').textContent = '전체 멤버 수 · ' + (slack.discord.date || '');
+        dcList.innerHTML = li('신규 가입', '+' + (slack.discord.newToday || 0) + '명');
+      } else {
+        dcNum.textContent = '—';
+        dcList.innerHTML = '<li style="color:var(--muted)">최근 메시지를 찾지 못했습니다</li>';
+      }
+    }).catch(err => {
+      ['homeTiktokNum', 'homeDiscordNum'].forEach(id => document.getElementById(id).textContent = '—');
+      const msg = '<li style="color:var(--muted)">불러오기 실패: ' + escapeHtml(err && err.message ? err.message : String(err)) + '</li>';
+      document.getElementById('homeTiktokList').innerHTML = msg;
+      document.getElementById('homeDiscordList').innerHTML = msg;
     });
 
     const fillCamp = () => {
