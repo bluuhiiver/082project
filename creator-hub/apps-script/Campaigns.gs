@@ -99,3 +99,54 @@ function getCampaignSheetData(fileId) {
   });
   return result;
 }
+
+// 캠페인 콘텐츠 일정 — 각 캠페인 시트의 UploadDate류 컬럼만 훑어 날짜별
+// 업로드 건수를 집계한다(전체 행을 안 읽고 날짜 열만 보는 가벼운 스캔).
+// 시트/행 수에 안전장치를 둬 실행 시간을 보호한다.
+var TIMELINE_MAX_SHEETS = 15;
+var TIMELINE_MAX_ROWS_PER_TAB = 800;
+
+function getCampaignTimeline() {
+  var allFiles = listCampaignSheets();
+  var files = allFiles.slice(0, TIMELINE_MAX_SHEETS);
+  var entries = [];
+  var tz = Session.getScriptTimeZone();
+
+  files.forEach(function (f) {
+    var ss;
+    try {
+      ss = SpreadsheetApp.openById(f.id);
+    } catch (err) {
+      return; // 접근 불가한 시트는 건너뜀
+    }
+    ss.getSheets().forEach(function (sheet) {
+      if (sheet.isSheetHidden()) return;
+      var tabName = sheet.getName();
+      if (tabName.charAt(0) === '_') return;
+      var lastRow = sheet.getLastRow();
+      var lastCol = sheet.getLastColumn();
+      if (lastRow < 2 || lastCol < 1) return;
+
+      var headerRow = sheet.getRange(1, 1, 1, lastCol).getValues()[0].map(function (h) { return String(h).trim(); });
+      var dateIdx = headerRow.findIndex(function (h) { return /upload\s*date|업로드일|게시일|데이터\s*수집일/i.test(h); });
+      if (dateIdx === -1) return;
+
+      var readRows = Math.min(lastRow - 1, TIMELINE_MAX_ROWS_PER_TAB);
+      var values = sheet.getRange(2, dateIdx + 1, readRows, 1).getValues();
+      var counts = {};
+      values.forEach(function (r) {
+        var v = r[0];
+        if (!v) return;
+        var dateStr = (v instanceof Date) ? Utilities.formatDate(v, tz, 'yyyy-MM-dd') : String(v).trim().slice(0, 10);
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return;
+        counts[dateStr] = (counts[dateStr] || 0) + 1;
+      });
+      Object.keys(counts).forEach(function (d) {
+        entries.push({ date: d, campaign: f.name.replace('[글로벌뷰티] ', ''), tab: tabName, count: counts[d] });
+      });
+    });
+  });
+
+  entries.sort(function (a, b) { return b.date.localeCompare(a.date); });
+  return { entries: entries, scannedSheets: files.length, truncatedSheets: allFiles.length > files.length };
+}
