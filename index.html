@@ -32,7 +32,8 @@
     <h1 class="title-logo">LAST SIGNAL</h1>
     <p class="title-sub">메리디안 스테이션에서 온 마지막 신호.</p>
     <div class="title-menu">
-      <button id="btn-start" class="menu-btn primary">START</button>
+      <button id="btn-continue" class="menu-btn primary hidden">CONTINUE</button>
+      <button id="btn-start" class="menu-btn primary">NEW GAME</button>
       <button id="btn-howto" class="menu-btn">CONTROLS</button>
     </div>
     <div id="howto" class="howto hidden">
@@ -42,6 +43,7 @@
       <div class="howto-row"><span>SPACE</span>점프</div>
       <div class="howto-row"><span>CTRL</span>웅크리기</div>
       <div class="howto-row"><span>E</span>상호작용 / 대화</div>
+      <div class="howto-row"><span>J</span>수사 기록(증거/목표)</div>
       <div class="howto-row"><span>1 2 3…</span>대화 선택지</div>
       <div class="howto-row"><span>ESC</span>일시정지</div>
     </div>
@@ -60,6 +62,39 @@
   </div>
   <div id="fade" class="fade"></div>
   <div id="subtitle-log" class="subtitle-log"></div>
+  <button id="btn-journal" class="journal-btn">📁 <span>수사 기록</span></button>
+  <div id="chapter-title" class="chapter-title hidden"><div class="ct-num"></div><div class="ct-name"></div></div>
+</div>
+
+<!-- ───────────────────────── JOURNAL ───────────────────────── -->
+<div id="journal" class="overlay hidden">
+  <div class="journal-panel">
+    <div class="journal-head">
+      <div class="pause-title">수사 기록</div>
+      <button id="btn-journal-close" class="jr-close">✕</button>
+    </div>
+    <div class="jr-section">현재 목표</div>
+    <div id="jr-objective" class="jr-objective">-</div>
+    <div class="jr-section">확보한 증거 <span id="jr-ev-count"></span></div>
+    <div id="jr-evidence" class="jr-list"></div>
+    <div class="jr-section">소지품</div>
+    <div id="jr-items" class="jr-list"></div>
+  </div>
+</div>
+
+<!-- ───────────────────────── KEYPAD ───────────────────────── -->
+<div id="keypad" class="overlay hidden">
+  <div class="keypad-panel">
+    <div class="pause-title">보안 코드</div>
+    <div id="kp-display" class="kp-display">— — — —</div>
+    <div class="kp-grid">
+      <button class="kp-key" data-k="1">1</button><button class="kp-key" data-k="2">2</button><button class="kp-key" data-k="3">3</button>
+      <button class="kp-key" data-k="4">4</button><button class="kp-key" data-k="5">5</button><button class="kp-key" data-k="6">6</button>
+      <button class="kp-key" data-k="7">7</button><button class="kp-key" data-k="8">8</button><button class="kp-key" data-k="9">9</button>
+      <button class="kp-key" data-k="C">C</button><button class="kp-key" data-k="0">0</button><button class="kp-key" data-k="X">✕</button>
+    </div>
+    <div id="kp-hint" class="kp-hint">단서는 기록 속에 있다.</div>
+  </div>
 </div>
 
 <!-- ───────────────────────── DIALOGUE ───────────────────────── -->

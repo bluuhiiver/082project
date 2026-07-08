@@ -20,6 +20,7 @@ export class InteractionSystem {
     const feet = this._tmp.set(this.player.position.x, this.player.position.y - this.player.eyeHeight, this.player.position.z);
     let best = null, bestD = Infinity;
     for (const it of this.interactables) {
+      if (it.when && !it.when()) continue;
       const dx = it.position.x - feet.x, dz = it.position.z - feet.z, dy = (it.position.y - feet.y) * 0.4;
       const d = dx * dx + dz * dz + dy * dy;
       if (d < it.radius * it.radius && d < bestD) { best = it; bestD = d; }
