@@ -64,6 +64,15 @@ function getSnsFollowerSnapshot() {
     for (var i = 0; i < keys.length; i++) if (obj[keys[i]] !== undefined) return obj[keys[i]];
     return '';
   }
+  // 날짜로 서식된 셀은 getValues()가 문자열이 아니라 실제 Date 객체를 준다 —
+  // google.script.run은 응답 안에 Date가 섞여 있으면 통째로 null을 돌려주는
+  // 경우가 있어서(에디터에서 직접 실행하면 정상으로 보이던 이유), 반환 전에
+  // 반드시 문자열로 바꿔둔다.
+  var tz = Session.getScriptTimeZone();
+  function dateStr(v) {
+    if (v instanceof Date) return Utilities.formatDate(v, tz, 'yyyy-MM-dd');
+    return String(v || '').trim();
+  }
 
   var TT_KW = ['tiktok', 'tik tok', 'tt'];
   var IG_KW = ['instagram', 'insta', 'ig'];
@@ -78,7 +87,7 @@ function getSnsFollowerSnapshot() {
     if (!snaps.length) { result[key] = null; return; }
     var latest = snaps[snaps.length - 1];
     result[key] = {
-      date: pick(latest, ['데이터 수집일', '날짜', 'Date']),
+      date: dateStr(pick(latest, ['데이터 수집일', '날짜', 'Date'])),
       followers: num(pick(latest, ['팔로워수', '팔로워 수', 'Followers'])),
       delta: num(pick(latest, ['전일 증감', '증감', 'Delta'])),
       trend: snaps.map(function (s) { return num(pick(s, ['팔로워수', '팔로워 수', 'Followers'])); }),
