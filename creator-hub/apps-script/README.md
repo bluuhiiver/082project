@@ -32,20 +32,17 @@
 
 - **적용**: 새 파일 `SnsMetrics` 추가 → [SnsMetrics.gs](https://github.com/bluuhiiver/082project/raw/claude/peonara-affiliate-strategy-odvuqf/creator-hub/apps-script/SnsMetrics.gs) 붙여넣기. **추가 권한 승인 불필요** (이미 있는 스프레드시트 읽기 권한만 사용).
 - 원본 시트 각 탭의 최근 14일치 값을 함께 읽어와, 홈 카드에 4개 계정 합계 기준 미니 추세선(스파크라인)을 그린다. 하루치 데이터만 있어도 에러 없이 숫자만 표시된다.
-- TikTok 해시태그(videoCount)와 Discord 멤버 현황은 별도 시트 없이 크롤링 → 슬랙 게시만 되는 구조라, `SlackMetrics.gs`가 **슬랙 채널 히스토리를 직접 읽어 봇 메시지 텍스트를 파싱**한다.
+- TikTok 해시태그(videoCount)와 Discord 멤버 현황은 **팀 자체 크롤러가 슬랙에 게시하는 값**이다. 크롤러가 같은 값을 SNS raw data 시트에도 한 줄씩 쓰게 하고, `SlackMetrics.gs`가 그 탭을 읽는다 — **슬랙 앱·봇 토큰이 전혀 필요 없다.**
 
-### 슬랙 연동 설정 (최초 1회)
+### TikTok 해시태그 / Discord 연동 설정 (최초 1회)
 
-1. [api.slack.com/apps](https://api.slack.com/apps) → **Create New App** → From scratch → 워크스페이스 선택
-2. **OAuth & Permissions** → Scopes → Bot Token Scopes에 `channels:history`, `channels:read` 추가
-3. **Install to Workspace** → 발급된 `xoxb-...` 토큰 복사
-4. 슬랙에서 `#team_글로벌뷰티제품-마케팅` 채널에 이 봇을 초대: `/invite @앱이름`
-5. Apps Script 편집기 → 새 파일 `SlackMetrics` 추가 → [SlackMetrics.gs](https://github.com/bluuhiiver/082project/raw/claude/peonara-affiliate-strategy-odvuqf/creator-hub/apps-script/SlackMetrics.gs) 붙여넣기
-6. `SlackMetrics.gs` 안의 `setSlackToken()` 함수에서 `token` 값을 3번의 토큰으로 교체 → 상단 함수 선택 드롭다운에서 `setSlackToken` 선택 → ▶ 실행 (최초 실행 시 권한 승인 필요할 수 있음)
-7. 실행 로그에 "저장 완료"가 뜨면 성공. 보안상 `token` 변수 값은 다시 지우고 저장해도 무방 (Script Properties에 이미 안전하게 저장됨)
-8. `Index.html`을 최신본으로 교체 → 배포 → 새 버전
+1. **크롤러 쪽**: 슬랙에 쏘는 값을 SNS raw data 시트(SNS 팔로워 리포트와 같은 스프레드시트)에도 append 하도록 스텝 추가. 새 탭 2개:
+   - 탭 `tiktok_hashtag raw data` — 컬럼: `날짜 | 해시태그 | videoCount | 신규` (해시태그 하나당 한 줄, 매일 누적)
+   - 탭 `discord raw data` — 컬럼: `날짜 | 총 멤버 | 신규 가입` (하루 한 줄 누적)
+   - 탭 이름에 `hashtag`(또는 `해시태그`) / `discord`만 들어 있으면 되고, 컬럼 순서도 무관 (헤더 이름으로 자동 인식). `2,068`·`+7`·`2054명` 같은 표기도 알아서 숫자로 파싱.
+2. **Apps Script 쪽**: 새 파일 `SlackMetrics` 추가 → [SlackMetrics.gs](https://github.com/bluuhiiver/082project/raw/claude/peonara-affiliate-strategy-odvuqf/creator-hub/apps-script/SlackMetrics.gs) 붙여넣기 → 배포 → 새 버전. **추가 권한 승인 불필요** (기존 스프레드시트 읽기 권한만 사용).
 
-추가 OAuth 스코프(appsscript.json 수정)는 필요 없다 — 외부 URL 호출은 기존 `script.external_request` 권한으로 이미 충분하다. 채널 ID가 바뀌거나 다른 채널을 보고 싶으면 `SlackMetrics.gs`의 `SLACK_CHANNEL_ID` 값만 바꾸면 된다.
+TikTok 카드는 가장 최근 날짜의 해시태그별 videoCount·신규 수를, Discord 카드는 맨 아래(최신) 행의 총 멤버·신규 가입을 보여준다. 크롤러가 아직 기록을 시작하기 전이면 카드에 안내 문구가 뜬다.
 
 ## 💰 GMV·주문 수 계산 방식 (Code.gs `fetchUpPromoteGmv()`)
 
