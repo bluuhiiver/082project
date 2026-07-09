@@ -1798,6 +1798,10 @@
       '<div class="hc-link">' + escapeHtml(linkLabel) + ' →</div></div>';
 
     const cards = [];
+    cards.push('<div class="home-card" data-go="ops"><div class="hc-head"><h3>🛒 어필리에이트 인기 제품</h3></div>' +
+      '<div class="hc-num" id="homeTopProdNum">—</div><div class="hc-sub" id="homeTopProdSub">파일 업로드로 갱신</div>' +
+      '<ul id="homeTopProdList"><li style="color:var(--muted)">불러오는 중...</li></ul>' +
+      '<div class="hc-link">오늘의 운영에서 갱신하기 →</div></div>');
     if (gmvOn) {
       cards.push(card('🔥', '지금 밀어줄 라이징 스타', rising.length + '명', '최근 7일 GMV 상위 — 부스트·PR 키트 타이밍',
         rising.slice(0, 3).map(c => li(c.handle || c.email, fmtEur(c.week) + '/7일')).join(''), '티어 세그먼트에서 보기', 'seg3'));
@@ -1810,10 +1814,6 @@
       '<div class="hc-num" id="homeCampNum">—</div><div class="hc-sub">최근 수정된 순</div>' +
       '<ul id="homeCampList"><li style="color:var(--muted)">불러오는 중...</li></ul>' +
       '<div class="hc-link">캠페인 시트 전체 보기 →</div></div>');
-    cards.push('<div class="home-card" data-go="ops"><div class="hc-head"><h3>🛒 어필리에이트 인기 제품</h3></div>' +
-      '<div class="hc-num" id="homeTopProdNum">—</div><div class="hc-sub" id="homeTopProdSub">파일 업로드로 갱신</div>' +
-      '<ul id="homeTopProdList"><li style="color:var(--muted)">불러오는 중...</li></ul>' +
-      '<div class="hc-link">오늘의 운영에서 갱신하기 →</div></div>');
     // 슬랙 #team_글로벌뷰티제품-마케팅 채널의 "Piyonna SNS 팔로워 리포트"와 같은 원본 시트
     cards.push('<div class="home-card" id="homeSnsCard"><div class="hc-head"><h3>📈 SNS 팔로워</h3></div>' +
       '<div class="hc-num" id="homeSnsNum">—</div><div id="homeSnsSpark"></div><div class="hc-sub">Partner + Official 계정 합계 · 전일 대비</div>' +
@@ -1946,7 +1946,7 @@
       }
       numEl.textContent = items[0].title;
       document.getElementById('homeTopProdSub').textContent = (data.meta && data.meta.updatedAt ? data.meta.updatedAt + ' 기준' : '') + ' · 판매수량 1위';
-      listEl.innerHTML = items.slice(0, 3).map(it => li(it.title, it.qty.toLocaleString() + '개')).join('');
+      listEl.innerHTML = items.slice(0, 5).map(it => li(it.title, it.qty.toLocaleString() + '개')).join('');
     };
     if (topProductsCache) fillTopProd(topProductsCache);
     else runServer('getTopProducts', []).then(data => { topProductsCache = data; fillTopProd(data); }).catch(() => {
