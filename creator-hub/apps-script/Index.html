@@ -436,6 +436,10 @@
 <script>
   const DATA = <?!= dataJson ?>;
   const tabNames = Object.keys(DATA);
+  // 크리에이터 풀 표(#page-creator)가 초기 로딩 시 UpPromote 매칭 이메일을
+  // 보여주려고 GMV를 참조하므로, GMV(const)는 renderAll()보다 먼저 선언해야 한다
+  // — 안 그러면 "Cannot access 'GMV' before initialization" 에러가 난다.
+  const GMV = <?!= gmvJson ?>;
 
   // 시트에서 내용을 지웠지만 체크박스(false)·숫자(0)·상태 기본값 등 잔여 값이 남아
   // "빈 행" 판정을 통과해버린 행을 화면에서 숨긴다.
@@ -570,11 +574,34 @@
     groupSelect.onchange = () => { state.groupBy = groupSelect.value; renderTable(); };
   }
 
+  // 풀 시트 자체 이메일 컬럼과 UpPromote 이메일이 다른 경우(오타·계정 변경 등)를
+  // 찾아내기 위해, 핸들(이름)로 UpPromote 어필리에이트를 매칭해 이메일을 보여준다.
+  // 이메일로 매칭하면 애초에 어긋난 케이스를 못 찾으니 이름/핸들 기준으로 매칭.
+  function normMatchKey_(s) {
+    return String(s || '').toLowerCase().replace(/[^a-z0-9가-힣]/g, '').trim();
+  }
+  const OWN_EMAIL_HEADERS_ = ['Email Address', 'Email', 'email', '이메일'];
+  function upNameToEmail_() {
+    const map = {};
+    if (GMV && GMV.enabled && GMV.rows) {
+      GMV.rows.forEach(r => {
+        const key = normMatchKey_(r[0]);
+        const email = String(r[1] || '').trim();
+        if (key && email && !map[key]) map[key] = email;
+      });
+    }
+    return map;
+  }
+
   function tableHtml(headers, rows) {
     const editing = editState.unlocked;
-    const extraTh = editing ? '<th>관리</th>' : '';
+    const nameColIdx = ['Handle ID', '이름', 'Name'].reduce((found, h) => found !== -1 ? found : colIdx(headers, h), -1);
+    const ownEmailColIdx = headers.findIndex(h => OWN_EMAIL_HEADERS_.includes(String(h).trim()));
+    const upMap = nameColIdx !== -1 ? upNameToEmail_() : null;
+    const showUpEmailCol = !!(upMap && Object.keys(upMap).length);
+    const extraTh = (showUpEmailCol ? '<th>UpPromote 매칭 이메일<span title="핸들·이름으로 UpPromote 어필리에이트를 찾아 매칭한 이메일 — 풀 시트의 이메일과 다르면 계정이 어긋나 있을 수 있음" style="cursor:help;color:var(--muted);"> ⓘ</span></th>' : '') + (editing ? '<th>관리</th>' : '');
     const thead = '<thead><tr>' + headers.map(h => `<th>${escapeHtml(h)}</th>`).join('') + extraTh + '</tr></thead>';
-    const colCount = headers.length + (editing ? 1 : 0);
+    const colCount = headers.length + (showUpEmailCol ? 1 : 0) + (editing ? 1 : 0);
 
     if (rows.length === 0) {
       return `<div class="table-scroll"><table>${thead}<tbody><tr><td colspan="${colCount}" class="empty-state">조건에 맞는 결과가 없습니다</td></tr></tbody></table></div>`;
@@ -587,12 +614,21 @@
         if (editing) return `<td class="editable" data-row="${sheetRow}" data-header="${escapeAttr(h)}">${renderCell(h, row[i])}</td>`;
         return `<td>${renderCell(h, row[i])}</td>`;
       }).join('');
+      let upEmailCell = '';
+      if (showUpEmailCol) {
+        const matched = upMap[normMatchKey_(row[nameColIdx])] || '';
+        const ownEmail = ownEmailColIdx !== -1 ? String(row[ownEmailColIdx] || '').toLowerCase().trim() : '';
+        const mismatch = matched && ownEmail && matched.toLowerCase().trim() !== ownEmail;
+        upEmailCell = matched
+          ? `<td>${escapeHtml(matched)}${mismatch ? ' <span title="풀 시트 이메일과 다름" style="color:var(--bad);">⚠</span>' : ''}</td>`
+          : '<td><span class="sub">—</span></td>';
+      }
       let actionCell = '';
       if (editing) {
         const isActive = statusIdx === -1 || String(row[statusIdx] || '').trim() !== '비활성';
         actionCell = `<td><button class="row-action-btn" data-action="toggle-status" data-row="${sheetRow}" data-active="${isActive ? '1' : '0'}">${isActive ? '비활성화' : '활성화'}</button></td>`;
       }
-      return `<tr>${cells}${actionCell}</tr>`;
+      return `<tr>${cells}${upEmailCell}${actionCell}</tr>`;
     }).join('');
 
     return `<div class="table-scroll"><table>${thead}<tbody>${body}</tbody></table></div>`;
@@ -1154,11 +1190,9 @@
     renderOpsCampaigns(opsPoolAllCache || []);
   });
 
-  // renderOps() 호출은 GMV(const)와 buildSegments()가 선언된 뒤(세그먼트 섹션 이후)로
-  // 미룬다 — 여기서 바로 호출하면 "Cannot access 'GMV' before initialization" 에러가 난다.
+  // renderOps() 호출은 buildSegments()가 선언된 뒤(세그먼트 섹션 이후)로 미룬다.
 
-  // --- 어필리에이트 GMV (UpPromote) ---
-  const GMV = <?!= gmvJson ?>;
+  // --- 어필리에이트 GMV (UpPromote) --- (GMV 자체는 파일 위쪽에서 이미 선언됨)
   let estGmvCache = null; // 추정 어필리에이트 GMV(주문 알림 × 할인코드) — renderGmv가 참조하므로 여기서 선언
   const GMV_SORT_COL = { totalGmv: 2, weekGmv: 3, todayGmv: 4, orders: 5 };
   let gmvQuery = '';
