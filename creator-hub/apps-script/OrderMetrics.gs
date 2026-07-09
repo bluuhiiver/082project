@@ -9,6 +9,7 @@
 //   (주문 하나당 한 줄, 할인코드 없으면 빈칸. 컬럼 순서 무관 — 헤더로 자동 인식)
 var ORDERS_SPREADSHEET_ID = '1NOoKuyM92HSe3aiQ_vm1If--ljgHebJtmFzdX7t1w0E';
 var ORDERS_MAX_SCAN_ROWS = 3000;
+var ORDERS_TREND_DAYS = 14;
 
 // 공용 프로모 코드 — 어필리에이트 개인 코드가 아닌 사이트 전체 할인.
 // 새 공용 코드를 만들면 여기에만 추가하면 된다 (대소문자 무관).
@@ -82,6 +83,7 @@ function getEstimatedAffiliateGmv() {
 
   var totalGmv = 0, weekGmv = 0, todayGmv = 0, orders = 0;
   var byCode = {};
+  var byDate = {}; // 날짜별 추이 그래프용
   var seenOrders = {}; // 같은 주문이 중복 기록돼도 한 번만 센다
 
   values.forEach(function (row) {
@@ -106,11 +108,24 @@ function getEstimatedAffiliateGmv() {
     if (!byCode[code]) byCode[code] = { gmv: 0, orders: 0 };
     byCode[code].gmv += amount;
     byCode[code].orders += 1;
+    if (dateStr) {
+      if (!byDate[dateStr]) byDate[dateStr] = { gmv: 0, orders: 0 };
+      byDate[dateStr].gmv += amount;
+      byDate[dateStr].orders += 1;
+    }
   });
 
   var byCodeList = Object.keys(byCode).map(function (c) {
     return { code: c, gmv: Math.round(byCode[c].gmv * 100) / 100, orders: byCode[c].orders };
   }).sort(function (a, b) { return b.gmv - a.gmv; });
+
+  // 최근 ORDERS_TREND_DAYS일 — 데이터 없는 날도 0으로 채워 그래프가 끊기지 않게 한다.
+  var daily = [];
+  for (var d = ORDERS_TREND_DAYS - 1; d >= 0; d--) {
+    var dt = new Date(Date.now() - d * 24 * 60 * 60 * 1000);
+    var ds = Utilities.formatDate(dt, tz, 'yyyy-MM-dd');
+    daily.push({ date: ds, gmv: byDate[ds] ? Math.round(byDate[ds].gmv * 100) / 100 : 0, orders: byDate[ds] ? byDate[ds].orders : 0 });
+  }
 
   return {
     enabled: true,
@@ -119,6 +134,7 @@ function getEstimatedAffiliateGmv() {
     weekGmv: Math.round(weekGmv * 100) / 100,
     todayGmv: Math.round(todayGmv * 100) / 100,
     byCode: byCodeList,
+    daily: daily,
     fetchedAt: Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd HH:mm'),
   };
 }

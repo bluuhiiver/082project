@@ -51,17 +51,19 @@ TikTok 카드는 가장 최근 날짜의 해시태그별 videoCount·신규 수�
 1. **주문 알림 앱 쪽**: SNS raw data 시트에 탭 `orders raw data` 추가 — 컬럼: `날짜 | 주문번호 | 금액 | 할인코드` (주문 하나당 한 줄, 할인코드 없으면 빈칸). 컬럼 순서 무관, `#1843`·`20.5 EUR`·소문자 코드 전부 알아서 정규화. 같은 주문번호가 중복 기록돼도 한 번만 센다.
 2. **Apps Script 쪽**: 새 파일 `OrderMetrics` 추가 → [OrderMetrics.gs](https://github.com/bluuhiiver/082project/raw/claude/peonara-affiliate-strategy-odvuqf/creator-hub/apps-script/OrderMetrics.gs) 붙여넣기 → `Index.html` 최신본 교체 → 배포 → 새 버전. **추가 권한 승인 불필요.**
 3. **공용 프로모 코드 관리**: 새 사이트 전체 할인 코드를 만들면 `OrderMetrics.gs` 상단의 `GENERAL_PROMO_CODES` 배열에 추가해야 어필리에이트 집계에서 빠진다 (현재: `SUMMER26`).
+4. **일별 추이 그래프**: 주문 기록에 날짜가 있으니 별도 스냅샷 저장 없이 최근 14일을 그대로 집계해 막대그래프로 보여준다(빈 날은 0으로 채움). GMV 페이지 상단에 노출.
 
 ## 💰 GMV·주문 수 계산 방식 (Code.gs `fetchUpPromoteGmv()`)
 
 이 함수는 **Code.gs 안에 있어서 이 레포에는 포함되지 않는다** (비밀번호 하드코딩 파일이라 의도적으로 제외). 다만 표시되는 숫자의 의미를 정확히 알아야 하므로 현재 반영된 계산 규칙을 여기 기록해둔다:
 
-- **주문 수**: UpPromote 주문 상태가 `approved`(승인) 또는 `paid`(지급 완료)인 건만 센다. `pending`(검토중)은 아직 커미션이 확정 안 된 상태라 제외, `denied`/`rejected`(거절)도 당연히 제외.
-- **수동 지급 커미션 제외**: `tracking_type`이 `"Manually added"`인 건(실제 판매가 아니라 꾸준한 참여에 대한 보상성 커미션)은 누적/7일/오늘 GMV와 주문 수 전부에서 제외한다. 다만 얼마나 있는지 참고할 수 있게 GMV 페이지의 "세부 유형" 목록에는 계속 노출된다.
+- **주문 수·GMV 기준 통일**: UpPromote 주문 상태가 `denied`/`rejected`(거절)인 건만 제외하고, `approved`(승인)·`paid`(지급완료)·`pending`(검토중)은 전부 GMV·주문 수 양쪽에 동일하게 반영한다. 분자(GMV)·분모(주문 수)가 항상 같은 기준이라 "건당 평균" 같은 파생 계산이 왜곡되지 않는다. pending은 나중에 거절되면 줄어들 수 있는 값이라는 점만 참고.
+- **수동 지급 커미션 제외**: `tracking_type`에 `"manual"`이 포함된 건(`Manually added`/`Manually Import` 등 — 실제 판매가 아니라 참여 보상·과거 데이터 일괄 임포트)은 누적/7일/오늘 GMV와 주문 수 전부에서 제외한다. 다만 얼마나 있는지 참고할 수 있게 GMV 페이지의 "세부 유형" 목록에는 계속 노출된다.
 - **쿠폰 코드 vs 링크/기타 비교**: GMV 페이지 상단에 `coupon_applied` 필드 유무로 구분한 유입 경로 비교 막대와, `tracking_type`별 세부 건수를 보여준다. 수동 지급 건은 이 비교에서도 제외.
+- **일별 GMV 추이**: referrals의 `created_at`을 매출 발생일로 잡아 최근 14일을 전체 어필리에이트 합산으로 집계, GMV 페이지 상단에 막대그래프로 표시. 별도 스냅샷 저장 없이 매 호출마다 재계산.
 - **"건당 평균 €1 미만 ⚠" 경고**: `Index.html`의 `orderCountCell()`이 클라이언트에서 계산 — 취소/거절/무료 사은품 주문이 섞였을 가능성을 운영자가 바로 알아챌 수 있게 하는 시각적 신호일 뿐, 서버 계산에는 영향 없음.
 
-이 규칙을 바꾸고 싶으면(예: `paid`만 인정하고 `approved`는 빼고 싶다든지) `Code.gs`의 `fetchUpPromoteGmv()` 안 해당 조건문만 수정하면 된다.
+이 규칙을 바꾸고 싶으면 `Code.gs`의 `fetchUpPromoteGmv()` 안 해당 조건문만 수정하면 된다.
 
 ## ⚠️ 보안 권고
 
