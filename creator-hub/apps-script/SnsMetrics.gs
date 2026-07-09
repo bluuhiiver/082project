@@ -31,7 +31,10 @@ function getSnsFollowerSnapshot() {
   // 한 줄씩 개별 API 호출(getRange 반복)로 읽으면 시트가 커질수록 급격히 느려져
   // 사실상 멈춘 것처럼 보인다 — 필요한 범위를 한 번에 통째로 읽는다.
   var SNS_TREND_DAYS = 14;
-  var SNS_SCAN_ROWS = 500; // 안전장치: 결측 행이 아주 많아도 이 범위 안에서만 찾는다
+  // 안전장치: 시트 끝에 서식만 남은 빈 행이 수백~수천 개 붙어있는 경우가 있어
+  // (실제 데이터는 130행 정도인데 lastRow가 1000행 넘게 잡히는 식) 너무 작게
+  // 잡으면 그 빈 꼬리 안에서만 찾다가 못 찾는다 — 여유있게 잡아둔다.
+  var SNS_SCAN_ROWS = 3000;
   function lastSnapshots(sheet, maxCount) {
     if (!sheet) return [];
     var lastRow = sheet.getLastRow();
