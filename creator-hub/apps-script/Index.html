@@ -839,19 +839,24 @@
     if (!data || data.length < 2) return '<div class="sub">추이를 그리기엔 데이터가 부족합니다.</div>';
     const max = Math.max.apply(null, data.map(d => d.value), 1);
     const n = data.length;
-    const gap = 3;
-    const barW = Math.max(2, (w - gap * (n - 1)) / n);
+    const gap = 6; // 막대 사이 여백을 넓혀서 더 가늘어 보이게
+    const topPad = 14; // 막대 위 숫자 라벨 공간
+    const barW = Math.max(2, Math.min(22, (w - gap * (n - 1)) / n)); // 폭이 넓은 화면에서 늘어나 뚱뚱해지지 않게 상한
+    const usedW = barW * n + gap * (n - 1);
+    const offsetX = (w - usedW) / 2; // 상한에 걸려 남는 공간은 가운데 정렬
     const labelEvery = Math.ceil(n / 7); // 최대 7개 정도만 날짜 라벨 표시
     const bars = data.map((d, i) => {
-      const x = i * (barW + gap);
-      const barH = Math.max(1, (d.value / max) * (h - 4));
-      const y = h - barH;
+      const x = offsetX + i * (barW + gap);
+      const barH = Math.max(1, (d.value / max) * (h - topPad - 4));
+      const y = topPad + (h - topPad) - barH;
       const label = d.date.slice(5).replace('-', '/');
+      const valueLabel = d.value > 0 ? fmt(d.value) : '';
       return '<rect x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + barW.toFixed(1) + '" height="' + barH.toFixed(1) +
         '" fill="var(--accent)" rx="2"><title>' + escapeHtml(d.date) + ': ' + escapeHtml(fmt(d.value)) + '</title></rect>' +
-        (i % labelEvery === 0 ? '<text x="' + (x + barW / 2).toFixed(1) + '" y="' + (h + 13) + '" font-size="10" fill="var(--muted)" text-anchor="middle">' + escapeHtml(label) + '</text>' : '');
+        (valueLabel ? '<text x="' + (x + barW / 2).toFixed(1) + '" y="' + (y - 3).toFixed(1) + '" font-size="9" fill="var(--muted)" text-anchor="middle">' + escapeHtml(valueLabel) + '</text>' : '') +
+        (i % labelEvery === 0 ? '<text x="' + (x + barW / 2).toFixed(1) + '" y="' + (topPad + h + 13) + '" font-size="10" fill="var(--muted)" text-anchor="middle">' + escapeHtml(label) + '</text>' : '');
     }).join('');
-    return '<svg width="100%" height="' + (h + 18) + '" viewBox="0 0 ' + w + ' ' + (h + 18) + '" preserveAspectRatio="none" style="display:block;overflow:visible;">' + bars + '</svg>';
+    return '<svg width="100%" height="' + (topPad + h + 18) + '" viewBox="0 0 ' + w + ' ' + (topPad + h + 18) + '" preserveAspectRatio="xMidYMid meet" style="display:block;overflow:visible;">' + bars + '</svg>';
   }
 
   function queueCardHtml(title, hint, rows, renderRow, emptyText) {
