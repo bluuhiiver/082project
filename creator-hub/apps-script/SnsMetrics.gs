@@ -24,16 +24,21 @@ function getSnsFollowerSnapshot() {
   // 각 raw data 탭은 날짜순으로 누적되며, 맨 아래가 최신 스냅샷이다.
   // 중간에 결측 행이 섞여 있을 수 있어 아래에서부터 값이 있는 행을 순서대로 모은다.
   // 홈 대시보드 미니 추세 그래프용으로 최근 SNS_TREND_DAYS일치를 함께 반환한다.
+  // 한 줄씩 개별 API 호출(getRange 반복)로 읽으면 시트가 커질수록 급격히 느려져
+  // 사실상 멈춘 것처럼 보인다 — 필요한 범위를 한 번에 통째로 읽는다.
   var SNS_TREND_DAYS = 14;
+  var SNS_SCAN_ROWS = 500; // 안전장치: 결측 행이 아주 많아도 이 범위 안에서만 찾는다
   function lastSnapshots(sheet, maxCount) {
     if (!sheet) return [];
     var lastRow = sheet.getLastRow();
     var lastCol = sheet.getLastColumn();
     if (lastRow < 2 || lastCol < 1) return [];
     var headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0].map(function (h) { return String(h).trim(); });
+    var startRow = Math.max(2, lastRow - SNS_SCAN_ROWS + 1);
+    var values = sheet.getRange(startRow, 1, lastRow - startRow + 1, lastCol).getValues();
     var out = [];
-    for (var r = lastRow; r >= 2 && out.length < maxCount; r--) {
-      var row = sheet.getRange(r, 1, 1, lastCol).getValues()[0];
+    for (var i = values.length - 1; i >= 0 && out.length < maxCount; i--) {
+      var row = values[i];
       var isEmpty = row.every(function (c) { return c === '' || c === null; });
       if (isEmpty) continue;
       var obj = {};
