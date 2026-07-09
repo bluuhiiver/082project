@@ -2057,14 +2057,15 @@
     }
     const top = (d.byCode || []).slice(0, 8);
     wrap.innerHTML = `<div class="queue-card">
-      <h3>추정 어필리에이트 GMV (할인코드 기준)</h3>
-      <div class="qhint">주문 기록에서 공용 프로모 코드를 뺀 할인코드 주문 합계 — UpPromote 추적과 별개인 추정치 · ${escapeHtml(d.fetchedAt || '')}</div>
+      <h3>추정 어필리에이트 GMV (UpPromote 등록 코드 기준)</h3>
+      <div class="qhint">주문 기록에서 UpPromote에 등록된 어필리에이트 개인 코드만 골라 합산 — UpPromote 확정 GMV와 별개인 추정치 · ${escapeHtml(d.fetchedAt || '')}</div>
       <div class="kpi-strip" style="margin-top:8px;">
         <div class="kpi-card"><div class="v">${fmtEur(d.totalGmv)}</div><div class="l">누적 · 주문 ${(d.orders || 0).toLocaleString()}건</div></div>
         <div class="kpi-card"><div class="v">${fmtEur(d.weekGmv)}</div><div class="l">최근 7일</div></div>
         <div class="kpi-card"><div class="v">${fmtEur(d.todayGmv)}</div><div class="l">오늘</div></div>
       </div>
       ${top.length ? '<div class="qhint" style="margin-top:8px;">코드별: ' + top.map(c => escapeHtml(c.code) + ' ' + fmtEur(c.gmv) + ' (' + c.orders + '건)').join(' · ') + '</div>' : ''}
+      ${d.note ? '<div class="qhint" style="margin-top:8px; color:var(--bad);">' + escapeHtml(d.note) + '</div>' : ''}
       ${d.daily && d.daily.length ? '<div class="qhint" style="margin-top:14px;">일별 추이 (최근 ' + d.daily.length + '일)</div>' + trendBarChartSvg(d.daily.map(x => ({ date: x.date, value: x.gmv })), fmtEur, 640, 90) : ''}
     </div>`;
   }
