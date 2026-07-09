@@ -856,7 +856,7 @@
       const rising = poolAll.filter(c => c.tier === 3).sort((a, b) => b.week - a.week);
       const ambassadors = poolAll.filter(c => c.tier === 4).sort((a, b) => b.total - a.total);
       cards.push(
-        queueCardHtml('휴면·미등록 (재활성화 대상)', '풀에는 있지만 업프로모트 계정이 없거나 미승인', dormant,
+        queueCardHtml('휴면·미등록 — 연락해서 다시 살려야 함', '어필리에이트 계정이 없거나 승인 안 됨 — 한 번도 판매를 시작 못 한 상태', dormant,
           c => `<li><span>${escapeHtml(c.handle || c.email)}</span><span>${escapeHtml(c.country || '')}${c.followers ? ' · ' + opsFmtCount(c.followers) : ''}</span></li>`,
           '해당 없음'),
         queueCardHtml('라이징 스타 — 최근 7일 매출 급상승', '전체 중 최근 7일 매출 상위 20% — 지금 밀어주면 효과가 큼', rising,
@@ -1807,7 +1807,7 @@
         rising.slice(0, 3).map(c => li(c.handle || c.email, fmtEur(c.week) + '/7일')).join(''), '티어 세그먼트에서 보기', 'seg3'));
       cards.push(card('👑', '앰버서더', amb.length + '명', '지금까지 누적 매출 최상위 — 장기 파트너십 후보',
         amb.slice(0, 3).map(c => li(c.handle || c.email, fmtEur(c.total))).join(''), '티어 세그먼트에서 보기', 'seg4'));
-      cards.push(card('😴', '재활성화 대상', dormant.length + '명', '업프로모트 미등록·휴면 — 아웃리치 필요',
+      cards.push(card('😴', '재활성화 대상', dormant.length + '명', '한 번도 판매를 시작 못 한 사람들 — 연락해서 활성화 필요',
         dormant.slice(0, 3).map(c => li(c.handle || c.email, (c.country || '') + (c.followers ? ' · ' + opsFmtCount(c.followers) : ''))).join(''), '오늘의 운영에서 보기', 'ops'));
     }
     cards.push('<div class="home-card" data-go="campaigns"><div class="hc-head"><h3>🗂 최근 캠페인 시트</h3></div>' +
