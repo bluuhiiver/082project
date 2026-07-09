@@ -859,10 +859,10 @@
         queueCardHtml('휴면·미등록 (재활성화 대상)', '풀에는 있지만 업프로모트 계정이 없거나 미승인', dormant,
           c => `<li><span>${escapeHtml(c.handle || c.email)}</span><span>${escapeHtml(c.country || '')}${c.followers ? ' · ' + opsFmtCount(c.followers) : ''}</span></li>`,
           '해당 없음'),
-        queueCardHtml('라이징 스타 (부스트 대상)', '최근 7일 GMV 상위 20% — 지금 밀어주면 효과가 큼', rising,
+        queueCardHtml('라이징 스타 — 최근 7일 매출 급상승', '전체 중 최근 7일 매출 상위 20% — 지금 밀어주면 효과가 큼', rising,
           c => `<li><span>${escapeHtml(c.handle || c.email)}</span><span>${fmtEur(c.week)}/7일</span></li>`,
           '해당 없음'),
-        queueCardHtml('앰버서더 (파트너십 관리 대상)', '누적 GMV 상위 5% — 고정 파트너십·피처링 검토', ambassadors,
+        queueCardHtml('앰버서더 — 누적 매출 최상위', '전체 중 누적 매출 상위 5% — 장기 파트너십·피처링 검토 대상', ambassadors,
           c => `<li><span>${escapeHtml(c.handle || c.email)}</span><span>${fmtEur(c.total)}</span></li>`,
           '해당 없음')
       );
@@ -1803,9 +1803,9 @@
       '<ul id="homeTopProdList"><li style="color:var(--muted)">불러오는 중...</li></ul>' +
       '<div class="hc-link">오늘의 운영에서 갱신하기 →</div></div>');
     if (gmvOn) {
-      cards.push(card('🔥', '지금 밀어줄 라이징 스타', rising.length + '명', '최근 7일 GMV 상위 — 부스트·PR 키트 타이밍',
+      cards.push(card('🔥', '라이징 스타', rising.length + '명', '최근 7일 매출이 급상승 중 — 지금 밀어주면 효과 큼',
         rising.slice(0, 3).map(c => li(c.handle || c.email, fmtEur(c.week) + '/7일')).join(''), '티어 세그먼트에서 보기', 'seg3'));
-      cards.push(card('👑', '앰버서더', amb.length + '명', '누적 GMV 상위 — 파트너십 관리 대상',
+      cards.push(card('👑', '앰버서더', amb.length + '명', '지금까지 누적 매출 최상위 — 장기 파트너십 후보',
         amb.slice(0, 3).map(c => li(c.handle || c.email, fmtEur(c.total))).join(''), '티어 세그먼트에서 보기', 'seg4'));
       cards.push(card('😴', '재활성화 대상', dormant.length + '명', '업프로모트 미등록·휴면 — 아웃리치 필요',
         dormant.slice(0, 3).map(c => li(c.handle || c.email, (c.country || '') + (c.followers ? ' · ' + opsFmtCount(c.followers) : ''))).join(''), '오늘의 운영에서 보기', 'ops'));
