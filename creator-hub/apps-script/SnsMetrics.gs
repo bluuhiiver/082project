@@ -12,10 +12,14 @@ function getSnsFollowerSnapshot() {
   }
 
   var sheets = ss.getSheets();
-  function findTab(mustHaveAll) {
+  // accountKw(예: 'partner'/'official')는 반드시 포함해야 하고, platformKwAlts는
+  // 그 중 하나만 포함되면 매칭 — 탭 이름이 'tt'/'ig' 같은 축약형이든
+  // 'tiktok'/'instagram' 같은 전체 단어든 모두 잡히게 한다.
+  function findTab(accountKw, platformKwAlts) {
     for (var i = 0; i < sheets.length; i++) {
       var name = sheets[i].getName().toLowerCase();
-      var ok = mustHaveAll.every(function (k) { return name.indexOf(k) !== -1; });
+      if (name.indexOf(accountKw) === -1) continue;
+      var ok = platformKwAlts.some(function (k) { return name.indexOf(k) !== -1; });
       if (ok) return sheets[i];
     }
     return null;
@@ -58,11 +62,13 @@ function getSnsFollowerSnapshot() {
     return '';
   }
 
+  var TT_KW = ['tiktok', 'tik tok', 'tt'];
+  var IG_KW = ['instagram', 'insta', 'ig'];
   var tabs = {
-    partnerTT: findTab(['partner', 'tt']),
-    partnerIG: findTab(['partner', 'ig']),
-    officialTT: findTab(['official', 'tt']),
-    officialIG: findTab(['official', 'ig']),
+    partnerTT: findTab('partner', TT_KW),
+    partnerIG: findTab('partner', IG_KW),
+    officialTT: findTab('official', TT_KW),
+    officialIG: findTab('official', IG_KW),
   };
 
   var result = { sheetUrl: ss.getUrl() };
