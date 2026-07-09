@@ -44,6 +44,14 @@
 
 TikTok 카드는 가장 최근 날짜의 해시태그별 videoCount·신규 수를, Discord 카드는 맨 아래(최신) 행의 총 멤버·신규 가입을 보여준다. 크롤러가 아직 기록을 시작하기 전이면 카드에 안내 문구가 뜬다.
 
+## 추정 어필리에이트 GMV (할인코드 기준)
+
+`#auto_order_noti_piyonna` 채널에 주문 알림을 쏘는 앱이 주문을 시트에도 한 줄씩 쌓아주면, `OrderMetrics.gs`가 **할인코드가 붙은 주문 중 공용 프로모 코드가 아닌 것**(= 크리에이터 개인 코드로 추정)을 집계해 누적/최근 7일/오늘 추정 GMV와 코드별 순위를 보여준다. UpPromote가 추적하지 못한 코드 주문까지 잡는 **추정치**라서, 확정 수치인 UpPromote GMV와 별도로 표기된다.
+
+1. **주문 알림 앱 쪽**: SNS raw data 시트에 탭 `orders raw data` 추가 — 컬럼: `날짜 | 주문번호 | 금액 | 할인코드` (주문 하나당 한 줄, 할인코드 없으면 빈칸). 컬럼 순서 무관, `#1843`·`20.5 EUR`·소문자 코드 전부 알아서 정규화. 같은 주문번호가 중복 기록돼도 한 번만 센다.
+2. **Apps Script 쪽**: 새 파일 `OrderMetrics` 추가 → [OrderMetrics.gs](https://github.com/bluuhiiver/082project/raw/claude/peonara-affiliate-strategy-odvuqf/creator-hub/apps-script/OrderMetrics.gs) 붙여넣기 → `Index.html` 최신본 교체 → 배포 → 새 버전. **추가 권한 승인 불필요.**
+3. **공용 프로모 코드 관리**: 새 사이트 전체 할인 코드를 만들면 `OrderMetrics.gs` 상단의 `GENERAL_PROMO_CODES` 배열에 추가해야 어필리에이트 집계에서 빠진다 (현재: `SUMMER26`).
+
 ## 💰 GMV·주문 수 계산 방식 (Code.gs `fetchUpPromoteGmv()`)
 
 이 함수는 **Code.gs 안에 있어서 이 레포에는 포함되지 않는다** (비밀번호 하드코딩 파일이라 의도적으로 제외). 다만 표시되는 숫자의 의미를 정확히 알아야 하므로 현재 반영된 계산 규칙을 여기 기록해둔다:

@@ -368,6 +368,7 @@
   </div>
 
   <div class="page" id="page-gmv">
+    <div id="gmvEstWrap" style="margin-bottom:14px;"></div>
     <section id="gmvSection" style="display:none;">
       <header class="top" style="margin-bottom: 10px;">
         <h1 style="font-size:17px;">어필리에이트 GMV (UpPromote)</h1>
@@ -1802,6 +1803,10 @@
       '<div class="hc-num" id="homeTopProdNum">—</div><div class="hc-sub" id="homeTopProdSub">파일 업로드로 갱신</div>' +
       '<ul id="homeTopProdList"><li style="color:var(--muted)">불러오는 중...</li></ul>' +
       '<div class="hc-link">오늘의 운영에서 갱신하기 →</div></div>');
+    cards.push('<div class="home-card" data-go="gmv"><div class="hc-head"><h3>추정 어필리에이트 GMV</h3></div>' +
+      '<div class="hc-num" id="homeEstGmvNum">—</div><div class="hc-sub">할인코드 주문 기준 · UpPromote와 별개 추정치</div>' +
+      '<ul id="homeEstGmvList"><li style="color:var(--muted)">불러오는 중...</li></ul>' +
+      '<div class="hc-link">어필리에이트 GMV에서 보기 →</div></div>');
     if (gmvOn) {
       cards.push(card('', '최근 7일 매출 급상승', rising.length + '명', '이번 주 잘 팔고 있는 크리에이터 — 지금 서포트하면 효과가 큼',
         rising.slice(0, 3).map(c => li(c.handle || c.email, fmtEur(c.week) + '/7일')).join(''), '티어 세그먼트에서 보기', 'seg3'));
@@ -1833,7 +1838,7 @@
         const go = el.dataset.go;
         if (go === 'seg3') homeGoSegments(3);
         else if (go === 'seg4') homeGoSegments(4);
-        else switchMainPage(go === 'ops' ? 'ops' : 'campaigns');
+        else switchMainPage(go);
       });
     });
     document.getElementById('homeSnsLink').addEventListener('click', (e) => {
@@ -1953,6 +1958,61 @@
       const listEl = document.getElementById('homeTopProdList');
       if (listEl) listEl.innerHTML = '<li style="color:var(--muted)">불러오지 못했습니다</li>';
     });
+
+    const fillEstGmv = d => {
+      const numEl = document.getElementById('homeEstGmvNum');
+      const listEl = document.getElementById('homeEstGmvList');
+      if (!numEl || !listEl) return;
+      if (!d || d.error) {
+        numEl.textContent = '—';
+        listEl.innerHTML = '<li style="color:var(--muted)">' + escapeHtml((d && d.error) || '데이터 없음') + '</li>';
+        return;
+      }
+      numEl.textContent = fmtEur(d.totalGmv);
+      listEl.innerHTML =
+        li('최근 7일', fmtEur(d.weekGmv)) +
+        li('오늘', fmtEur(d.todayGmv)) +
+        li('코드 주문', (d.orders || 0).toLocaleString() + '건 · 코드 ' + ((d.byCode || []).length) + '개');
+    };
+    if (estGmvCache) fillEstGmv(estGmvCache);
+    else runServer('getEstimatedAffiliateGmv', []).then(d => { estGmvCache = d; fillEstGmv(d); }).catch(() => {
+      const listEl = document.getElementById('homeEstGmvList');
+      if (listEl) listEl.innerHTML = '<li style="color:var(--muted)">불러오지 못했습니다</li>';
+    });
+  }
+
+  // --- 추정 어필리에이트 GMV (주문 알림 기록 × 할인코드) ---
+  // UpPromote가 추적 못 한 코드 주문까지 잡는 추정치라 확정 GMV와 별도 표기.
+  let estGmvCache = null;
+  function loadEstimatedGmv(force) {
+    if (estGmvCache && !force) { renderEstimatedGmv(); return; }
+    runServer('getEstimatedAffiliateGmv', []).then(d => {
+      estGmvCache = d;
+      renderEstimatedGmv();
+    }).catch(err => {
+      document.getElementById('gmvEstWrap').innerHTML = '<div class="queue-card"><h3>추정 어필리에이트 GMV (할인코드 기준)</h3>' +
+        '<div class="qhint">불러오지 못했습니다: ' + escapeHtml(err && err.message ? err.message : String(err)) + '</div></div>';
+    });
+  }
+  function renderEstimatedGmv() {
+    const d = estGmvCache;
+    const wrap = document.getElementById('gmvEstWrap');
+    if (!d) return;
+    if (d.error) {
+      wrap.innerHTML = '<div class="queue-card"><h3>추정 어필리에이트 GMV (할인코드 기준)</h3><div class="qhint">' + escapeHtml(d.error) + '</div></div>';
+      return;
+    }
+    const top = (d.byCode || []).slice(0, 8);
+    wrap.innerHTML = `<div class="queue-card">
+      <h3>추정 어필리에이트 GMV (할인코드 기준)</h3>
+      <div class="qhint">주문 기록에서 공용 프로모 코드를 뺀 할인코드 주문 합계 — UpPromote 추적과 별개인 추정치 · ${escapeHtml(d.fetchedAt || '')}</div>
+      <div class="kpi-strip" style="margin-top:8px;">
+        <div class="kpi-card"><div class="v">${fmtEur(d.totalGmv)}</div><div class="l">누적 · 주문 ${(d.orders || 0).toLocaleString()}건</div></div>
+        <div class="kpi-card"><div class="v">${fmtEur(d.weekGmv)}</div><div class="l">최근 7일</div></div>
+        <div class="kpi-card"><div class="v">${fmtEur(d.todayGmv)}</div><div class="l">오늘</div></div>
+      </div>
+      ${top.length ? '<div class="qhint" style="margin-top:8px;">코드별: ' + top.map(c => escapeHtml(c.code) + ' ' + fmtEur(c.gmv) + ' (' + c.orders + '건)').join(' · ') + '</div>' : ''}
+    </div>`;
   }
 
   // --- 상단 메인 탭(크리에이터 풀 / 성과 분석 / GMV) ---
@@ -1962,6 +2022,7 @@
     if (pageName === 'campaigns') loadCampaignList(false); // 첫 진입 시에만 드라이브 조회
     if (pageName === 'home') renderHomeDash();
     if (pageName === 'schedule') { loadScheduleTimeline(false); loadTeamSchedule(false); }
+    if (pageName === 'gmv') loadEstimatedGmv(false);
     try { localStorage.setItem('piyonna_creator_pool_page', pageName); } catch (e) {}
   }
   document.getElementById('mainNav').addEventListener('click', (e) => {
