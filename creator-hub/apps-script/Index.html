@@ -1873,7 +1873,7 @@
       '<div class="hc-link">캠페인 시트 전체 보기 →</div></div>');
     // 슬랙 #team_글로벌뷰티제품-마케팅 채널의 "Piyonna SNS 팔로워 리포트"와 같은 원본 시트
     cards.push('<div class="home-card" id="homeSnsCard"><div class="hc-head"><h3>SNS 팔로워</h3></div>' +
-      '<div class="hc-num" id="homeSnsNum">—</div><div id="homeSnsSpark"></div><div class="hc-sub">Partner + Official 계정 합계 · 전일 대비</div>' +
+      '<div class="hc-num" id="homeSnsNum">—</div><div id="homeSnsSpark"></div><div class="hc-sub">Partner 계정 합계 · 전일 대비</div>' +
       '<ul id="homeSnsList"><li style="color:var(--muted)">불러오는 중...</li></ul>' +
       '<div class="hc-link" id="homeSnsLink">원본 시트 열기 →</div></div>');
     // 슬랙 #team_글로벌뷰티제품-마케팅 채널의 봇 메시지(TikTok 해시태그 리포트 / Discord 멤버 현황)를 직접 파싱
@@ -1909,7 +1909,6 @@
       }
       const rows = [
         ['Partner · TikTok', sns.partnerTT], ['Partner · Instagram', sns.partnerIG],
-        ['Official · TikTok', sns.officialTT], ['Official · Instagram', sns.officialIG],
       ];
       const present = rows.filter(r => r[1]);
       const total = present.reduce((s, r) => s + r[1].followers, 0);

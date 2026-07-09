@@ -70,8 +70,6 @@ function getSnsFollowerSnapshot() {
   var tabs = {
     partnerTT: findTab('partner', TT_KW),
     partnerIG: findTab('partner', IG_KW),
-    officialTT: findTab('official', TT_KW),
-    officialIG: findTab('official', IG_KW),
   };
 
   var result = { sheetUrl: ss.getUrl() };
