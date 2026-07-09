@@ -1154,6 +1154,7 @@
 
   // --- 어필리에이트 GMV (UpPromote) ---
   const GMV = <?!= gmvJson ?>;
+  let estGmvCache = null; // 추정 어필리에이트 GMV(주문 알림 × 할인코드) — renderGmv가 참조하므로 여기서 선언
   const GMV_SORT_COL = { totalGmv: 2, weekGmv: 3, todayGmv: 4, orders: 5 };
   let gmvQuery = '';
 
@@ -1243,19 +1244,37 @@
     if (onlyActive) rows = rows.filter(r => r[2] > 0);
     rows = rows.slice().sort((a, b) => b[sortCol] - a[sortCol]);
 
-    const thead = '<thead><tr>' + GMV.headers.map(h => `<th>${escapeHtml(h)}</th>`).join('') + '</tr></thead>';
+    const colCount = GMV.headers.length + 1;
+    const thead = '<thead><tr>' + GMV.headers.map(h => `<th>${escapeHtml(h)}</th>`).join('') +
+      '<th>추정 GMV<span title="주문 기록에서 할인코드로 잡은 추정치 — UpPromote 확정 GMV와 별개" style="cursor:help; color:var(--muted);"> ⓘ</span></th></tr></thead>';
     const tbody = rows.length === 0
-      ? `<tbody><tr><td colspan="${GMV.headers.length}" class="empty-state">조건에 맞는 결과가 없습니다</td></tr></tbody>`
-      : '<tbody>' + rows.map(r => `<tr>
+      ? `<tbody><tr><td colspan="${colCount}" class="empty-state">조건에 맞는 결과가 없습니다</td></tr></tbody>`
+      : '<tbody>' + rows.map(r => {
+          const est = estGmvForEmail(r[1]);
+          return `<tr>
           <td>${escapeHtml(r[0])}</td>
           <td>${escapeHtml(r[1])}</td>
           <td>${fmtEur(r[2])}</td>
           <td>${fmtEur(r[3])}</td>
           <td>${fmtEur(r[4])}</td>
           <td>${orderCountCell(r[2], r[5])}</td>
-        </tr>`).join('') + '</tbody>';
+          <td>${est ? fmtEur(est.gmv) + ' <span class="sub" style="font-size:11px;">(' + est.orders + '건)</span>' : '<span class="sub">—</span>'}</td>
+        </tr>`;
+        }).join('') + '</tbody>';
 
     document.getElementById('gmvTableWrap').innerHTML = `<div class="table-scroll"><table>${thead}${tbody}</table></div>`;
+  }
+
+  // 어필리에이트별 개인 할인코드(UpPromote affiliate_coupon)로 OrderMetrics의
+  // 코드별 집계와 매칭 — GMV.couponByEmail은 Code.gs에서 채워준다.
+  function estGmvForEmail(email) {
+    if (!estGmvCache || !estGmvCache.byCode || !GMV.couponByEmail) return null;
+    const codes = String(GMV.couponByEmail[email] || '').split(',').map(c => c.trim().toUpperCase()).filter(Boolean);
+    if (!codes.length) return null;
+    const codeMap = new Map(estGmvCache.byCode.map(c => [String(c.code).toUpperCase(), c]));
+    let gmv = 0, orders = 0, found = false;
+    codes.forEach(c => { const m = codeMap.get(c); if (m) { gmv += m.gmv; orders += m.orders; found = true; } });
+    return found ? { gmv, orders } : null;
   }
 
   document.getElementById('gmvSearch').addEventListener('input', (e) => {
@@ -2016,12 +2035,13 @@
 
   // --- 추정 어필리에이트 GMV (주문 알림 기록 × 할인코드) ---
   // UpPromote가 추적 못 한 코드 주문까지 잡는 추정치라 확정 GMV와 별도 표기.
-  let estGmvCache = null;
+  // (renderGmv가 이 값을 초기 렌더링 때부터 참조하므로 GMV const 선언부 근처로 올려둔다)
   function loadEstimatedGmv(force) {
     if (estGmvCache && !force) { renderEstimatedGmv(); return; }
     runServer('getEstimatedAffiliateGmv', []).then(d => {
       estGmvCache = d;
       renderEstimatedGmv();
+      renderGmv(); // 추정 GMV 컬럼이 이제 채워질 수 있으니 표도 다시 그린다
     }).catch(err => {
       document.getElementById('gmvEstWrap').innerHTML = '<div class="queue-card"><h3>추정 어필리에이트 GMV (할인코드 기준)</h3>' +
         '<div class="qhint">불러오지 못했습니다: ' + escapeHtml(err && err.message ? err.message : String(err)) + '</div></div>';
@@ -2064,4 +2084,5 @@
     if (btn) switchMainPage(btn.dataset.page);
   });
   switchMainPage('home'); // 접속하면 항상 브리핑(홈)부터
+  loadEstimatedGmv(false); // GMV 표의 "추정 GMV" 컬럼이 채워지도록 페이지 전환과 무관하게 미리 불러온다
 </script>

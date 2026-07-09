@@ -114,7 +114,7 @@ function getSlackDailyMetrics() {
       for (var r = discordTab.rows.length - 1; r >= 0; r--) {
         var row = discordTab.rows[r];
         var total = ugcNum_(row[dIdx.total]);
-        if (total === null) continue;
+        if (total === null || total <= 0) continue; // 연결 테스트용 0 값 등 placeholder 행은 건너뜀
         discord = {
           date: dIdx.date !== -1 ? ugcDateStr_(row[dIdx.date], tz) : '',
           total: total,
