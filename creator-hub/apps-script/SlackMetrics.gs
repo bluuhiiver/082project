@@ -92,7 +92,7 @@ function getSlackDailyMetrics() {
       tiktokTab.rows.forEach(function (r) {
         if (ugcDateStr_(r[tIdx.date], tz) !== latestDate) return;
         var tag = String(r[tIdx.tag] || '').replace(/^#/, '').trim();
-        if (!tag) return;
+        if (!tag || tag === 'connection-test') return; // 크롤러 연결 테스트 행은 무시
         tags[tag] = {
           videoCount: tIdx.video !== -1 ? ugcNum_(r[tIdx.video]) : null,
           newYesterday: tIdx.fresh !== -1 ? ugcNum_(r[tIdx.fresh]) : null,
