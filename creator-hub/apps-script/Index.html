@@ -231,8 +231,11 @@
 
 <div class="wrap">
   <header class="top">
-    <h1>🐣 Piyonna Partner Creator Pool</h1>
-    <div class="sub">시트 실시간 연동 · 마지막 새로고침 <?= updatedAt ?> · 페이지를 새로고침하면 최신 데이터로 갱신됩니다</div>
+    <div>
+      <h1>🐣 Piyonna Partner Creator Pool</h1>
+      <div class="sub">시트 실시간 연동 · 마지막 새로고침 <?= updatedAt ?> · 페이지를 새로고침하면 최신 데이터로 갱신됩니다</div>
+    </div>
+    <button class="group-toggle edit-toggle" id="editToggle">🔒 편집 모드</button>
   </header>
 
   <nav class="main-nav" id="mainNav">
@@ -266,8 +269,7 @@
       <select id="groupBySelect" style="display:none;"></select>
       <label style="display:flex;align-items:center;gap:5px;font-size:12.5px;color:var(--muted);"><input type="checkbox" id="showInactive">비활성 포함</label>
       <button class="reset" id="reset">필터 초기화</button>
-      <button class="group-toggle edit-toggle" id="editToggle" style="margin-left:auto;">🔒 편집 모드</button>
-      <button class="group-toggle" id="addRowBtn" style="display:none;">+ 새 크리에이터 추가</button>
+      <button class="group-toggle" id="addRowBtn" style="display:none;margin-left:auto;">+ 새 크리에이터 추가</button>
     </div>
 
     <div class="result-count" id="resultCount"></div>

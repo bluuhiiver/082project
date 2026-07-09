@@ -22,7 +22,7 @@
 캠페인 콘텐츠 업로드 일정(자동)과 팀 업무 일정(수동)을 한 페이지에서 본다.
 
 - **캠페인 콘텐츠 일정**: `Campaigns.gs`의 `getCampaignTimeline()`이 각 캠페인 시트의 UploadDate류 컬럼만 훑어 날짜별 업로드 건수를 집계 — 수기 입력 없이 항상 최신 상태. 최근 30일만 표시.
-- **팀 업무 일정**: 마감일·회의·캠페인 오픈 등을 팀에서 직접 추가/상태 변경/삭제. 크리에이터 풀 시트 안에 숨겨진 `_일정` 탭에 저장되며, `Schedule.gs`가 CRUD를 담당한다. 기존 "편집 모드"(🐣 크리에이터 풀 탭의 🔒 버튼)로 잠금 해제해야 추가/수정/삭제 가능 — 별도 비밀번호 설정 불필요, 기존 `EDIT_PASSWORD`를 그대로 재사용한다.
+- **팀 업무 일정**: 마감일·회의·캠페인 오픈 등을 팀에서 직접 추가/상태 변경/삭제. 크리에이터 풀 시트 안에 숨겨진 `_일정` 탭에 저장되며, `Schedule.gs`가 CRUD를 담당한다. 기존 "편집 모드"(헤더 오른쪽 상단 🔒 버튼, 모든 페이지에서 공통으로 보임)로 잠금 해제해야 추가/수정/삭제 가능 — 별도 비밀번호 설정 불필요, 기존 `EDIT_PASSWORD`를 그대로 재사용한다.
 
 **적용**: 새 파일 `Campaigns`(기존 파일에 덮어쓰기), `Schedule`(신규 추가) → 각각 [Campaigns.gs](https://github.com/bluuhiiver/082project/raw/claude/peonara-affiliate-strategy-odvuqf/creator-hub/apps-script/Campaigns.gs) / [Schedule.gs](https://github.com/bluuhiiver/082project/raw/claude/peonara-affiliate-strategy-odvuqf/creator-hub/apps-script/Schedule.gs) 내용 붙여넣기 → `Index.html` 최신본으로 교체 → 배포 → 새 버전. **추가 권한 승인 불필요**(이미 있는 스프레드시트/드라이브 권한만 사용).
 
@@ -31,6 +31,7 @@
 슬랙 `#team_글로벌뷰티제품-마케팅` 채널에 매일 올라오는 "Piyonna SNS 팔로워 리포트"(n8n 자동화)와 **같은 원본 시트**("[글로벌뷰티] Piyonna SNS 채널 raw data")를 `SnsMetrics.gs`가 직접 읽어 홈 카드로 보여준다. Partner/Official × TikTok/Instagram 4개 탭에서 최신 행(팔로워 수, 전일 증감)을 가져오며, 탭 이름에 `partner`/`official` + `tt`/`ig`가 포함되어 있으면 자동으로 찾는다 — 시트 소유자가 탭을 재배치해도 이름 패턴만 유지되면 깨지지 않는다.
 
 - **적용**: 새 파일 `SnsMetrics` 추가 → [SnsMetrics.gs](https://github.com/bluuhiiver/082project/raw/claude/peonara-affiliate-strategy-odvuqf/creator-hub/apps-script/SnsMetrics.gs) 붙여넣기. **추가 권한 승인 불필요** (이미 있는 스프레드시트 읽기 권한만 사용).
+- 원본 시트 각 탭의 최근 14일치 값을 함께 읽어와, 홈 카드에 4개 계정 합계 기준 미니 추세선(스파크라인)을 그린다. 하루치 데이터만 있어도 에러 없이 숫자만 표시된다.
 - TikTok 해시태그(videoCount)와 Discord 멤버 현황은 별도 시트 없이 크롤링 → 슬랙 게시만 되는 구조라, `SlackMetrics.gs`가 **슬랙 채널 히스토리를 직접 읽어 봇 메시지 텍스트를 파싱**한다.
 
 ### 슬랙 연동 설정 (최초 1회)
@@ -45,6 +46,17 @@
 8. `Index.html`을 최신본으로 교체 → 배포 → 새 버전
 
 추가 OAuth 스코프(appsscript.json 수정)는 필요 없다 — 외부 URL 호출은 기존 `script.external_request` 권한으로 이미 충분하다. 채널 ID가 바뀌거나 다른 채널을 보고 싶으면 `SlackMetrics.gs`의 `SLACK_CHANNEL_ID` 값만 바꾸면 된다.
+
+## 💰 GMV·주문 수 계산 방식 (Code.gs `fetchUpPromoteGmv()`)
+
+이 함수는 **Code.gs 안에 있어서 이 레포에는 포함되지 않는다** (비밀번호 하드코딩 파일이라 의도적으로 제외). 다만 표시되는 숫자의 의미를 정확히 알아야 하므로 현재 반영된 계산 규칙을 여기 기록해둔다:
+
+- **주문 수**: UpPromote 주문 상태가 `approved`(승인) 또는 `paid`(지급 완료)인 건만 센다. `pending`(검토중)은 아직 커미션이 확정 안 된 상태라 제외, `denied`/`rejected`(거절)도 당연히 제외.
+- **수동 지급 커미션 제외**: `tracking_type`이 `"Manually added"`인 건(실제 판매가 아니라 꾸준한 참여에 대한 보상성 커미션)은 누적/7일/오늘 GMV와 주문 수 전부에서 제외한다. 다만 얼마나 있는지 참고할 수 있게 GMV 페이지의 "세부 유형" 목록에는 계속 노출된다.
+- **쿠폰 코드 vs 링크/기타 비교**: GMV 페이지 상단에 `coupon_applied` 필드 유무로 구분한 유입 경로 비교 막대와, `tracking_type`별 세부 건수를 보여준다. 수동 지급 건은 이 비교에서도 제외.
+- **"건당 평균 €1 미만 ⚠" 경고**: `Index.html`의 `orderCountCell()`이 클라이언트에서 계산 — 취소/거절/무료 사은품 주문이 섞였을 가능성을 운영자가 바로 알아챌 수 있게 하는 시각적 신호일 뿐, 서버 계산에는 영향 없음.
+
+이 규칙을 바꾸고 싶으면(예: `paid`만 인정하고 `approved`는 빼고 싶다든지) `Code.gs`의 `fetchUpPromoteGmv()` 안 해당 조건문만 수정하면 된다.
 
 ## ⚠️ 보안 권고
 
@@ -82,4 +94,4 @@
 
 ## 검증
 
-Playwright로 GAS 템플릿 변수를 샘플 데이터로 치환해 렌더링 테스트 완료: 티어 5단계 분류 정확성, 기존 페이지 무손상, 비활성 행 제외, KOL 탭 헤더 변형(`Email`) 인식, 모바일(390px) 가로 스크롤 없음, 콘솔 에러 0건. 일정 탭은 편집 모드 잠금/해제에 따른 추가·상태변경·삭제 버튼 노출, CRUD 동작, 타임라인 날짜별 집계까지 검증했다.
+Playwright로 GAS 템플릿 변수를 샘플 데이터로 치환해 렌더링 테스트 완료: 티어 5단계 분류 정확성, 기존 페이지 무손상, 비활성 행 제외, KOL 탭 헤더 변형(`Email`) 인식, 모바일(390px) 가로 스크롤 없음, 콘솔 에러 0건. 일정 탭은 편집 모드 잠금/해제에 따른 추가·상태변경·삭제 버튼 노출, CRUD 동작, 타임라인 날짜별 집계까지 검증했다. 편집 모드 토글을 전역 헤더로 옮긴 뒤에는 크리에이터 풀 탭으로 이동하지 않고 일정 탭에서 바로 잠금 해제되는지도 확인했다.
