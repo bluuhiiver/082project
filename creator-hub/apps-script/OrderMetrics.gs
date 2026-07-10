@@ -3,9 +3,19 @@
 // **UpPromote에 실제 등록된 어필리에이트 코드로 확인된 것만** 집계한다.
 // (BIENVENUE30 같은 웰컴 할인, 랜덤 서프라이즈 코드 등은 공용 코드 블록리스트로
 // 걸러내려 하면 새 코드가 생길 때마다 놓치게 돼서, 반대로 "UpPromote 기준
-// 허용 목록" 방식으로 뒤집었다 — Code.gs의 fetchUpPromoteGmv()가 반환하는
-// couponByEmail을 그대로 재사용한다. 같은 프로젝트라 전역을 공유하므로 바로
-// 호출할 수 있다.)
+// 허용 목록" 방식으로 뒤집었다.)
+//
+// 허용 목록은 두 소스를 합친다(둘 중 하나만 있어도 동작):
+//   1) Code.gs의 fetchUpPromoteGmv()가 반환하는 couponByEmail — 이미 전환(주문)이
+//      한 번이라도 잡힌 어필리에이트만 포함(부분적).
+//   2) 데이터브릭스 volume.piyonna_mkt.uppromote_coupons 전체 스냅샷(11,000여건,
+//      전환 여부와 무관하게 등록된 쿠폰 전부) — 카야님의 기존 로컬 동기화
+//      스크립트(sync_uppromote_to_databricks.py)를 확장해 같은 스프레드시트에
+//      "uppromote_coupons raw data" 탭으로 매일 내보내주면 여기서 읽는다.
+//      탭 형식: 쿠폰코드(coupon) | 어필리에이트 이메일(affiliate_email) —
+//      컬럼 순서 무관, 헤더로 자동 인식. 탭이 아직 없으면 조용히 건너뛰고
+//      1번 소스만으로 동작(완전히 새로 생긴 코드는 그때까지 "확인 안 됨"으로 제외).
+//
 // UpPromote가 아직 추적 못 한(승인 대기 등) 코드 주문까지도 이 방식으로는
 // 잡히는 게 아니라, "어필리에이트 코드로 확인된" 주문만 잡는다는 점 참고 —
 // 그래도 결제~물류 검수 지연(최대 6일) 없이 주문 시점 기준으로 집계되는
@@ -18,9 +28,40 @@ var ORDERS_SPREADSHEET_ID = '1NOoKuyM92HSe3aiQ_vm1If--ljgHebJtmFzdX7t1w0E';
 var ORDERS_MAX_SCAN_ROWS = 3000;
 var ORDERS_TREND_DAYS = 14;
 
+// 데이터브릭스 uppromote_coupons 스냅샷 탭에서 쿠폰 코드 전체를 읽는다.
+// 탭이 없으면(아직 연동 전) 조용히 빈 목록 반환 — omKnownAffiliateCoupons_()가
+// Code.gs 쪽 소스와 합치므로 이 탭 하나만으로 전체가 좌우되지 않는다.
+function omCouponsFromDatabricksTab_() {
+  var set = {};
+  try {
+    var ss = SpreadsheetApp.openById(ORDERS_SPREADSHEET_ID);
+    var sheets = ss.getSheets();
+    var sheet = null;
+    for (var i = 0; i < sheets.length; i++) {
+      var name = sheets[i].getName().toLowerCase();
+      if (name.indexOf('uppromote_coupons') !== -1 || (name.indexOf('coupon') !== -1 && name.indexOf('raw data') !== -1)) { sheet = sheets[i]; break; }
+    }
+    if (!sheet) return set;
+    var lastRow = sheet.getLastRow();
+    var lastCol = sheet.getLastColumn();
+    if (lastRow < 2 || lastCol < 1) return set;
+    var headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0].map(function (h) { return String(h).trim(); });
+    var codeIdx = omFindCol_(headers, ['coupon', '쿠폰', '할인', 'code', '코드']);
+    if (codeIdx === -1) return set;
+    var values = sheet.getRange(2, 1, lastRow - 1, lastCol).getValues();
+    values.forEach(function (row) {
+      var code = String(row[codeIdx] || '').trim().toUpperCase();
+      if (code) set[code] = true;
+    });
+  } catch (e) {
+    // 탭 접근 실패 — 빈 목록으로 조용히 진행 (Code.gs 쪽 소스만으로 동작)
+  }
+  return set;
+}
+
 // UpPromote에 등록된 어필리에이트 개인 코드 전체를 모아 허용 목록을 만든다.
-// UpPromote 연동 전이거나 오류가 나면 빈 목록을 반환 — 이 경우 주문에 코드가
-// 있어도 전부 "확인 안 됨"으로 제외된다(공용/웰컴 코드가 새는 것보다 안전).
+// 두 소스가 다 없으면 빈 목록을 반환 — 이 경우 주문에 코드가 있어도 전부
+// "확인 안 됨"으로 제외된다(공용/웰컴 코드가 새는 것보다 안전).
 function omKnownAffiliateCoupons_() {
   var set = {};
   try {
@@ -34,8 +75,10 @@ function omKnownAffiliateCoupons_() {
       });
     }
   } catch (e) {
-    // UpPromote 연동 전 — 빈 허용 목록으로 진행
+    // UpPromote 연동 전 — 이 소스는 건너뜀
   }
+  var dbCodes = omCouponsFromDatabricksTab_();
+  Object.keys(dbCodes).forEach(function (code) { set[code] = true; });
   return set;
 }
 
