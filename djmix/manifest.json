@@ -1,0 +1,18 @@
+{
+  "name": "DJ 스쿨 — 초보자 디제잉 스튜디오",
+  "short_name": "DJ 스쿨",
+  "description": "지식이 없어도 시작하는 DJ 믹싱. 정규반 커리큘럼을 그대로 따라 배우는 웹 DJ 앱",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#0b0e14",
+  "theme_color": "#0b0e14",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%230b0e14'/%3E%3Ctext x='50' y='68' font-size='52' text-anchor='middle'%3E🎧%3C/text%3E%3C/svg%3E",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
